@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import ProtectedRoute from '@/components/ui/ProtectedRoute';
 import AdminRoute from '@/components/ui/AdminRoute';
+import PublicRoute from '@/components/ui/PublicRoute';
 import LoginPage from '@/pages/auth/LoginPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
@@ -34,8 +35,8 @@ import BrochurePage from '@/pages/admin/BrochurePage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
-  { path: '/login', element: <LoginPage /> },
-  { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/login', element: <PublicRoute><LoginPage /></PublicRoute> },
+  { path: '/forgot-password', element: <PublicRoute><ForgotPasswordPage /></PublicRoute> },
   { path: '/reset-password/:token', element: <ResetPasswordPage /> },
   {
     element: <ProtectedRoute><AppLayout /></ProtectedRoute>,
