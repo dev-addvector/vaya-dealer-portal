@@ -101,7 +101,7 @@ exports.getShippingModes = async (req, res) => {
 };
 
 exports.placeOrder = async (req, res) => {
-  const { shippingAddressId, billingAddressId, shipmentMode, poNumber, orderDate, orderType, authPassword } = req.body;
+  const { shippingAddressId, billingAddressId, shipmentMode, poNumber, orderDate, orderType, authPassword, refPoNumber } = req.body;
   const user = req.user;
 
   if (!user.authorizationPassword) {
@@ -166,12 +166,14 @@ exports.placeOrder = async (req, res) => {
     OrderType: orderType || 'Ordered',
     ReserveDate: orderType === 'Reserved' ? `${d}-${m}-${y}` : '',
     DeliveryDate: orderType !== 'Reserved' ? `${m}-${d}-${y}` : '',
-    RefPONumber: '',
+    RefPONumber: refPoNumber || '',
   };
 
   try {
     const result = await erpService.placeOrder(erpPayload);
-    const isSuccess = result?.status === true || result?.return_code === 200 || result?.success === true;
+    const isSuccess = result?.status === true || result?.status === 'TRUE' ||
+      result?.return_code === 200 || result?.return_code === '200' ||
+      result?.success === true;
     if (isSuccess) {
       await prisma.cartItem.deleteMany({ where: { userId: user.id } });
       return res.json({ success: true, message: 'Order placed successfully' });

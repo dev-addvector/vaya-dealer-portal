@@ -8,6 +8,6 @@ router.get('/reserved-orders', auth, c.getReservedOrders);
 router.get('/download/:po', auth, c.downloadOrder);
 router.get('/download-open-order', auth, c.downloadOpenOrderPdf);
 router.post('/cancel/:id', auth, c.cancelOrder);
-router.post('/convert-reserved/:po', auth, c.convertReservedToOrder);
+router.post('/convert-reserved/*', auth, c.convertReservedToOrder);
 
 module.exports = router;

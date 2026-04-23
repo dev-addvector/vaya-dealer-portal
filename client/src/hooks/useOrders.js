@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import * as orderApi from '@/api/order.api';
 import toast from 'react-hot-toast';
 
@@ -21,13 +22,14 @@ export const useCancelOrder = () => {
 };
 
 export const useConvertReserved = () => {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: orderApi.convertReserved,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['reserved-orders'] });
-      qc.invalidateQueries({ queryKey: ['my-orders'] });
-      toast.success('Order converted successfully');
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['cart'] });
+      toast.success('Items added to cart');
+      navigate('/cart', { state: { reserveDetails: res.data } });
     },
     onError: (err) => toast.error(err.message || 'Failed to convert order'),
   });

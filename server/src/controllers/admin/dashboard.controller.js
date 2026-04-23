@@ -17,8 +17,8 @@ function buildMongoMatch({ from, to, searchString, location, consigneeName }) {
   const match = {};
   if (from || to) {
     match.timestamp = {};
-    if (from) match.timestamp.$gte = new Date(from);
-    if (to) match.timestamp.$lte = new Date(to + 'T23:59:59');
+    if (from) match.timestamp.$gte = { $date: new Date(from).toISOString() };
+    if (to) match.timestamp.$lte = { $date: new Date(to + 'T23:59:59').toISOString() };
   }
   if (searchString) match.search_string = searchString;
   if (location) match.location = location;
