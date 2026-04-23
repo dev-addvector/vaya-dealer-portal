@@ -12,7 +12,7 @@ exports.loadProducts = async (req, res) => {
     zone: req.user.zone,
   });
   const elapsed = (Date.now() - start) / 1000;
-  prisma.search_report.create({
+  prisma.searchReport.create({
     data: {
       search_string: search || null,
       pattern: pattern || null,
@@ -78,7 +78,7 @@ exports.editCartItem = async (req, res) => {
   if (quantity !== undefined) updateData.quantity = quantity;
   if (remark !== undefined) updateData.remark = remark;
   await prisma.cartItem.updateMany({
-    where: { id: Number(id), userId: req.user.id },
+    where: { id, userId: req.user.id },
     data: updateData,
   });
   res.json({ success: true, message: 'Cart updated' });
@@ -86,7 +86,7 @@ exports.editCartItem = async (req, res) => {
 
 exports.deleteCartItem = async (req, res) => {
   await prisma.cartItem.deleteMany({
-    where: { id: Number(req.params.id), userId: req.user.id },
+    where: { id: req.params.id, userId: req.user.id },
   });
   res.json({ success: true, message: 'Item removed' });
 };

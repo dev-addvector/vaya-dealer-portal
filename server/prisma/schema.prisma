@@ -3,327 +3,145 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("MONGODB_URL")
 }
 
-model User {
-  id                        BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
-  name                      String?     @db.VarChar(125)
-  email                     String      @unique(map: "users_email_unique") @db.VarChar(125)
-  emailVerifiedAt           DateTime?   @map("email_verified_at") @db.Timestamp(0)
-  accountingEmail           String?     @map("accounting_email") @db.Text
-  authorizationPassword     String?     @map("authorization_password") @db.Char(100)
-  password                  String      @db.VarChar(125)
-  two_factor_secret         String?     @db.Text
-  two_factor_recovery_codes String?     @db.Text
-  unc                       String?     @db.Char(55)
-  keyParse                  String?     @map("key_parse") @db.Char(55)
-  rememberToken             String?     @map("remember_token") @db.VarChar(100)
-  isStatus                  Int?        @default(1) @map("is_status")
-  createdAt                 DateTime?   @map("created_at") @db.Timestamp(0)
-  updatedAt                 DateTime?   @updatedAt @map("updated_at") @db.Timestamp(0)
-  zone                      users_zone?
-  cutDiscount               String?     @map("cut_discount") @db.VarChar(55)
-  rollDiscount              String?     @map("roll_discount") @db.VarChar(55)
-  role                      String?     @default("user") @db.VarChar(50)
-
-  @@map("users")
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model PasswordReset {
-  email     String    @db.VarChar(125)
-  token     String    @db.VarChar(125)
-  createdAt DateTime? @map("created_at") @db.Timestamp(0)
-
-  @@index([email], map: "password_resets_email_index")
-  @@map("password_resets")
-  @@ignore
-}
-
-model Ad {
-  id        BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  title     String?   @db.VarChar(255)
-  startDate DateTime? @map("start_date") @db.Date
-  endDate   DateTime? @map("end_date") @db.Date
-  createdAt DateTime? @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
-
-  @@map("ads")
-}
-
-model Setting {
-  id                   Int      @id @default(autoincrement())
-  smtp_email           String?  @db.Char(55)
-  smtp_pass            String?  @db.Char(100)
-  image                String?  @db.Char(55)
-  receiving_order_days Int?
-  ebrochure            String?  @db.Text
-  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
-  gst                  Int?
-  qr_link              String?  @db.Text
-
-  @@map("settings")
-}
-
-model brochure {
-  id           BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  title        String?   @db.VarChar(255)
-  brochure_key String?   @db.VarChar(255)
-  file_name    String?   @db.VarChar(255)
-  qr_code      String?   @db.VarChar(255)
-  qr_code2     String?   @db.VarChar(255)
-  created_at   DateTime? @db.Timestamp(0)
-  updated_at   DateTime? @db.Timestamp(0)
-  pattern_name String?   @db.VarChar(255)
-  is_active    Boolean?  @default(true)
-}
-
-model contact {
-  id         Int      @id @default(autoincrement())
-  contact_id Int?
-  department String?  @db.Char(55)
-  email_id   String?  @db.Char(55)
-  name       String?  @db.Char(55)
-  number     String?  @db.Char(55)
-  is_default Int      @default(0) @db.TinyInt
-  created_at DateTime @default(now()) @db.Timestamp(0)
-  updated_at DateTime @default(now()) @db.Timestamp(0)
-}
-
-model failed_jobs {
-  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(125)
-  connection String   @db.Text
-  queue      String   @db.Text
-  payload    String   @db.LongText
-  exception  String   @db.LongText
-  failed_at  DateTime @default(now()) @db.Timestamp(0)
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model jobs {
-  id           BigInt @db.UnsignedBigInt
-  queue        String
-  payload      String @db.LongText
-  attempts     Int    @db.UnsignedTinyInt
-  reserved_at  Int?   @db.UnsignedInt
-  available_at Int    @db.UnsignedInt
-  created_at   Int    @db.UnsignedInt
-
-  @@ignore
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model mail_templates {
-  id           Int       @db.UnsignedInt
-  display_name String?
-  file_name    String
-  subject      String?
-  markdown     Boolean   @default(false)
-  action       String?
-  created_at   DateTime? @db.Timestamp(0)
-  updated_at   DateTime? @db.Timestamp(0)
-
-  @@ignore
-}
-
-model migrations {
-  id        Int    @id @default(autoincrement()) @db.UnsignedInt
-  migration String @db.VarChar(125)
-  batch     Int
-}
-
-model model_has_permissions {
-  permission_id BigInt @db.UnsignedBigInt
-  model_type    String @db.VarChar(125)
-  model_id      BigInt @db.UnsignedBigInt
-
-  @@id([permission_id, model_id, model_type])
-  @@index([model_id, model_type], map: "model_has_permissions_model_id_model_type_index")
-}
-
-model model_has_roles {
-  role_id    BigInt @db.UnsignedBigInt
-  model_type String @db.VarChar(125)
-  model_id   BigInt @db.UnsignedBigInt
-
-  @@id([role_id, model_id, model_type])
-  @@index([model_id, model_type], map: "model_has_roles_model_id_model_type_index")
-}
-
-model multiple_ebrochure_file {
-  id         Int      @id @default(autoincrement())
-  ebrochure  String?  @db.VarChar(255)
-  created_at DateTime @default(now()) @db.Timestamp(0)
-  updated_at DateTime @default(now()) @db.Timestamp(0)
-}
-
-model permissions {
-  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  name       String    @db.VarChar(125)
-  guard_name String    @db.VarChar(125)
-  created_at DateTime? @db.Timestamp(0)
-  updated_at DateTime? @db.Timestamp(0)
-
-  @@unique([name, guard_name], map: "permissions_name_guard_name_unique")
-}
-
-model personal_access_tokens {
-  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  tokenable_type String    @db.VarChar(125)
-  tokenable_id   BigInt    @db.UnsignedBigInt
-  name           String    @db.VarChar(125)
-  token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
-  abilities      String?   @db.Text
-  last_used_at   DateTime? @db.Timestamp(0)
-  created_at     DateTime? @db.Timestamp(0)
-  updated_at     DateTime? @db.Timestamp(0)
-
-  @@index([tokenable_type, tokenable_id], map: "personal_access_tokens_tokenable_type_tokenable_id_index")
-}
-
-model products {
-  id                      Int       @id @default(autoincrement())
-  Color                   String?   @db.Char(55)
-  Cut_Price               String?   @db.Char(20)
-  Length                  String?   @db.Char(55)
-  Pattern                 String?   @db.Char(55)
-  PcSlNo                  String?   @db.Char(55)
-  Roll_Price              String?   @db.Char(55)
-  Unique_Consignee_Number String?   @db.Char(55)
-  created_at              DateTime? @default(now()) @db.Timestamp(0)
-  updated_at              DateTime  @default(now()) @db.Timestamp(0)
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model purchase_codes {
-  id              Int       @db.UnsignedInt
-  code            String
-  user_id         String
-  item_name       String
-  item_id         String
-  supported_until String?
-  url             String?
-  image           String?
-  created_at      DateTime? @db.Timestamp(0)
-  updated_at      DateTime? @db.Timestamp(0)
-  envato_username String?
-
-  @@ignore
-}
-
-model role_has_permissions {
-  permission_id BigInt @db.UnsignedBigInt
-  role_id       BigInt @db.UnsignedBigInt
-
-  @@id([permission_id, role_id])
-  @@index([role_id], map: "role_has_permissions_role_id_foreign")
-}
-
-model roles {
-  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  name       String    @db.VarChar(125)
-  guard_name String    @db.VarChar(125)
-  created_at DateTime? @db.Timestamp(0)
-  updated_at DateTime? @db.Timestamp(0)
-
-  @@unique([name, guard_name], map: "roles_name_guard_name_unique")
-}
-
-model search_report {
-  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  search_string  String?   @db.Char(255)
-  pattern        String?   @db.Char(255)
-  color          String?   @db.Char(255)
-  consignee_name String?   @db.VarChar(255)
-  location       String?   @db.Char(255)
-  elpsed_time    String?   @db.Char(255)
-  row_count      Int?      @default(0)
-  device_type    String?   @db.Char(255)
-  os_type        String?   @db.Char(255)
-  user_agent     String?   @db.Char(255)
-  timestamp      DateTime? @default(dbgenerated("('2023-01-23 21:16:10')")) @db.DateTime(0)
-  created_at     DateTime? @db.Timestamp(0)
-  updated_at     DateTime? @db.Timestamp(0)
-}
-
-model sessions {
-  id            String  @id @db.VarChar(125)
-  user_id       BigInt? @db.UnsignedBigInt
-  ip_address    String? @db.VarChar(45)
-  user_agent    String? @db.Text
-  payload       String  @db.Text
-  last_activity Int
-
-  @@index([last_activity], map: "sessions_last_activity_index")
-  @@index([user_id], map: "sessions_user_id_index")
-}
-
-model CartItem {
-  id          Int      @id @default(autoincrement())
-  userId      BigInt   @db.UnsignedBigInt
-  productId   String   @db.VarChar(125)
-  productName String?  @db.VarChar(255)
-  pattern     String?  @db.VarChar(125)
-  color       String?  @db.VarChar(125)
-  price       Float?
-  rollPrice   Float?   @map("roll_price")
-  cutPrice    Float?   @map("cut_price")
-  gstPercent  Float?   @map("gst_percent")
-  quantity    Float    @default(1)
-  unit        String?  @db.VarChar(20)
-  remark      String?  @db.Text
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
-
-  @@map("cart_items")
-}
-
-model Address {
-  id        Int      @id @default(autoincrement())
-  userId    BigInt   @db.UnsignedBigInt
-  label     String?  @db.VarChar(125)
-  line1     String?  @db.VarChar(255)
-  line2     String?  @db.VarChar(255)
-  city      String?  @db.VarChar(125)
-  state     String?  @db.VarChar(125)
-  pincode   String?  @db.VarChar(20)
-  isDefault Int      @default(0) @db.TinyInt
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
-
-  @@map("addresses")
-}
-
-model UserContact {
-  id        Int      @id @default(autoincrement())
-  userId    BigInt   @db.UnsignedBigInt
-  name      String?  @db.VarChar(125)
-  phone     String?  @db.VarChar(55)
-  email     String?  @db.VarChar(125)
-  isDefault Int      @default(0) @db.TinyInt
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
-
-  @@map("user_contacts")
-}
-
-model PasswordResetToken {
-  id        Int      @id @default(autoincrement())
-  userId    BigInt   @db.UnsignedBigInt
-  token     String   @unique @db.VarChar(255)
-  expiresAt DateTime @db.Timestamp(0)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-
-  @@map("password_reset_tokens")
-}
-
-enum users_zone {
+enum UserZone {
   North
   South
   East
   West
+}
+
+model User {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String?
+  email                 String    @unique
+  accountingEmail       String?
+  authorizationPassword String?
+  password              String
+  unc                   String?
+  keyParse              String?
+  isStatus              Int       @default(1)
+  zone                  UserZone?
+  cutDiscount           String?
+  rollDiscount          String?
+  role                  String    @default("user")
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Setting {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  smtp_email           String?
+  smtp_pass            String?
+  image                String?
+  receiving_order_days Int?
+  ebrochure            String?
+  gst                  Int?
+  qr_link              String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model CartItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  productId   String
+  productName String?
+  pattern     String?
+  color       String?
+  price       Float?
+  rollPrice   Float?
+  cutPrice    Float?
+  gstPercent  Float?
+  quantity    Float    @default(1)
+  unit        String?
+  remark      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cart_items")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
+
+model UserContact {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  name      String?
+  phone     String?
+  email     String?
+  isDefault Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_contacts")
+}
+
+model Ad {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  title     String?
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("ads")
+}
+
+model Brochure {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  title        String?
+  brochure_key String?
+  file_name    String?
+  qr_code      String?
+  qr_code2     String?
+  pattern_name String?
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("brochures")
+}
+
+model EbrochureFile {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  ebrochure String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ebrochure_files")
+}
+
+model SearchReport {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  search_string  String?
+  pattern        String?
+  color          String?
+  consignee_name String?
+  location       String?
+  elpsed_time    String?
+  row_count      Int?      @default(0)
+  device_type    String?
+  os_type        String?
+  user_agent     String?
+  timestamp      DateTime? @default(now())
+  created_at     DateTime? @default(now())
+  updated_at     DateTime? @updatedAt
+
+  @@map("search_reports")
 }

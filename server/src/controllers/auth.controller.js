@@ -36,7 +36,7 @@ exports.sendForgotPasswordLink = async (req, res) => {
   const token = randomToken();
   const expiresAt = new Date(Date.now() + 3600000);
   await prisma.passwordResetToken.upsert({
-    where: { token },
+    where: { userId: user.id },
     create: { userId: user.id, token, expiresAt },
     update: { token, expiresAt },
   });

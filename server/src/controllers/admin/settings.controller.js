@@ -79,6 +79,6 @@ exports.downloadQr = async (req, res) => {
 
 exports.disableUser = async (req, res) => {
   const { id, status } = req.body;
-  await prisma.user.update({ where: { id: BigInt(id) }, data: { isStatus: Number(status) } });
+  await prisma.user.update({ where: { id }, data: { isStatus: Number(status) } });
   res.json({ success: true, message: `User ${status ? 'enabled' : 'disabled'}` });
 };

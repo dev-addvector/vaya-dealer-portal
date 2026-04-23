@@ -65,13 +65,13 @@ exports.update = async (req, res) => {
   if (password) updateData.password = await bcrypt.hash(password, 10);
 
   await prisma.user.update({
-    where: { id: Number(req.params.id) },
+    where: { id: req.params.id },
     data: updateData,
   });
   res.json({ success: true, message: 'Subadmin updated' });
 };
 
 exports.remove = async (req, res) => {
-  await prisma.user.delete({ where: { id: Number(req.params.id) } });
+  await prisma.user.delete({ where: { id: req.params.id } });
   res.json({ success: true, message: 'Subadmin deleted' });
 };

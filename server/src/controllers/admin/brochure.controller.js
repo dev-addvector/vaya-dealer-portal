@@ -34,11 +34,11 @@ exports.update = async (req, res) => {
   const { title, patternName } = req.body;
   const data = { title, pattern_name: patternName };
   if (req.file) data.file_name = req.file.filename;
-  await prisma.brochure.update({ where: { id: BigInt(req.params.id) }, data });
+  await prisma.brochure.update({ where: { id: req.params.id }, data });
   res.json({ success: true, message: 'Brochure updated' });
 };
 
 exports.remove = async (req, res) => {
-  await prisma.brochure.delete({ where: { id: BigInt(req.params.id) } });
+  await prisma.brochure.delete({ where: { id: req.params.id } });
   res.json({ success: true, message: 'Brochure deleted' });
 };
