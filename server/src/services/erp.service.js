@@ -241,6 +241,28 @@ async function getPriceListJson(unc) {
   return Array.isArray(data?.return_field_value) ? data.return_field_value : [];
 }
 
+async function getReservedOrderByPo(unc, poNumber) {
+  const { data } = await postWithFallback('/Order/GetOrderDetails', {
+    UCN: unc,
+    OrderType: 'Reserved',
+  });
+  const orders = extractOrders(data);
+  const order = orders.find((o) => o.PONumber === poNumber);
+  if (!order) throw Object.assign(new Error('Reserved order not found'), { status: 404 });
+  if (!Array.isArray(order.OrderItems) || !order.OrderItems.length)
+    throw Object.assign(new Error('Reserved order has no items'), { status: 400 });
+  return order;
+}
+
+async function getLiveProductsRaw(unc) {
+  const { data } = await postWithFallback(
+    '/ProductOrder/GetLiveProductList',
+    { UCN: unc, SearchString: '' },
+    { timeout: 0 }
+  );
+  return Array.isArray(data?.return_field_value) ? data.return_field_value : [];
+}
+
 async function getStocks(unc = 'BC') {
   const { data } = await postWithFallback('/Stock/GetStockDetails', { UCN: unc });
   if (Array.isArray(data?.return_field_value)) return data.return_field_value;
@@ -436,4 +458,4 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
   }
 }
 
-module.exports = { getProducts, getOpenOrders, getReservedOrders, getMyOrders, placeOrder, cancelOrder, getOrderPdf, generateOpenOrderPdf, getPriceList, getPriceListJson, getUserDetails, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress, getShippingModes, getStocks, getOrdersByUnc };
+module.exports = { getProducts, getOpenOrders, getReservedOrders, getMyOrders, placeOrder, cancelOrder, getReservedOrderByPo, getLiveProductsRaw, getOrderPdf, generateOpenOrderPdf, getPriceList, getPriceListJson, getUserDetails, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress, getShippingModes, getStocks, getOrdersByUnc };

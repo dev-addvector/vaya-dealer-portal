@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart, useDeleteCartItem, useEditCartItem, usePlaceOrder, useShippingModes } from '@/hooks/useProducts';
 import { useAddresses } from '@/hooks/useAddresses';
 import toast from 'react-hot-toast';
@@ -82,6 +82,7 @@ function PanelLengthPopup({ item, onClose, onSave }) {
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: cartData, isLoading } = useCart();
   const deleteItem = useDeleteCartItem();
   const editItem = useEditCartItem();
@@ -112,6 +113,7 @@ export default function CartPage() {
   const [orderDate, setOrderDate] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [rememberPassword, setRememberPassword] = useState(false);
+  const [refPoNumber, setRefPoNumber] = useState('');
 
   const debounceTimers = useRef({});
 
@@ -134,6 +136,16 @@ export default function CartPage() {
       setAuthPassword(saved);
     }
   }, []);
+
+  // Pre-fill form when arriving from convert-reserved flow
+  useEffect(() => {
+    const rd = location.state?.reserveDetails;
+    if (!rd) return;
+    if (rd.shippingAddressId) setShippingAddressId(rd.shippingAddressId);
+    if (rd.shippingMode)      setShipmentMode(rd.shippingMode);
+    if (rd.poNumber)          setPoNumber(rd.poNumber);
+    if (rd.refPoNumber)       setRefPoNumber(rd.refPoNumber);
+  }, [location.state]);
 
   const handleRememberPassword = (pwd, checked) => {
     if (checked && pwd) {
@@ -180,7 +192,7 @@ export default function CartPage() {
     const billingId = billingAddress ? String(billingAddress.id) : shippingAddressId;
 
     placeOrderMutation.mutate(
-      { shippingAddressId, billingAddressId: billingId, shipmentMode, poNumber, orderDate, orderType, authPassword },
+      { shippingAddressId, billingAddressId: billingId, shipmentMode, poNumber, orderDate, orderType, authPassword, refPoNumber },
       {
         onSuccess: (data) => {
           setSubmitting(false);

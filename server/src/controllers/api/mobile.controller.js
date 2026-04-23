@@ -24,7 +24,7 @@ exports.sendForgotPasswordLink = async (req, res) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) return res.json({ status: true, message: 'If email exists, a reset link was sent' });
   const token = randomToken();
-  await prisma.passwordReset.upsert({
+  await prisma.passwordResetToken.upsert({
     where: { userId: user.id },
     create: { userId: user.id, token, expiresAt: new Date(Date.now() + 3600000) },
     update: { token, expiresAt: new Date(Date.now() + 3600000) },
@@ -68,6 +68,6 @@ exports.downloadOrder = async (req, res) => {
 };
 
 exports.listEBrochures = async (req, res) => {
-  const brochures = await prisma.ebrochure.findMany({ orderBy: { createdAt: 'desc' } });
+  const brochures = await prisma.ebrochureFile.findMany({ orderBy: { createdAt: 'desc' } });
   res.json({ status: true, code: 200, data: brochures, message: 'Success' });
 };

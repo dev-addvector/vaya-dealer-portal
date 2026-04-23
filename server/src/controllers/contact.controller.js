@@ -16,7 +16,7 @@ exports.add = async (req, res) => {
 exports.update = async (req, res) => {
   const { id, name, phone, email } = req.body;
   await prisma.userContact.updateMany({
-    where: { id: Number(id), userId: req.user.id },
+    where: { id: id, userId: req.user.id },
     data: { name, phone, email },
   });
   res.json({ success: true, message: 'Contact updated' });
@@ -24,7 +24,7 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   await prisma.userContact.deleteMany({
-    where: { id: Number(req.params.id), userId: req.user.id },
+    where: { id: req.params.id, userId: req.user.id },
   });
   res.json({ success: true, message: 'Contact deleted' });
 };
@@ -32,6 +32,6 @@ exports.remove = async (req, res) => {
 exports.setDefault = async (req, res) => {
   const { id } = req.body;
   await prisma.userContact.updateMany({ where: { userId: req.user.id }, data: { isDefault: 0 } });
-  await prisma.userContact.updateMany({ where: { id: Number(id), userId: req.user.id }, data: { isDefault: 1 } });
+  await prisma.userContact.updateMany({ where: { id: id, userId: req.user.id }, data: { isDefault: 1 } });
   res.json({ success: true, message: 'Default contact set' });
 };

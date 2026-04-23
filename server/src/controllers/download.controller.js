@@ -3,7 +3,7 @@ const pdfService = require('../services/pdf.service');
 const prisma = require('../config/database');
 
 exports.listEbrochures = async (req, res) => {
-  const records = await prisma.multiple_ebrochure_file.findMany({ orderBy: { created_at: 'desc' } });
+  const records = await prisma.ebrochureFile.findMany({ orderBy: { createdAt: 'desc' } });
   const data = records.map((r) => ({
     id: r.id,
     name: r.ebrochure ? r.ebrochure.replace(/\.pdf$/i, '').replace(/-/g, ' ') : '',

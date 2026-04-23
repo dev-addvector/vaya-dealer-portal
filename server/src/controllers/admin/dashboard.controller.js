@@ -1,30 +1,45 @@
 const prisma = require('../../config/database');
 
-function buildWhere(conditions) {
-  if (!conditions.length) return { sql: '', params: [] };
-  return {
-    sql: 'WHERE ' + conditions.map((c) => c.sql).join(' AND '),
-    params: conditions.flatMap((c) => c.params),
-  };
+function buildPrismaWhere({ from, to, searchString, location, consigneeName }) {
+  const where = {};
+  if (from || to) {
+    where.timestamp = {};
+    if (from) where.timestamp.gte = new Date(from);
+    if (to) where.timestamp.lte = new Date(to + 'T23:59:59');
+  }
+  if (searchString) where.search_string = searchString;
+  if (location) where.location = location;
+  if (consigneeName) where.consignee_name = consigneeName;
+  return where;
+}
+
+function buildMongoMatch({ from, to, searchString, location, consigneeName }) {
+  const match = {};
+  if (from || to) {
+    match.timestamp = {};
+    if (from) match.timestamp.$gte = { $date: new Date(from).toISOString() };
+    if (to) match.timestamp.$lte = { $date: new Date(to + 'T23:59:59').toISOString() };
+  }
+  if (searchString) match.search_string = searchString;
+  if (location) match.location = location;
+  if (consigneeName) match.consignee_name = consigneeName;
+  return match;
 }
 
 exports.index = async (req, res) => {
   const [consignees, searchStrings, locations] = await Promise.all([
-    prisma.search_report.findMany({
-      select: { consignee_name: true },
-      distinct: ['consignee_name'],
+    prisma.searchReport.groupBy({
+      by: ['consignee_name'],
       where: { consignee_name: { not: null } },
       orderBy: { consignee_name: 'asc' },
     }),
-    prisma.search_report.findMany({
-      select: { search_string: true },
-      distinct: ['search_string'],
+    prisma.searchReport.groupBy({
+      by: ['search_string'],
       where: { search_string: { not: null } },
       orderBy: { search_string: 'asc' },
     }),
-    prisma.search_report.findMany({
-      select: { location: true },
-      distinct: ['location'],
+    prisma.searchReport.groupBy({
+      by: ['location'],
       where: { AND: [{ location: { not: null } }, { location: { not: 'India' } }] },
       orderBy: { location: 'asc' },
     }),
@@ -42,60 +57,86 @@ exports.index = async (req, res) => {
 
 exports.loadChartData = async (req, res) => {
   const { from, to, searchString, location, consigneeName } = req.body;
+  const params = { from, to, searchString, location, consigneeName };
+  const baseWhere = buildPrismaWhere(params);
+  const baseMatch = buildMongoMatch(params);
 
-  const conditions = [];
-  if (from) conditions.push({ sql: 'timestamp >= ?', params: [new Date(from)] });
-  if (to) conditions.push({ sql: 'timestamp <= ?', params: [new Date(to + 'T23:59:59')] });
-  if (searchString) conditions.push({ sql: 'search_string = ?', params: [searchString] });
-  if (location) conditions.push({ sql: 'location = ?', params: [location] });
-  if (consigneeName) conditions.push({ sql: 'consignee_name = ?', params: [consigneeName] });
-
-  const { sql: whereBase, params: baseParams } = buildWhere(conditions);
-
-  const ssWhere = buildWhere([...conditions, { sql: 'search_string IS NOT NULL', params: [] }]);
-  const locWhere = buildWhere([...conditions, { sql: 'location IS NOT NULL', params: [] }]);
-  const cnWhere = buildWhere([...conditions, { sql: 'consignee_name IS NOT NULL', params: [] }]);
-
-  const [avgRows, topSearchStrings, locationMap, top5Consignees, dates] = await Promise.all([
-    prisma.$queryRawUnsafe(
-      `SELECT AVG(CAST(elpsed_time AS DECIMAL(10,4))) as avg_elapsed, AVG(row_count) as avg_row_count FROM search_report ${whereBase}`,
-      ...baseParams
-    ),
-    prisma.$queryRawUnsafe(
-      `SELECT search_string, COUNT(*) as count FROM search_report ${ssWhere.sql} GROUP BY search_string ORDER BY count DESC LIMIT 5`,
-      ...ssWhere.params
-    ),
-    prisma.$queryRawUnsafe(
-      `SELECT location, COUNT(*) as count FROM search_report ${locWhere.sql} GROUP BY location ORDER BY count DESC LIMIT 10`,
-      ...locWhere.params
-    ),
-    prisma.$queryRawUnsafe(
-      `SELECT consignee_name, COUNT(*) as total FROM search_report ${cnWhere.sql} GROUP BY consignee_name ORDER BY total DESC LIMIT 5`,
-      ...cnWhere.params
-    ),
-    prisma.$queryRawUnsafe(
-      `SELECT DISTINCT DATE_FORMAT(timestamp, '%Y-%m-%d') as date FROM search_report ${whereBase} ORDER BY date ASC LIMIT 100`,
-      ...baseParams
-    ),
+  const [avgResult, topSearchStrings, locationMap, top5Consignees, datesResult] = await Promise.all([
+    prisma.$runCommandRaw({
+      aggregate: 'search_reports',
+      pipeline: [
+        { $match: baseMatch },
+        {
+          $group: {
+            _id: null,
+            avg_elapsed: { $avg: { $toDouble: { $ifNull: ['$elpsed_time', '0'] } } },
+            avg_row_count: { $avg: { $ifNull: ['$row_count', 0] } },
+          },
+        },
+      ],
+      cursor: {},
+    }),
+    prisma.searchReport.groupBy({
+      by: ['search_string'],
+      _count: { search_string: true },
+      where: { ...baseWhere, search_string: { not: null } },
+      orderBy: { _count: { search_string: 'desc' } },
+      take: 5,
+    }),
+    prisma.searchReport.groupBy({
+      by: ['location'],
+      _count: { location: true },
+      where: { ...baseWhere, location: { not: null } },
+      orderBy: { _count: { location: 'desc' } },
+      take: 10,
+    }),
+    prisma.searchReport.groupBy({
+      by: ['consignee_name'],
+      _count: { consignee_name: true },
+      where: { ...baseWhere, consignee_name: { not: null } },
+      orderBy: { _count: { consignee_name: 'desc' } },
+      take: 5,
+    }),
+    prisma.$runCommandRaw({
+      aggregate: 'search_reports',
+      pipeline: [
+        { $match: baseMatch },
+        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } } } },
+        { $sort: { _id: 1 } },
+        { $limit: 100 },
+      ],
+      cursor: {},
+    }),
   ]);
+
+  const avgRow = (avgResult.cursor?.firstBatch ?? [])[0] ?? {};
+  const avgElapsed = parseFloat(avgRow.avg_elapsed ?? 0);
+  const avgRowCount = parseFloat(avgRow.avg_row_count ?? 0);
+  const avgPerSec = avgElapsed > 0 ? parseFloat((avgRowCount / avgElapsed).toFixed(2)) : 0;
+
+  const dates = (datesResult.cursor?.firstBatch ?? []).map((d) => d._id).filter(Boolean);
 
   const usersData = await Promise.all(
     top5Consignees.map(async (row) => {
-      const userWhere = buildWhere([...conditions, { sql: 'consignee_name = ?', params: [row.consignee_name] }]);
-      const daily = await prisma.$queryRawUnsafe(
-        `SELECT DATE_FORMAT(timestamp, '%Y-%m-%d') as date, COUNT(*) as count FROM search_report ${userWhere.sql} GROUP BY date ORDER BY date ASC`,
-        ...userWhere.params
-      );
-      const dayMap = {};
-      daily.forEach((d) => { dayMap[d.date] = Number(d.count); });
-      return { name: row.consignee_name, data: dates.map((d) => dayMap[d.date] ?? 0) };
+      const dailyResult = await prisma.$runCommandRaw({
+        aggregate: 'search_reports',
+        pipeline: [
+          { $match: { ...baseMatch, consignee_name: row.consignee_name } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+              count: { $sum: 1 },
+            },
+          },
+          { $sort: { _id: 1 } },
+        ],
+        cursor: {},
+      });
+      const daily = dailyResult.cursor?.firstBatch ?? [];
+      const dayMap = Object.fromEntries(daily.map((d) => [d._id, d.count]));
+      return { name: row.consignee_name, data: dates.map((d) => dayMap[d] ?? 0) };
     })
   );
-
-  const avg = avgRows[0] ?? {};
-  const avgElapsed = parseFloat(avg.avg_elapsed ?? 0);
-  const avgRowCount = parseFloat(avg.avg_row_count ?? 0);
-  const avgPerSec = avgElapsed > 0 ? parseFloat((avgRowCount / avgElapsed).toFixed(2)) : 0;
 
   res.json({
     success: true,
@@ -105,27 +146,22 @@ exports.loadChartData = async (req, res) => {
       averageRecordPerSec: avgPerSec,
       topSearchString: {
         search_string: topSearchStrings.map((r) => r.search_string),
-        count: topSearchStrings.map((r) => Number(r.count)),
+        count: topSearchStrings.map((r) => r._count.search_string),
       },
       topConsignee: {
-        dates: dates.map((d) => d.date),
+        dates,
         users: usersData,
       },
-      locationMap: locationMap.map((r) => ({ location: r.location, count: Number(r.count) })),
+      locationMap: locationMap.map((r) => ({ location: r.location, count: r._count.location })),
     },
   });
 };
 
 exports.downloadChartData = async (req, res) => {
   const { from, to, searchString, location, consigneeName } = req.body;
+  const where = buildPrismaWhere({ from, to, searchString, location, consigneeName });
 
-  const where = {};
-  if (from && to) where.timestamp = { gte: new Date(from), lte: new Date(to + 'T23:59:59') };
-  if (searchString) where.search_string = searchString;
-  if (location) where.location = location;
-  if (consigneeName) where.consignee_name = consigneeName;
-
-  const records = await prisma.search_report.findMany({ where, orderBy: { timestamp: 'asc' } });
+  const records = await prisma.searchReport.findMany({ where, orderBy: { timestamp: 'asc' } });
 
   const header = ['Sno', 'TimeStamp', 'Location', 'Consignee Name', 'Search String', 'Pattern', 'Color', 'RowCount', 'ElapsedTime'].join(',');
   const rows = records.map((r, i) =>
