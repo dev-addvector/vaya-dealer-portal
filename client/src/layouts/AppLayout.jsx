@@ -48,14 +48,27 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
+      <style>{`
+        .nav-icon {
+          transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+        }
+        .nav-icon:hover {
+          background-color: rgba(128,122,82,0.12) !important;
+          border-color: #807A52 !important;
+          opacity: 1 !important;
+        }
+        .cart-btn:hover {
+          background-color: #9aae37 !important;
+        }
+      `}</style>
       {/* Desktop header */}
       <header style={{ backgroundColor: '#E3E8CC', boxShadow: '0px 1px 3px #00000029', position: 'sticky', top: 0, zIndex: 40, width: '100%' }}>
-        <nav style={{ height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '100%', padding: '0' }}>
+        <nav style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '100%', padding: '0' }}>
 
           {/* Logo — left 33% */}
           <div style={{ width: '33%', padding: '20px 30px' }}>
             <NavLink to="/products">
-              <img src="/images/logo.png" alt="Vaya" style={{ height: '40px', objectFit: 'contain', display: 'block' }} />
+              <img src="/images/logo.png" alt="Vaya" style={{ height: '28px', objectFit: 'contain', display: 'block' }} />
             </NavLink>
           </div>
 
@@ -71,10 +84,11 @@ export default function AppLayout() {
             <NavLink
               to="/products"
               title="Stock Check"
-              style={{ width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#707070', textDecoration: 'none' }}
+              className="nav-icon"
+              style={{ width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(112,112,112,0.35)', borderRadius: '50%', textDecoration: 'none', flexShrink: 0 }}
             >
               {({ isActive }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill={isActive ? '#807A52' : '#707070'} viewBox="0 0 16 16">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill={isActive ? '#807A52' : '#707070'} viewBox="0 0 16 16">
                   <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6-.354.353V15.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5V7.5l-.354-.354-6-6z"/>
                 </svg>
               )}
@@ -84,20 +98,20 @@ export default function AppLayout() {
             <NavLink
               to="/orders/open-orders"
               title="Open Orders"
-              style={{ width: '34px', height: '34px', display: 'block', opacity: 0.6 }}
-              className={({ isActive }) => isActive ? 'opacity-100' : ''}
+              style={{ width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(112,112,112,0.35)', borderRadius: '50%', textDecoration: 'none', flexShrink: 0 }}
+              className={({ isActive }) => `nav-icon${isActive ? ' opacity-100' : ' opacity-60'}`}
             >
-              <img src="/images/open-orders.svg" alt="Open Orders" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="/images/open-orders.svg" alt="Open Orders" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
             </NavLink>
 
             {/* Reserved Orders */}
             <NavLink
               to="/orders/reserved-orders"
               title="Reserved Orders"
-              style={{ width: '34px', height: '34px', display: 'block', opacity: 0.6 }}
-              className={({ isActive }) => isActive ? 'opacity-100' : ''}
+              style={{ width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(112,112,112,0.35)', borderRadius: '50%', textDecoration: 'none', flexShrink: 0 }}
+              className={({ isActive }) => `nav-icon${isActive ? ' opacity-100' : ' opacity-60'}`}
             >
-              <img src="/images/reserve-order.svg" alt="Reserved Orders" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="/images/reserve-order.svg" alt="Reserved Orders" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
             </NavLink>
 
             {/* Downloads dropdown */}
@@ -105,9 +119,10 @@ export default function AppLayout() {
               <button
                 onClick={() => setDownloadsOpen(!downloadsOpen)}
                 title="Downloads"
-                style={{ width: '34px', height: '34px', border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, opacity: downloadsOpen ? 1 : 0.6 }}
+                className="nav-icon"
+                style={{ width: '34px', height: '34px', border: '1px solid rgba(112,112,112,0.35)', borderRadius: '50%', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: downloadsOpen ? 1 : 0.6, flexShrink: 0 }}
               >
-                <img src="/images/downloads.svg" alt="Downloads" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src="/images/downloads.svg" alt="Downloads" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
               </button>
 
               {downloadsOpen && (
@@ -139,6 +154,7 @@ export default function AppLayout() {
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 title="Profile"
+                className="nav-icon"
                 style={{ width: '34px', height: '34px', border: '1px solid rgba(84,84,84,0.5)', borderRadius: '50%', padding: 0, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 <img src="/images/menu-icon-3.png" alt="Profile" style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: 0.7 }} />
@@ -176,9 +192,10 @@ export default function AppLayout() {
             <button
               onClick={() => navigate('/cart')}
               title="Cart"
-              style={{ backgroundColor: '#AEC148', padding: '25px', border: 'none', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '90px' }}
+              className="cart-btn"
+              style={{ backgroundColor: '#AEC148', padding: '18px', border: 'none', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '64px' }}
             >
-              <img src="/images/shopping-cart.png" alt="Cart" style={{ width: '40px' }} />
+              <img src="/images/shopping-cart.png" alt="Cart" style={{ width: '28px' }} />
               {cartCount > 0 && (
                 <span style={{ position: 'absolute', width: '17px', height: '17px', background: '#000', color: '#AEC148', borderRadius: '50%', textAlign: 'center', fontSize: '12px', lineHeight: '17px', right: '8px', top: '8px' }}>
                   {cartCount}
@@ -190,7 +207,7 @@ export default function AppLayout() {
       </header>
 
       <main style={{ flex: 1 }}>
-        <div id="wrapper" style={{ backgroundColor: '#ffffff', minHeight: 'calc(100vh - 90px)' }}>
+        <div id="wrapper" style={{ backgroundColor: '#ffffff', minHeight: 'calc(100vh - 64px)' }}>
           <Outlet />
         </div>
       </main>

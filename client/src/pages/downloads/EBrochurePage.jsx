@@ -34,7 +34,7 @@ export default function EBrochurePage() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              gap: '16px',
               padding: '12px 0',
               borderBottom: '1px solid #E3E8CC',
             }}

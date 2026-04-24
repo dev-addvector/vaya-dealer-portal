@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { useLoadProducts, useAddToCart } from '@/hooks/useProducts';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useLoadProducts, useAddToCart, useCart } from '@/hooks/useProducts';
 
 const containerStyle = { maxWidth: '90%', margin: '0 auto', padding: '0 15px' };
 
@@ -142,13 +142,48 @@ export default function ProductsPage() {
   const [panelNotes, setPanelNotes] = useState({});
   const [panelPopupKey, setPanelPopupKey] = useState(null);
   const [rollModal, setRollModal] = useState(null);
+  const [sort, setSort] = useState({ key: null, dir: 'asc' });
 
   const { data, isLoading, isError } = useLoadProducts(filters);
   const addToCart = useAddToCart();
+  const { data: cartData } = useCart();
+
+  useEffect(() => {
+    const items = cartData?.items ?? [];
+    if (!items.length) return;
+    setOrderLengths(prev => {
+      const merged = { ...prev };
+      items.forEach(item => {
+        const key = `${item.pattern}||${item.color}`;
+        if (!merged[key] && item.quantity) merged[key] = String(item.quantity);
+      });
+      return merged;
+    });
+  }, [cartData]);
 
   const products = data?.data?.items ?? [];
   const total = data?.data?.total ?? 0;
   const totalPages = Math.ceil(total / filters.perPage);
+
+  const handleSort = (key) => {
+    setSort(prev => ({ key, dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc' }));
+  };
+
+  const sortedProducts = useMemo(() => {
+    if (!sort.key) return products;
+    return [...products].sort((a, b) => {
+      let av, bv;
+      if (sort.key === 'stock')         { av = a.TotalLength > 0 ? 1 : 0; bv = b.TotalLength > 0 ? 1 : 0; }
+      else if (sort.key === 'pattern')  { av = (a.Pattern || '').toLowerCase(); bv = (b.Pattern || '').toLowerCase(); }
+      else if (sort.key === 'color')    { av = (a.Color || '').toLowerCase(); bv = (b.Color || '').toLowerCase(); }
+      else if (sort.key === 'qty')      { av = a.TotalLength; bv = b.TotalLength; }
+      else if (sort.key === 'rolls')    { av = a.NumberOfRolls; bv = b.NumberOfRolls; }
+      else return 0;
+      if (av < bv) return sort.dir === 'asc' ? -1 : 1;
+      if (av > bv) return sort.dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [products, sort]);
 
   const handleSearch = () => {
     setFilters(f => ({ ...f, pattern: draftPattern, color: draftColor, page: 1 }));
@@ -157,8 +192,8 @@ export default function ProductsPage() {
   const handleAddToCart = (p) => {
     const key = `${p.Pattern}||${p.Color}`;
     const length = parseFloat(orderLengths[key] || 0);
-    if (!length || length <= 0) {
-      alert('Please enter a valid order length');
+    if (!length || length < 1) {
+      alert('Please enter an order length of at least 1 m');
       return;
     }
     if (length > p.TotalLength) {
@@ -251,8 +286,27 @@ export default function ProductsPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff', fontSize: '14px' }}>
                   <thead>
                     <tr>
-                      {['Stock', 'Pattern', 'Color', 'Quantity Available', 'Number of Rolls', 'Order Length(m)', ''].map(h => (
-                        <th key={h} style={thStyle}>{h}</th>
+                      {[
+                        { label: 'Stock',              key: 'stock'   },
+                        { label: 'Pattern',            key: 'pattern' },
+                        { label: 'Color',              key: 'color'   },
+                        { label: 'Quantity Available', key: 'qty'     },
+                        { label: 'Number of Rolls',    key: 'rolls'   },
+                        { label: 'Order Length(m)',    key: null      },
+                        { label: '',                   key: null      },
+                      ].map(({ label, key }) => (
+                        <th
+                          key={label}
+                          style={{ ...thStyle, cursor: key ? 'pointer' : 'default', userSelect: 'none' }}
+                          onClick={() => key && handleSort(key)}
+                        >
+                          {label}
+                          {key && (
+                            <span style={{ marginLeft: '6px', opacity: sort.key === key ? 1 : 0.3, fontSize: '11px' }}>
+                              {sort.key === key && sort.dir === 'desc' ? '▼' : '▲'}
+                            </span>
+                          )}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -262,7 +316,7 @@ export default function ProductsPage() {
                         <td colSpan={7} style={{ ...tdStyle, textAlign: 'center', color: '#999', padding: '24px' }}>No products found</td>
                       </tr>
                     )}
-                    {products.map((p) => {
+                    {sortedProducts.map((p) => {
                       const key = `${p.Pattern}||${p.Color}`;
                       const inStock = p.TotalLength > 0;
                       return (
@@ -293,10 +347,8 @@ export default function ProductsPage() {
                           <td style={{ ...tdStyle, position: 'relative' }}>
                             <div style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', borderBottom: '1px solid #000', minWidth: '115px' }}>
                               <input
-                                type="number"
-                                min="0"
-                                max={p.TotalLength}
-                                step="0.1"
+                                type="text"
+                                inputMode="decimal"
                                 placeholder="Enter Length(m)"
                                 style={{
                                   border: 'none',
@@ -309,20 +361,33 @@ export default function ProductsPage() {
                                   textAlign: 'center',
                                 }}
                                 value={orderLengths[key] || ''}
-                                onChange={e => setOrderLengths(prev => ({ ...prev, [key]: e.target.value }))}
+                                onChange={e => {
+                                  const v = e.target.value;
+                                  if (v === '' || /^\d*\.?\d*$/.test(v)) {
+                                    setOrderLengths(prev => ({ ...prev, [key]: v }));
+                                  }
+                                }}
+                                onBlur={() => {
+                                  const v = parseFloat(orderLengths[key]);
+                                  if (!isNaN(v) && v < 1) {
+                                    setOrderLengths(prev => ({ ...prev, [key]: '1' }));
+                                  }
+                                }}
                               />
                               <button
                                 onClick={() => setPanelPopupKey(prev => prev === key ? null : key)}
                                 title="Specify Panel Lengths"
+                                disabled={!orderLengths[key]}
                                 style={{
                                   background: 'none',
                                   border: 'none',
-                                  cursor: 'pointer',
+                                  cursor: orderLengths[key] ? 'pointer' : 'not-allowed',
                                   padding: '0 2px',
                                   color: '#555',
-                                  fontSize: '11px',
+                                  fontSize: '20px',
                                   lineHeight: 1,
                                   flexShrink: 0,
+                                  opacity: orderLengths[key] ? 1 : 0.25,
                                 }}
                               >
                                 ▾

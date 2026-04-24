@@ -38,6 +38,20 @@ const filterSelect = {
 
 const filterInput = { ...filterSelect };
 
+function parseErpDate(v) {
+  if (!v || String(v).toLowerCase() === 'null') return 0;
+  const p = String(v).split(/[\s-]/);
+  return p.length >= 3 ? (new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime() || 0) : 0;
+}
+
+function netPayableNum(order) {
+  const d = parseFloat(order.NetPayable);
+  if (!isNaN(d) && d > 0) return d;
+  if (Array.isArray(order.OrderItems))
+    return order.OrderItems.reduce((s, i) => s + (parseFloat(i.TotalCost) || 0) + (parseFloat(i.TaxAmount) || 0), 0);
+  return 0;
+}
+
 function formatNetPayable(order) {
   const direct = parseFloat(order.NetPayable);
   if (!isNaN(direct) && direct > 0) {
@@ -71,6 +85,7 @@ export default function OpenOrdersPage() {
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [downloading, setDownloading] = useState(null);
+  const [sort, setSort] = useState({ key: null, dir: 'asc' });
 
   const unique = (key) => [...new Set(orders.map(o => o[key]).filter(v => v && String(v).toLowerCase() !== 'null'))];
 
@@ -91,8 +106,23 @@ export default function OpenOrdersPage() {
     return true;
   }), [orders, filters]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const handleSort = (key) => { setSort(prev => ({ key, dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc' })); setPage(1); };
+
+  const sortedFiltered = useMemo(() => {
+    if (!sort.key) return filtered;
+    return [...filtered].sort((a, b) => {
+      let av, bv;
+      if (sort.key === 'OrderDate')     { av = parseErpDate(a.OrderDate);  bv = parseErpDate(b.OrderDate); }
+      else if (sort.key === 'NetPayable') { av = netPayableNum(a); bv = netPayableNum(b); }
+      else { av = (a[sort.key] || '').toLowerCase(); bv = (b[sort.key] || '').toLowerCase(); }
+      if (av < bv) return sort.dir === 'asc' ? -1 : 1;
+      if (av > bv) return sort.dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [filtered, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / pageSize));
+  const paged = sortedFiltered.slice((page - 1) * pageSize, page * pageSize);
 
   const setFilter = (key, val) => { setFilters(f => ({ ...f, [key]: val })); setPage(1); };
 
@@ -144,8 +174,24 @@ export default function OpenOrdersPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff', fontSize: '14px' }}>
                 <thead>
                   <tr>
-                    {['Order ID', 'Order Date', 'Net Payable', 'PO Number', 'Shipping Mode', 'Order Type', 'Order Status', 'Action'].map(h => (
-                      <th key={h} style={th}>{h}</th>
+                    {[
+                      { label: 'Order ID',      key: 'OrderID' },
+                      { label: 'Order Date',    key: 'OrderDate' },
+                      { label: 'Net Payable',   key: 'NetPayable' },
+                      { label: 'PO Number',     key: 'PONumber' },
+                      { label: 'Shipping Mode', key: 'ShippingMode' },
+                      { label: 'Order Type',    key: 'OrderType' },
+                      { label: 'Order Status',  key: 'OrderStatus' },
+                      { label: 'Action',        key: null },
+                    ].map(({ label, key }) => (
+                      <th
+                        key={label}
+                        style={{ ...th, cursor: key ? 'pointer' : 'default', userSelect: 'none' }}
+                        onClick={() => key && handleSort(key)}
+                      >
+                        {label}
+                        {key && <span style={{ marginLeft: '5px', opacity: sort.key === key ? 1 : 0.3, fontSize: '11px' }}>{sort.key === key && sort.dir === 'desc' ? '▼' : '▲'}</span>}
+                      </th>
                     ))}
                   </tr>
                   <tr style={{ backgroundColor: '#fff' }}>

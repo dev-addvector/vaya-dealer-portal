@@ -5,6 +5,113 @@ import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import { useLogin } from '@/hooks/useAuth';
 
+const responsiveStyles = `
+  .login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+  }
+  .login-header {
+    background-color: #E3E8CC;
+    box-shadow: 0px 1px 3px #00000029;
+    width: 100%;
+    height: 64px;
+    flex-shrink: 0;
+  }
+  .login-header-inner {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 100%;
+  }
+  .login-body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+  }
+  .login-form-panel {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    overflow-y: auto;
+  }
+  .login-form-inner {
+    width: 100%;
+    max-width: 480px;
+  }
+  .login-title-wrap {
+    margin-bottom: 40px;
+  }
+  .login-field-email {
+    margin-bottom: 25px;
+  }
+  .login-field-password {
+    margin-bottom: 20px;
+  }
+  .login-remember-row {
+    margin-bottom: 25px;
+  }
+  .login-image-panel {
+    width: 50%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    min-height: 0;
+  }
+  @media (max-height: 820px) {
+    .login-header {
+      height: 56px;
+    }
+    .login-header-inner {
+      height: 56px;
+    }
+    .login-form-panel {
+      padding: 24px 40px;
+      align-items: flex-start;
+    }
+    .login-title-wrap {
+      margin-bottom: 24px;
+    }
+    .login-field-email {
+      margin-bottom: 16px;
+    }
+    .login-field-password {
+      margin-bottom: 14px;
+    }
+    .login-remember-row {
+      margin-bottom: 16px;
+    }
+  }
+  @media (max-height: 680px) {
+    .login-header {
+      height: 48px;
+    }
+    .login-header-inner {
+      height: 48px;
+    }
+    .login-form-panel {
+      padding: 16px 32px;
+      align-items: flex-start;
+    }
+    .login-title-wrap {
+      margin-bottom: 16px;
+    }
+    .login-field-email {
+      margin-bottom: 12px;
+    }
+    .login-field-password {
+      margin-bottom: 10px;
+    }
+    .login-remember-row {
+      margin-bottom: 12px;
+    }
+  }
+`;
+
 const schema = z.object({
   email: z.string().email('Invalid email'),
   password: z.string().min(1, 'Password required'),
@@ -61,130 +168,127 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#fff' }}>
+    <>
+      <style>{responsiveStyles}</style>
+      <div className="login-wrapper">
 
-      {/* Header */}
-      <header style={{ backgroundColor: '#E3E8CC', boxShadow: '0px 1px 3px #00000029', width: '100%', height: '90px', flexShrink: 0 }}>
-        <div style={{ height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '100%' }}>
-          <div style={{ width: '33%', padding: '20px 30px' }}>
-            <img src="/images/logo.png" alt="Vaya" style={{ height: '40px', objectFit: 'contain', display: 'block' }} />
-          </div>
-          <div style={{ width: '33%', textAlign: 'center' }}>
-            <span style={{ fontSize: '25px', color: '#111111', fontWeight: 400 }}>Dealer Portal</span>
-          </div>
-          <div style={{ width: '33%' }} />
-        </div>
-      </header>
-
-      {/* Body */}
-      <div style={{ flex: 1, display: 'flex' }}>
-
-        {/* Left: Form */}
-        <div style={{ width: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
-          <div style={{ width: '100%', maxWidth: '480px' }}>
-
-            <div style={{ marginBottom: '40px' }}>
-              <h1 style={{ fontSize: '35px', fontWeight: 400, margin: 0, color: '#111111' }}>Dealer Login</h1>
+        {/* Header */}
+        <header className="login-header">
+          <div className="login-header-inner">
+            <div style={{ width: '33%', padding: '20px 30px' }}>
+              <img src="/images/logo.png" alt="Vaya" style={{ height: '28px', objectFit: 'contain', display: 'block' }} />
             </div>
+            <div style={{ width: '33%', textAlign: 'center' }}>
+              <span style={{ fontSize: '25px', color: '#111111', fontWeight: 400 }}>Dealer Portal</span>
+            </div>
+            <div style={{ width: '33%' }} />
+          </div>
+        </header>
 
-            <form onSubmit={handleSubmit((d) => login.mutate(d))}>
-              <div style={{ marginBottom: '25px' }}>
-                <label style={labelStyle}>Email</label>
-                <input
-                  {...register('email')}
-                  type="email"
-                  placeholder="mail@domain.com"
-                  style={inputStyle}
-                  autoComplete="off"
-                />
-                {errors.email && <p style={{ color: '#e3342f', fontSize: '12px', marginTop: '4px' }}>{errors.email.message}</p>}
+        {/* Body */}
+        <div className="login-body">
+
+          {/* Left: Form */}
+          <div className="login-form-panel">
+            <div className="login-form-inner">
+
+              <div className="login-title-wrap">
+                <h1 style={{ fontSize: '35px', fontWeight: 400, margin: 0, color: '#111111' }}>Dealer Login</h1>
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={labelStyle}>Password</label>
-                <div style={{ position: 'relative' }}>
+              <form onSubmit={handleSubmit((d) => login.mutate(d))}>
+                <div className="login-field-email">
+                  <label style={labelStyle}>Email</label>
                   <input
-                    {...register('password')}
-                    type={showPwd ? 'text' : 'password'}
-                    placeholder="Min. 8 Characters"
-                    style={{ ...inputStyle, paddingRight: '48px' }}
+                    {...register('email')}
+                    type="email"
+                    placeholder="mail@domain.com"
+                    style={inputStyle}
                     autoComplete="off"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPwd((v) => !v)}
-                    style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
-                  >
-                    <EyeIcon visible={showPwd} />
-                  </button>
+                  {errors.email && <p style={{ color: '#e3342f', fontSize: '12px', marginTop: '4px' }}>{errors.email.message}</p>}
                 </div>
-                {errors.password && <p style={{ color: '#e3342f', fontSize: '12px', marginTop: '4px' }}>{errors.password.message}</p>}
-              </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '25px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer', color: '#333' }}>
-                  <input {...register('remember')} type="checkbox" style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                  Remember me
-                </label>
-                <Link to="/forgot-password" style={{ color: '#000000', fontSize: '14px', textDecoration: 'none' }}>
-                  Forgot Password?
-                </Link>
-              </div>
+                <div className="login-field-password">
+                  <label style={labelStyle}>Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      {...register('password')}
+                      type={showPwd ? 'text' : 'password'}
+                      placeholder="Min. 8 Characters"
+                      style={{ ...inputStyle, paddingRight: '48px' }}
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPwd((v) => !v)}
+                      style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                    >
+                      <EyeIcon visible={showPwd} />
+                    </button>
+                  </div>
+                  {errors.password && <p style={{ color: '#e3342f', fontSize: '12px', marginTop: '4px' }}>{errors.password.message}</p>}
+                </div>
 
-              <button
-                type="submit"
-                disabled={login.isPending}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '12px 30px',
-                  backgroundColor: 'transparent',
-                  color: '#111111',
-                  border: 'none',
-                  borderBottom: '2px solid #000000',
-                  fontSize: '21px',
-                  fontWeight: 400,
-                  cursor: login.isPending ? 'not-allowed' : 'pointer',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                {login.isPending ? 'Signing in...' : 'Submit'}
-              </button>
+                <div className="login-remember-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer', color: '#333' }}>
+                    <input {...register('remember')} type="checkbox" style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                    Remember me
+                  </label>
+                  <Link to="/forgot-password" style={{ color: '#000000', fontSize: '14px', textDecoration: 'none' }}>
+                    Forgot Password?
+                  </Link>
+                </div>
 
-              {login.isError && (
-                <p style={{ color: '#e3342f', fontSize: '14px', marginTop: '12px', textAlign: 'center' }}>
-                  {login.error?.message || 'Invalid credentials. Please try again.'}
-                </p>
-              )}
-            </form>
+                <button
+                  type="submit"
+                  disabled={login.isPending}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '12px 30px',
+                    backgroundColor: 'transparent',
+                    color: '#111111',
+                    border: 'none',
+                    borderBottom: '2px solid #000000',
+                    fontSize: '21px',
+                    fontWeight: 400,
+                    cursor: login.isPending ? 'not-allowed' : 'pointer',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  {login.isPending ? 'Signing in...' : 'Submit'}
+                </button>
+
+                {login.isError && (
+                  <p style={{ color: '#e3342f', fontSize: '14px', marginTop: '12px', textAlign: 'center' }}>
+                    {login.error?.message || 'Invalid credentials. Please try again.'}
+                  </p>
+                )}
+              </form>
+            </div>
           </div>
+
+          {/* Right: Image */}
+          <div
+            className="login-image-panel"
+            style={{ backgroundImage: `url(${loginImage})` }}
+          />
         </div>
 
-        {/* Right: Image */}
-        <div
-          style={{
-            width: '50%',
-            backgroundImage: `url(${loginImage})`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            backgroundSize: 'cover',
-            minHeight: '400px',
-          }}
-        />
+        {/* Footer */}
+        <footer style={{ backgroundColor: '#f5f5f5', borderTop: '1px solid #e0e0e0', flexShrink: 0 }}>
+          <div style={{ padding: '16px', textAlign: 'center' }}>
+            <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#666' }}>VAYA Home By Universal Textile Mills</p>
+            <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
+              Customer Care :{' '}
+              <a href="mailto:sales@vayahome.com" style={{ color: '#666', textDecoration: 'none' }}>sales@vayahome.com</a>
+              {' | '}
+              <a href="tel:+918068170500" style={{ color: '#666', textDecoration: 'none' }}>+91 8068170500</a>
+            </p>
+          </div>
+        </footer>
       </div>
-
-      {/* Footer */}
-      <footer style={{ backgroundColor: '#f5f5f5', borderTop: '1px solid #e0e0e0', flexShrink: 0 }}>
-        <div style={{ padding: '16px', textAlign: 'center' }}>
-          <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#666' }}>VAYA Home By Universal Textile Mills</p>
-          <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
-            Customer Care :{' '}
-            <a href="mailto:sales@vayahome.com" style={{ color: '#666', textDecoration: 'none' }}>sales@vayahome.com</a>
-            {' | '}
-            <a href="tel:+918068170500" style={{ color: '#666', textDecoration: 'none' }}>+91 8068170500</a>
-          </p>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

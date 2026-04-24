@@ -158,6 +158,7 @@ export default function CartPage() {
   };
 
   const handleLengthChange = (itemId, val) => {
+    if (val !== '' && !/^\d*\.?\d*$/.test(val)) return;
     setLocalLengths(prev => ({ ...prev, [itemId]: val }));
     clearTimeout(debounceTimers.current[itemId]);
     debounceTimers.current[itemId] = setTimeout(() => {
@@ -166,6 +167,14 @@ export default function CartPage() {
         editItem.mutate({ id: itemId, quantity: num });
       }
     }, 800);
+  };
+
+  const handleLengthBlur = (itemId, val) => {
+    const num = parseFloat(val);
+    if (isNaN(num) || num < 1) {
+      setLocalLengths(prev => ({ ...prev, [itemId]: '1' }));
+      editItem.mutate({ id: itemId, quantity: 1 });
+    }
   };
 
   const handlePanelSave = (itemId, remarkText) => {
@@ -229,9 +238,9 @@ export default function CartPage() {
 
   const labelStyle = { fontSize: 12, color: '#555', marginBottom: 4, display: 'block', fontWeight: 500 };
   const inputStyle = {
-    width: '100%', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-    borderBottom: '1px solid #ccc', padding: '6px 4px', fontSize: 13,
-    background: 'transparent', outline: 'none', boxSizing: 'border-box',
+    width: '100%', border: '1px solid #ccc', borderRadius: 3,
+    padding: '6px 8px', fontSize: 13,
+    background: '#fff', outline: 'none', boxSizing: 'border-box',
   };
   const selectStyle = {
     width: '100%', border: '1px solid #ccc', borderRadius: 3,
@@ -327,11 +336,11 @@ export default function CartPage() {
                           <td style={{ ...tdStyle, position: 'relative' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               <input
-                                type="number"
-                                min="0.1"
-                                step="0.1"
+                                type="text"
+                                inputMode="decimal"
                                 value={getLength(item)}
                                 onChange={e => handleLengthChange(item.id, e.target.value)}
+                                onBlur={e => handleLengthBlur(item.id, e.target.value)}
                                 style={{ width: 80, border: '1px solid #ccc', borderRadius: 3, padding: '4px 6px', fontSize: 13, outline: 'none' }}
                               />
                               <button

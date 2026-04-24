@@ -4,6 +4,14 @@ import AdminLayout from '@/layouts/AdminLayout';
 import ProtectedRoute from '@/components/ui/ProtectedRoute';
 import AdminRoute from '@/components/ui/AdminRoute';
 import PublicRoute from '@/components/ui/PublicRoute';
+import { useAuthStore } from '@/store/authStore';
+
+function CatchAll() {
+  const user = useAuthStore(s => s.user);
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'user') return <Navigate to="/admin/dashboard" replace />;
+  return <Navigate to="/products" replace />;
+}
 import LoginPage from '@/pages/auth/LoginPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
@@ -73,4 +81,5 @@ export const router = createBrowserRouter([
       { path: '/admin/brochures', element: <BrochurePage /> },
     ],
   },
+  { path: '*', element: <CatchAll /> },
 ]);
