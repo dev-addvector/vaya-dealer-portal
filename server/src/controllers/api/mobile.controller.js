@@ -4,6 +4,7 @@ const { sign } = require('../../utils/jwt');
 const erpService = require('../../services/erp.service');
 const emailService = require('../../services/email.service');
 const { randomToken } = require('../../utils/helpers');
+const { generatePriceListPdf } = require('../../services/pdf.service');
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -17,6 +18,17 @@ exports.login = async (req, res) => {
     success: true, code: 200, message: 'Login successful',
     user: { token, ucn: user.unc, keyPhrase: user.keyParse },
   });
+};
+
+exports.resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+  const record = await prisma.passwordResetToken.findUnique({ where: { token } });
+  if (!record || record.expiresAt < new Date())
+    return res.status(400).json({ success: false, code: 400, message: 'Invalid or expired token' });
+  const hashed = await bcrypt.hash(password, 10);
+  await prisma.user.update({ where: { id: record.userId }, data: { password: hashed } });
+  await prisma.passwordResetToken.delete({ where: { token } });
+  res.json({ success: true, code: 200, message: 'Password reset successfully' });
 };
 
 exports.sendForgotPasswordLink = async (req, res) => {
@@ -53,10 +65,32 @@ exports.resetAuthPassword = async (req, res) => {
 
 exports.downloadPriceList = async (req, res) => {
   const { type } = req.params;
-  const buffer = await erpService.getPriceList(type);
-  res.setHeader('Content-Type', type === 'pdf' ? 'application/pdf' : 'text/csv');
-  res.setHeader('Content-Disposition', `attachment; filename=pricelist.${type}`);
-  res.send(buffer);
+  const { unc, keyParse } = req.user;
+  const [userDetails, items] = await Promise.all([
+    erpService.getUserDetails(unc, keyParse),
+    erpService.getPriceListJson(unc),
+  ]);
+
+  if (type === 'pdf') {
+    const pdfBuffer = await generatePriceListPdf({ userDetails, items });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=Price-list.pdf');
+    return res.send(pdfBuffer);
+  }
+
+  const rows = [
+    ['Vaya Dealer Price List', `Customer Name : ${userDetails.customerName}`, `Customer Code : ${userDetails.customerCode}`, `Consignee Category : ${userDetails.consigneeCategory}`],
+    ['Pattern', 'DP Cut Price', 'DP Roll Price'],
+    ...items.map(item => [
+      item.Pattern || '',
+      item['Cut Price'] ? Number(item['Cut Price']).toLocaleString('en-IN') : '',
+      item['Roll Price'] ? Number(item['Roll Price']).toLocaleString('en-IN') : '',
+    ]),
+  ];
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename=Price-list.csv');
+  res.send(csv);
 };
 
 exports.downloadOrder = async (req, res) => {
