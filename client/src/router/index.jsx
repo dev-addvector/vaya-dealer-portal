@@ -3,13 +3,15 @@ import AppLayout from '@/layouts/AppLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import ProtectedRoute from '@/components/ui/ProtectedRoute';
 import AdminRoute from '@/components/ui/AdminRoute';
+import PermissionRoute from '@/components/ui/PermissionRoute';
 import PublicRoute from '@/components/ui/PublicRoute';
 import { useAuthStore } from '@/store/authStore';
+import { getDefaultAdminRoute } from '@/utils/permissions';
 
 function CatchAll() {
   const user = useAuthStore(s => s.user);
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== 'user') return <Navigate to="/admin/dashboard" replace />;
+  if (user.role !== 'user') return <Navigate to={getDefaultAdminRoute(user.role)} replace />;
   return <Navigate to="/products" replace />;
 }
 import LoginPage from '@/pages/auth/LoginPage';
@@ -67,20 +69,20 @@ export const router = createBrowserRouter([
   {
     element: <AdminRoute><AdminLayout /></AdminRoute>,
     children: [
-      { path: '/admin/dashboard', element: <DashboardPage /> },
-      { path: '/admin/login-image', element: <LoginImagePage /> },
-      { path: '/admin/smtp-setting', element: <SmtpSettingPage /> },
-      { path: '/admin/max-reserve-days', element: <MaxReserveDaysPage /> },
-      { path: '/admin/gst-setting', element: <GSTSettingPage /> },
-      { path: '/admin/qr-setting', element: <QRSettingPage /> },
-      { path: '/admin/ads', element: <AdsPage /> },
-      { path: '/admin/ebrochures', element: <EBrochureAdminPage /> },
-      { path: '/admin/subadmins', element: <SubAdminPage /> },
-      { path: '/admin/stocks', element: <StocksPage /> },
-      { path: '/admin/users', element: <UsersPage /> },
-      { path: '/admin/users/:unc/orders', element: <UserOrdersPage /> },
-      { path: '/admin/create-order', element: <CreateOrderPage /> },
-      { path: '/admin/brochures', element: <BrochurePage /> },
+      { path: '/admin/dashboard', element: <PermissionRoute><DashboardPage /></PermissionRoute> },
+      { path: '/admin/login-image', element: <PermissionRoute><LoginImagePage /></PermissionRoute> },
+      { path: '/admin/smtp-setting', element: <PermissionRoute><SmtpSettingPage /></PermissionRoute> },
+      { path: '/admin/max-reserve-days', element: <PermissionRoute><MaxReserveDaysPage /></PermissionRoute> },
+      { path: '/admin/gst-setting', element: <PermissionRoute><GSTSettingPage /></PermissionRoute> },
+      { path: '/admin/qr-setting', element: <PermissionRoute><QRSettingPage /></PermissionRoute> },
+      { path: '/admin/ads', element: <PermissionRoute><AdsPage /></PermissionRoute> },
+      { path: '/admin/ebrochures', element: <PermissionRoute><EBrochureAdminPage /></PermissionRoute> },
+      { path: '/admin/subadmins', element: <PermissionRoute><SubAdminPage /></PermissionRoute> },
+      { path: '/admin/stocks', element: <PermissionRoute><StocksPage /></PermissionRoute> },
+      { path: '/admin/users', element: <PermissionRoute><UsersPage /></PermissionRoute> },
+      { path: '/admin/users/:unc/orders', element: <PermissionRoute><UserOrdersPage /></PermissionRoute> },
+      { path: '/admin/create-order', element: <PermissionRoute><CreateOrderPage /></PermissionRoute> },
+      { path: '/admin/brochures', element: <PermissionRoute><BrochurePage /></PermissionRoute> },
     ],
   },
   { path: '*', element: <CatchAll /> },

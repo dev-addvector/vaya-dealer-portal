@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useLogout } from '@/hooks/useAuth';
+import { useAuthStore } from '@/store/authStore';
+import { canAccessAdminRoute, getDefaultAdminRoute } from '@/utils/permissions';
 
 const navItems = [
   ['/admin/dashboard', 'Dashboard'],
@@ -23,6 +25,9 @@ export default function AdminLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const defaultRoute = getDefaultAdminRoute(user?.role);
+  const visibleNavItems = navItems.filter(([to]) => canAccessAdminRoute(user?.role, to));
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -36,7 +41,7 @@ export default function AdminLayout() {
           <span className="font-bold text-lg tracking-wide">VAYA</span>
         </div>
         <nav className="flex-1 overflow-y-auto py-2">
-          {navItems.map(([to, label]) => (
+          {visibleNavItems.map(([to, label]) => (
             <NavLink
               key={to}
               to={to}
@@ -79,7 +84,7 @@ export default function AdminLayout() {
             </button>
 
             <button
-              onClick={() => navigate('/admin/dashboard')}
+              onClick={() => navigate(defaultRoute)}
               className="bg-transparent border-none cursor-pointer text-[#111] font-semibold"
               aria-label="Go to dashboard"
             >
@@ -118,7 +123,7 @@ export default function AdminLayout() {
           </div>
 
           <nav className="flex-1 overflow-y-auto py-2">
-            {navItems.map(([to, label]) => (
+            {visibleNavItems.map(([to, label]) => (
               <NavLink
                 key={to}
                 to={to}

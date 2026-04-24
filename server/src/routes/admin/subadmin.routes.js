@@ -1,9 +1,14 @@
 const router = require('express').Router();
 const c = require('../../controllers/admin/subadmin.controller');
+const { requireRoles } = require('../../middleware/roleAuth');
+const { ROLES } = require('../../config/constants');
 
-router.get('/', c.list);
-router.post('/', c.create);
-router.put('/:id', c.update);
-router.delete('/:id', c.remove);
+const superOnly = requireRoles(ROLES.ADMIN);
+const superOrSub = requireRoles(ROLES.ADMIN, ROLES.SUB_ADMIN, ROLES.SUBADMIN);
+
+router.get('/', superOrSub, c.list);
+router.post('/', superOrSub, c.create);
+router.put('/:id', superOnly, c.update);
+router.delete('/:id', superOnly, c.remove);
 
 module.exports = router;

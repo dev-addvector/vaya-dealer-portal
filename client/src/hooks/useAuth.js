@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import * as authApi from '@/api/auth.api';
+import { getDefaultAdminRoute } from '@/utils/permissions';
 import toast from 'react-hot-toast';
 
 export const useLogin = () => {
@@ -11,7 +12,7 @@ export const useLogin = () => {
     mutationFn: authApi.login,
     onSuccess: (data) => {
       setAuth(data.user, data.token);
-      navigate(data.user.role === 'user' ? '/products' : '/admin/dashboard');
+      navigate(data.user.role === 'user' ? '/products' : getDefaultAdminRoute(data.user.role));
     },
     onError: (err) => toast.error(err.message || 'Login failed'),
   });

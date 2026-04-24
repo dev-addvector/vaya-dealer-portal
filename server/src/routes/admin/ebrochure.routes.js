@@ -12,8 +12,13 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, fileFilter: (req, file, cb) => cb(null, file.mimetype === 'application/pdf') });
 
-router.get('/', c.list);
-router.post('/', upload.single('file'), c.upload);
-router.delete('/:id', c.remove);
+const { requireRoles } = require('../../middleware/roleAuth');
+const { ROLES } = require('../../config/constants');
+
+const superOnly = requireRoles(ROLES.ADMIN);
+
+router.get('/', superOnly, c.list);
+router.post('/', superOnly, upload.single('file'), c.upload);
+router.delete('/:id', superOnly, c.remove);
 
 module.exports = router;

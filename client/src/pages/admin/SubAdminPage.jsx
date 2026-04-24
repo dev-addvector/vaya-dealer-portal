@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { getSubadmins, createSubadmin, updateSubadmin, deleteSubadmin } from '@/api/admin.api';
+import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
 const ROLES = [
@@ -83,6 +84,8 @@ const formatDate = (v) => {
 
 export default function SubAdminPage() {
   const qc = useQueryClient();
+  const { user } = useAuthStore();
+  const canEditDelete = user?.role === 'super_admin';
   const { data, isLoading } = useQuery({ queryKey: ['admin-subadmins'], queryFn: getSubadmins });
   const [modal, setModal] = useState(null); // null | { mode: 'create' | 'edit', data?: object }
   const subadmins = data?.data ?? [];
@@ -153,17 +156,21 @@ export default function SubAdminPage() {
                   <td className="px-4 py-3 text-xs">{formatDate(s.createdAt)}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col sm:flex-row gap-1">
-                      <button
-                        onClick={() => setModal({ mode: 'edit', data: { ...s, role: s.role === 'subadmin' ? 'sub_admin' : s.role } })}
-                        className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(s)}
-                        disabled={remove.isPending}
-                        className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 disabled:opacity-60">
-                        Delete
-                      </button>
+                      {canEditDelete && (
+                        <>
+                          <button
+                            onClick={() => setModal({ mode: 'edit', data: { ...s, role: s.role === 'subadmin' ? 'sub_admin' : s.role } })}
+                            className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(s)}
+                            disabled={remove.isPending}
+                            className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 disabled:opacity-60">
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

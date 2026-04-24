@@ -21,8 +21,13 @@ const upload = multer({
   },
 });
 
-router.get('/', c.list);
-router.post('/upload-csv', upload.single('csv_file'), c.uploadCSV);
-router.delete('/:id', c.remove);
+const { requireRoles } = require('../../middleware/roleAuth');
+const { ROLES } = require('../../config/constants');
+
+const superOrQr = requireRoles(ROLES.ADMIN, ROLES.QR_ADMIN);
+
+router.get('/', superOrQr, c.list);
+router.post('/upload-csv', superOrQr, upload.single('csv_file'), c.uploadCSV);
+router.delete('/:id', superOrQr, c.remove);
 
 module.exports = router;

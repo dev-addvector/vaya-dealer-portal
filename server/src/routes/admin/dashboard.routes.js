@@ -1,8 +1,12 @@
 const router = require('express').Router();
 const c = require('../../controllers/admin/dashboard.controller');
+const { requireRoles } = require('../../middleware/roleAuth');
+const { ROLES } = require('../../config/constants');
 
-router.get('/', c.index);
-router.post('/chart-data', c.loadChartData);
-router.post('/download', c.downloadChartData);
+const superOrSub = requireRoles(ROLES.ADMIN, ROLES.SUB_ADMIN, ROLES.SUBADMIN);
+
+router.get('/', superOrSub, c.index);
+router.post('/chart-data', superOrSub, c.loadChartData);
+router.post('/download', superOrSub, c.downloadChartData);
 
 module.exports = router;
