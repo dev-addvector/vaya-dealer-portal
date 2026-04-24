@@ -30,18 +30,33 @@ function calcItem(item, cutDiscount, rollDiscount, globalGst) {
 
 function PanelLengthPopup({ item, onClose, onSave }) {
   const [text, setText] = useState(item.remark || '');
+  const textareaRef = useRef(null);
+  
+  useEffect(() => {
+    if (textareaRef.current) {
+      setTimeout(() => textareaRef.current.focus(), 0);
+    }
+  }, []);
+
+  const handlePopupClick = (e) => {
+    e.stopPropagation();
+  };
+
   return (
-    <div className="absolute top-full left-0 z-[200] bg-white border border-[#ccc] rounded p-3 w-[280px] shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
+    <div onClick={handlePopupClick} className="absolute top-full left-0 z-[1000] bg-white border border-[#ccc] rounded p-3 w-[260px] shadow-[0_4px_12px_rgba(0,0,0,0.15)] md:w-[280px]">
       <div className="flex justify-between items-center mb-2">
         <span className="font-semibold text-[13px]">Specify Panel Lengths</span>
         <button onClick={onClose} className="bg-transparent border-none cursor-pointer text-[16px] leading-none text-[#555]">×</button>
       </div>
       <p className="text-[11px] text-[#888] m-0 mb-[6px] italic">Optional — helps us send adequate roll lengths</p>
       <textarea
+        ref={textareaRef}
         rows={4}
         value={text}
         onChange={e => setText(e.target.value)}
-        className="w-full border border-[#ccc] rounded-[3px] p-[6px] text-[12px] resize-y"
+        onClick={handlePopupClick}
+        onMouseDown={handlePopupClick}
+        className="w-full border border-[#ccc] rounded-[3px] p-[6px] text-[12px] resize-y focus:outline-none focus:border-[#007bff] focus:ring-1 focus:ring-[#007bff]"
         placeholder="e.g. 3m×2, 4m×1..."
       />
       <div className="flex gap-2 mt-2">
@@ -305,7 +320,7 @@ export default function CartPage() {
                               value={getLength(item)}
                               onChange={e => handleLengthChange(item.id, e.target.value)}
                               onBlur={e => handleLengthBlur(item.id, e.target.value)}
-                              className="w-[86px] h-[34px] border border-[#ccc] rounded-[3px] px-[8px] py-1 text-[13px] outline-none text-right"
+                              className="w-[86px] h-[34px] border border-[#ccc] rounded-[3px] px-[8px] py-1 text-[13px] text-right focus:border-[#007bff] focus:ring-1 focus:ring-[#007bff] focus:outline-none"
                             />
                             <button
                               onClick={() => setPopupItemId(popupItemId === item.id ? null : item.id)}
@@ -424,7 +439,7 @@ export default function CartPage() {
                                 value={getLength(item)}
                                 onChange={e => handleLengthChange(item.id, e.target.value)}
                                 onBlur={e => handleLengthBlur(item.id, e.target.value)}
-                                className="w-[80px] border border-[#ccc] rounded-[3px] px-[6px] py-1 text-[13px] outline-none"
+                                className="w-[80px] border border-[#ccc] rounded-[3px] px-[6px] py-1 text-[13px] focus:border-[#007bff] focus:ring-1 focus:ring-[#007bff] focus:outline-none"
                               />
                               <button
                                 onClick={() => setPopupItemId(popupItemId === item.id ? null : item.id)}

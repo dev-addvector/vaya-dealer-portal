@@ -30,6 +30,8 @@ function RollModal({ product, onClose }) {
 
 function PanelLengthPopup({ onClose, value, onChange }) {
   const popupRef = useRef(null);
+  const textareaRef = useRef(null);
+  
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (popupRef.current && !popupRef.current.contains(e.target)) onClose();
@@ -38,15 +40,25 @@ function PanelLengthPopup({ onClose, value, onChange }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
+  useEffect(() => {
+    if (textareaRef.current) {
+      setTimeout(() => textareaRef.current.focus(), 0);
+    }
+  }, []);
+
+  const handlePopupClick = (e) => {
+    e.stopPropagation();
+  };
+
   return (
-    <div ref={popupRef} className="absolute top-full right-0 z-[100] w-[300px] bg-white shadow-[0px_3px_40px_rgba(0,0,0,0.32)] rounded-[10px] p-5 mt-[10px]">
+    <div ref={popupRef} onClick={handlePopupClick} className="absolute top-full right-0 z-[1000] w-[280px] bg-white shadow-[0px_3px_40px_rgba(0,0,0,0.32)] rounded-[10px] p-4 mt-[10px] md:w-[300px] md:p-5">
       <button onClick={onClose} className="absolute top-[10px] right-[14px] bg-transparent border-none text-[18px] cursor-pointer text-[#555] leading-none">×</button>
       <div className="text-center font-semibold text-[15px] mb-[6px]">Specify Panel Lengths</div>
       <div className="text-center italic text-sm mb-[10px] flex items-center justify-center gap-[6px]">
         Optional Field
         <span title="Please provide info to help us to send adequate roll lengths" className="inline-flex items-center justify-center border border-black rounded-full w-[17px] h-[17px] text-[10px] cursor-default shrink-0">i</span>
       </div>
-      <textarea rows={4} value={value} onChange={e => onChange(e.target.value)} className="w-full border border-[#C8C8C8] rounded-[4px] p-[6px] text-[13px] resize-y outline-none" />
+      <textarea ref={textareaRef} rows={4} value={value} onChange={e => onChange(e.target.value)} onClick={handlePopupClick} onMouseDown={handlePopupClick} className="w-full border border-[#C8C8C8] rounded-[4px] p-[6px] text-[13px] resize-y focus:outline-none focus:border-[#007bff] focus:ring-1 focus:ring-[#007bff]" />
     </div>
   );
 }
@@ -91,7 +103,7 @@ function ProductCard({ p, orderLengths, setOrderLengths, panelNotes, setPanelNot
               type="text"
               inputMode="decimal"
               placeholder="Enter Length"
-              className="border-none bg-transparent py-1 px-[2px] w-[90px] text-[13px] outline-none text-[#555] text-right"
+              className="border-none bg-transparent py-1 px-[2px] w-[90px] text-[13px] text-[#555] text-right focus:bg-white focus:border focus:border-[#007bff] focus:shadow-sm rounded"
               value={orderLengths[key] || ''}
               onChange={e => {
                 const v = e.target.value;
@@ -127,7 +139,16 @@ function ProductCard({ p, orderLengths, setOrderLengths, panelNotes, setPanelNot
             {panelPopupKey === key && (
               <PanelLengthPopup
                 value={panelNotes[key] || ''}
-                onChange={v => setPanelNotes(prev => ({ ...prev, [key]: v }))}
+                onChange={v => {
+                  setPanelNotes(prev => ({ ...prev, [key]: v }));
+                  const cartItem = cartItemByKey[key];
+                  if (cartItem) {
+                    clearTimeout(debounceTimers.current[`panel_${key}`]);
+                    debounceTimers.current[`panel_${key}`] = setTimeout(() => {
+                      editCartItem.mutate({ id: cartItem.id, remark: v });
+                    }, 800);
+                  }
+                }}
                 onClose={() => setPanelPopupKey(null)}
               />
             )}
@@ -169,6 +190,12 @@ export default function ProductsPage() {
   const { data: cartData } = useCart();
   const debounceTimers = useRef({});
 
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(timerId => clearTimeout(timerId));
+    };
+  }, []);
+
   const cartItemByKey = useMemo(() => {
     const map = {};
     (cartData?.items ?? []).forEach(item => {
@@ -185,6 +212,14 @@ export default function ProductsPage() {
       items.forEach(item => {
         const key = `${item.pattern}||${item.color}`;
         if (merged[key] === undefined) merged[key] = String(item.quantity);
+      });
+      return merged;
+    });
+    setPanelNotes(prev => {
+      const merged = { ...prev };
+      items.forEach(item => {
+        const key = `${item.pattern}||${item.color}`;
+        if (item.remark && merged[key] === undefined) merged[key] = item.remark;
       });
       return merged;
     });
@@ -378,7 +413,7 @@ export default function ProductsPage() {
                                 type="text"
                                 inputMode="decimal"
                                 placeholder="Enter Length(m)"
-                                className="border-none bg-transparent py-1 px-[2px] w-[100px] text-[13px] outline-none text-[#555] text-center"
+                                className="border-none bg-transparent py-1 px-[2px] w-[100px] text-[13px] text-[#555] text-center focus:bg-white focus:border focus:border-[#007bff] focus:shadow-sm rounded"
                                 value={orderLengths[key] || ''}
                                 onChange={e => {
                                   const v = e.target.value;
@@ -414,7 +449,16 @@ export default function ProductsPage() {
                               {panelPopupKey === key && (
                                 <PanelLengthPopup
                                   value={panelNotes[key] || ''}
-                                  onChange={v => setPanelNotes(prev => ({ ...prev, [key]: v }))}
+                                  onChange={v => {
+                                    setPanelNotes(prev => ({ ...prev, [key]: v }));
+                                    const cartItem = cartItemByKey[key];
+                                    if (cartItem) {
+                                      clearTimeout(debounceTimers.current[`panel_${key}`]);
+                                      debounceTimers.current[`panel_${key}`] = setTimeout(() => {
+                                        editCartItem.mutate({ id: cartItem.id, remark: v });
+                                      }, 800);
+                                    }
+                                  }}
                                   onClose={() => setPanelPopupKey(null)}
                                 />
                               )}
