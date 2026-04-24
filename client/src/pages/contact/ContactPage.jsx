@@ -88,9 +88,13 @@ export default function ContactPage() {
 
       <section>
         <div className="max-w-[90%] mx-auto px-[15px] pt-[30px] pb-10">
-          <div className="flex gap-6 items-start">
-            <div className="flex-1 min-w-0">
-              <div className="bg-white shadow-[0_2px_15px_rgba(0,0,0,0.22)] rounded-[10px] py-7 px-8">
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="w-full lg:w-[260px] shrink-0 order-1 lg:order-2">
+              <ProfileSidebar />
+            </div>
+
+            <div className="flex-1 min-w-0 w-full order-2 lg:order-1">
+              <div className="bg-white shadow-[0_2px_15px_rgba(0,0,0,0.22)] rounded-[10px] py-6 sm:py-7 px-5 sm:px-8">
                 <div className="flex justify-between items-center border-b border-[rgba(112,112,112,0.15)] pb-[14px] mb-5">
                   <h4 className="text-[18px] font-medium text-vaya-black m-0">Reset Default Contact</h4>
                   <button
@@ -121,10 +125,6 @@ export default function ContactPage() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="w-[260px] shrink-0">
-              <ProfileSidebar />
             </div>
           </div>
         </div>

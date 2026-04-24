@@ -35,9 +35,13 @@ export default function ProfilePage() {
 
       <section>
         <div className="max-w-[90%] mx-auto px-[15px] pt-[30px] pb-10">
-          <div className="flex gap-6 items-start">
-            <div className="flex-1 min-w-0">
-              <div className="bg-white shadow-[0_2px_15px_rgba(0,0,0,0.22)] rounded-[10px] py-7 px-8">
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="w-full lg:w-[260px] shrink-0 order-1 lg:order-2">
+              <ProfileSidebar />
+            </div>
+
+            <div className="flex-1 min-w-0 w-full order-2 lg:order-1">
+              <div className="bg-white shadow-[0_2px_15px_rgba(0,0,0,0.22)] rounded-[10px] py-6 sm:py-7 px-5 sm:px-8">
                 <div className="flex justify-between items-center border-b border-[rgba(112,112,112,0.15)] pb-[14px] mb-1">
                   <h4 className="text-[18px] font-medium text-vaya-black m-0">Consignee Details</h4>
                   <button
@@ -49,20 +53,20 @@ export default function ProfilePage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
                   <div>
                     {left.map(([label, value]) => (
                       <div key={label} className="flex items-start py-[10px] border-b border-[rgba(112,112,112,0.12)]">
-                        <span className="text-[rgba(0,0,0,0.45)] text-sm pr-2 w-[180px] shrink-0">{label}:</span>
-                        <span className="text-[#111] text-sm font-medium">{value || ''}</span>
+                        <span className="text-[rgba(0,0,0,0.45)] text-xs sm:text-sm pr-2 w-[140px] sm:w-[180px] shrink-0">{label}:</span>
+                        <span className="text-[#111] text-xs sm:text-sm font-medium break-words">{value || ''}</span>
                       </div>
                     ))}
                   </div>
                   <div>
                     {right.map(([label, value]) => (
                       <div key={label} className="flex items-start py-[10px] border-b border-[rgba(112,112,112,0.12)]">
-                        <span className="text-[rgba(0,0,0,0.45)] text-sm pr-2 w-[180px] shrink-0">{label}:</span>
-                        <span className={`text-sm font-medium ${label === 'Status' ? 'text-vaya-green' : 'text-[#111]'}`}>
+                        <span className="text-[rgba(0,0,0,0.45)] text-xs sm:text-sm pr-2 w-[140px] sm:w-[180px] shrink-0">{label}:</span>
+                        <span className={`text-xs sm:text-sm font-medium break-words ${label === 'Status' ? 'text-vaya-green' : 'text-[#111]'}`}>
                           {value || ''}
                         </span>
                       </div>
@@ -70,10 +74,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="w-[260px] shrink-0">
-              <ProfileSidebar />
             </div>
           </div>
         </div>

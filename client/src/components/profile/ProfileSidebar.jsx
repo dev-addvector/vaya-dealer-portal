@@ -12,8 +12,8 @@ export default function ProfileSidebar() {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-vaya-green rounded-[8px] py-6 px-5 min-w-[220px]">
-      <h3 className="text-white text-[18px] font-normal mb-[18px] leading-[1.3]">
+    <div className="bg-vaya-green rounded-[10px] py-6 px-5 w-full">
+      <h3 className="text-white text-[18px] sm:text-[18px] font-normal mb-[18px] leading-[1.3]">
         Useful Links
       </h3>
       <ul className="list-none p-0 m-0">
@@ -23,7 +23,7 @@ export default function ProfileSidebar() {
             <li
               key={to}
               onClick={() => navigate(to)}
-              className="py-[10px] cursor-pointer border-b border-[rgba(255,255,255,0.25)] flex items-center gap-2"
+              className="py-[12px] cursor-pointer border-b border-[rgba(255,255,255,0.25)] flex items-center gap-2"
             >
               <span className="text-white text-[12px] shrink-0">›</span>
               <span className={`text-white text-[14px] ${active ? 'font-bold' : 'font-normal'}`}>{label}</span>

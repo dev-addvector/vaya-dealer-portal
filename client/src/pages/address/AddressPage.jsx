@@ -36,7 +36,7 @@ function AddressModal({ initial, onSave, onClose, saving }) {
               placeholder="Address"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block mb-[6px] text-sm text-[#111]">City<span className="text-[#dc3545]">*</span></label>
               <input value={form.city} onChange={e => set('city', e.target.value)} className="w-full h-[45px] border border-[#C8C8C8] rounded-[4px] px-[14px] py-2 text-sm text-[#333] outline-none" placeholder="City" />
@@ -46,7 +46,7 @@ function AddressModal({ initial, onSave, onClose, saving }) {
               <input value={form.state} onChange={e => set('state', e.target.value)} className="w-full h-[45px] border border-[#C8C8C8] rounded-[4px] px-[14px] py-2 text-sm text-[#333] outline-none" placeholder="State" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block mb-[6px] text-sm text-[#111]">Country<span className="text-[#dc3545]">*</span></label>
               <input value={form.country} onChange={e => set('country', e.target.value)} className="w-full h-[45px] border border-[#C8C8C8] rounded-[4px] px-[14px] py-2 text-sm text-[#333] outline-none" placeholder="Country" />
@@ -108,9 +108,13 @@ export default function AddressPage() {
 
       <section>
         <div className="max-w-[90%] mx-auto px-[15px] pt-[30px] pb-10">
-          <div className="flex gap-6 items-start">
-            <div className="flex-1 min-w-0">
-              <div className="bg-white shadow-[0_2px_15px_rgba(0,0,0,0.22)] rounded-[10px] py-7 px-8">
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="w-full lg:w-[260px] shrink-0 order-1 lg:order-2">
+              <ProfileSidebar />
+            </div>
+
+            <div className="flex-1 min-w-0 w-full order-2 lg:order-1">
+              <div className="bg-white shadow-[0_2px_15px_rgba(0,0,0,0.22)] rounded-[10px] py-6 sm:py-7 px-5 sm:px-8">
                 <div className="flex justify-between items-center border-b border-[rgba(112,112,112,0.15)] pb-[14px] mb-5">
                   <h4 className="text-[18px] font-medium text-vaya-black m-0">Reset Default Address</h4>
                   <button
@@ -130,76 +134,74 @@ export default function AddressPage() {
                 )}
 
                 {!isLoading && !isError && (
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr>
-                        <th className="w-[70%]" />
-                        <th className="w-[8%]" />
-                        <th className="w-[11%] text-center text-[13px] text-[#555] font-medium pb-[10px]">
-                          Shipping<br />address
-                        </th>
-                        <th className="w-[11%] text-center text-[13px] text-[#555] font-medium pb-[10px]">
-                          Billing<br />address
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {addresses.length === 0 && (
+                  <div className="w-full overflow-x-auto">
+                    <table className="w-full border-collapse min-w-[560px]">
+                      <thead>
                         <tr>
-                          <td colSpan={4} className="text-[#999] text-sm py-4">No addresses found.</td>
+                          <th className="w-[70%]" />
+                          <th className="w-[8%]" />
+                          <th className="w-[11%] text-center text-[13px] text-[#555] font-medium pb-[10px]">
+                            Shipping<br />address
+                          </th>
+                          <th className="w-[11%] text-center text-[13px] text-[#555] font-medium pb-[10px]">
+                            Billing<br />address
+                          </th>
                         </tr>
-                      )}
-                      {addresses.map((addr) => (
-                        <tr key={addr.id} className="border-b border-[rgba(112,112,112,0.12)]">
-                          <td className="py-[14px] text-sm text-[#555]">
-                            <div>{addr.line1}</div>
-                            <div className="text-[13px] text-[#888]">{formatAddress(addr)}</div>
-                          </td>
-                          <td className="py-[14px] px-2">
-                            {addr.addressType !== 'Billing' && (
-                              <div className="flex gap-[10px] justify-center">
-                                <button
-                                  onClick={() => setEditing({ ...addr, line1: addr.line1 || addr.label })}
-                                  className="bg-transparent border-none cursor-pointer text-[#888] text-[15px]"
-                                  title="Edit"
-                                >✎</button>
-                                <button
-                                  onClick={() => setDeleting(addr.id)}
-                                  className="bg-transparent border-none cursor-pointer text-[#888] text-[15px]"
-                                  title="Delete"
-                                >🗑</button>
-                              </div>
-                            )}
-                          </td>
-                          <td className="text-center py-[14px]">
-                            <input
-                              type="radio"
-                              name="shipping"
-                              checked={addr.isDefault === 1}
-                              onChange={() => setDefault.mutate(addr.id)}
-                              className="w-[18px] h-[18px] accent-vaya-green cursor-pointer"
-                            />
-                          </td>
-                          <td className="text-center py-[14px]">
-                            <input
-                              type="radio"
-                              name="billing"
-                              checked={addr.isBillingDefault === 1}
-                              readOnly
-                              disabled
-                              className="w-[18px] h-[18px] accent-vaya-green cursor-default opacity-50"
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {addresses.length === 0 && (
+                          <tr>
+                            <td colSpan={4} className="text-[#999] text-sm py-4">No addresses found.</td>
+                          </tr>
+                        )}
+                        {addresses.map((addr) => (
+                          <tr key={addr.id} className="border-b border-[rgba(112,112,112,0.12)]">
+                            <td className="py-[14px] text-sm text-[#555]">
+                              <div>{addr.line1}</div>
+                              <div className="text-[13px] text-[#888]">{formatAddress(addr)}</div>
+                            </td>
+                            <td className="py-[14px] px-2">
+                              {addr.addressType !== 'Billing' && (
+                                <div className="flex gap-[10px] justify-center">
+                                  <button
+                                    onClick={() => setEditing({ ...addr, line1: addr.line1 || addr.label })}
+                                    className="bg-transparent border-none cursor-pointer text-[#888] text-[15px]"
+                                    title="Edit"
+                                  >✎</button>
+                                  <button
+                                    onClick={() => setDeleting(addr.id)}
+                                    className="bg-transparent border-none cursor-pointer text-[#888] text-[15px]"
+                                    title="Delete"
+                                  >🗑</button>
+                                </div>
+                              )}
+                            </td>
+                            <td className="text-center py-[14px]">
+                              <input
+                                type="radio"
+                                name="shipping"
+                                checked={addr.isDefault === 1}
+                                onChange={() => setDefault.mutate(addr.id)}
+                                className="w-[18px] h-[18px] accent-vaya-green cursor-pointer"
+                              />
+                            </td>
+                            <td className="text-center py-[14px]">
+                              <input
+                                type="radio"
+                                name="billing"
+                                checked={addr.isBillingDefault === 1}
+                                readOnly
+                                disabled
+                                className="w-[18px] h-[18px] accent-vaya-green cursor-default opacity-50"
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
-            </div>
-
-            <div className="w-[260px] shrink-0">
-              <ProfileSidebar />
             </div>
           </div>
         </div>
