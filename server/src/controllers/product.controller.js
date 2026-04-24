@@ -49,7 +49,7 @@ exports.addToCart = async (req, res) => {
   if (existing) {
     await prisma.cartItem.update({
       where: { id: existing.id },
-      data: { quantity: existing.quantity + (quantity || 1) },
+      data: { quantity: quantity || existing.quantity },
     });
   } else {
     await prisma.cartItem.create({

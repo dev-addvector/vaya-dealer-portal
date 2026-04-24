@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useLoadProducts, useAddToCart, useCart } from '@/hooks/useProducts';
+import { useLoadProducts, useAddToCart, useEditCartItem, useCart } from '@/hooks/useProducts';
 
 const containerStyle = { maxWidth: '90%', margin: '0 auto', padding: '0 15px' };
 
@@ -146,7 +146,17 @@ export default function ProductsPage() {
 
   const { data, isLoading, isError } = useLoadProducts(filters);
   const addToCart = useAddToCart();
+  const editCartItem = useEditCartItem();
   const { data: cartData } = useCart();
+  const debounceTimers = useRef({});
+
+  const cartItemByKey = useMemo(() => {
+    const map = {};
+    (cartData?.items ?? []).forEach(item => {
+      map[`${item.pattern}||${item.color}`] = item;
+    });
+    return map;
+  }, [cartData]);
 
   useEffect(() => {
     const items = cartData?.items ?? [];
@@ -155,7 +165,7 @@ export default function ProductsPage() {
       const merged = { ...prev };
       items.forEach(item => {
         const key = `${item.pattern}||${item.color}`;
-        if (!merged[key] && item.quantity) merged[key] = String(item.quantity);
+        if (merged[key] === undefined) merged[key] = String(item.quantity);
       });
       return merged;
     });
@@ -365,12 +375,24 @@ export default function ProductsPage() {
                                   const v = e.target.value;
                                   if (v === '' || /^\d*\.?\d*$/.test(v)) {
                                     setOrderLengths(prev => ({ ...prev, [key]: v }));
+                                    const cartItem = cartItemByKey[key];
+                                    if (cartItem) {
+                                      clearTimeout(debounceTimers.current[key]);
+                                      debounceTimers.current[key] = setTimeout(() => {
+                                        const num = parseFloat(v);
+                                        if (!isNaN(num) && num > 0) {
+                                          editCartItem.mutate({ id: cartItem.id, quantity: num });
+                                        }
+                                      }, 800);
+                                    }
                                   }
                                 }}
                                 onBlur={() => {
                                   const v = parseFloat(orderLengths[key]);
                                   if (!isNaN(v) && v < 1) {
                                     setOrderLengths(prev => ({ ...prev, [key]: '1' }));
+                                    const cartItem = cartItemByKey[key];
+                                    if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: 1 });
                                   }
                                 }}
                               />
@@ -402,22 +424,26 @@ export default function ProductsPage() {
                             </div>
                           </td>
                           <td style={{ ...tdStyle, textAlign: 'center' }}>
-                            <button
-                              onClick={() => handleAddToCart(p)}
-                              disabled={addToCart.isPending || !inStock}
-                              style={{
-                                backgroundColor: '#fff',
-                                color: inStock ? '#807A52' : '#aaa',
-                                border: `1px solid ${inStock ? '#807A52' : '#ccc'}`,
-                                padding: '5px 14px',
-                                borderRadius: '3px',
-                                fontSize: '13px',
-                                cursor: inStock ? 'pointer' : 'not-allowed',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              Add To Cart
-                            </button>
+                            {cartItemByKey[key] ? (
+                              <span style={{ fontSize: '13px', color: '#807A52', fontWeight: 500 }}>✓ In Cart</span>
+                            ) : (
+                              <button
+                                onClick={() => handleAddToCart(p)}
+                                disabled={addToCart.isPending || !inStock}
+                                style={{
+                                  backgroundColor: '#fff',
+                                  color: inStock ? '#807A52' : '#aaa',
+                                  border: `1px solid ${inStock ? '#807A52' : '#ccc'}`,
+                                  padding: '5px 14px',
+                                  borderRadius: '3px',
+                                  fontSize: '13px',
+                                  cursor: inStock ? 'pointer' : 'not-allowed',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                Add To Cart
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );

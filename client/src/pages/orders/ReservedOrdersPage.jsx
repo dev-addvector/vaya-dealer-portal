@@ -84,7 +84,7 @@ export default function ReservedOrdersPage() {
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [downloading, setDownloading] = useState(null);
-  const [sort, setSort] = useState({ key: null, dir: 'asc' });
+  const [sort, setSort] = useState({ key: 'OrderDate', dir: 'desc' });
 
   const unique = (key) => [...new Set(orders.map(o => o[key]).filter(v => v && String(v).toLowerCase() !== 'null'))];
 
