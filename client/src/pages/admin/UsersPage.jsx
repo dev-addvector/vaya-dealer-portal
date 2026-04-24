@@ -34,7 +34,7 @@ export default function UsersPage() {
       <h1 className="text-xl font-bold mb-4 text-gray-800">Users</h1>
 
       {/* Top bar: Show entries + Search */}
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>Show</span>
           <select
@@ -52,7 +52,7 @@ export default function UsersPage() {
           placeholder="Search by name or email..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="border rounded px-3 py-2 text-sm w-72 focus:outline-none focus:ring-1 focus:ring-vaya-green"
+          className="border rounded px-3 py-2 text-sm w-full sm:w-72 focus:outline-none focus:ring-1 focus:ring-vaya-green"
         />
       </div>
 
@@ -106,14 +106,14 @@ export default function UsersPage() {
 
       {/* Bottom bar: showing info + page buttons */}
       {!isLoading && (
-        <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
-          <p className="text-sm text-gray-500">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-3">
+          <p className="text-sm text-gray-500 text-center sm:text-left">
             {total === 0
               ? 'No entries found'
               : `Showing ${from} to ${to} of ${total} entries`}
           </p>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 justify-center">
             <button
               disabled={page <= 1}
               onClick={() => setPage(1)}

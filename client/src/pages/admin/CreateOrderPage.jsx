@@ -16,7 +16,7 @@ function StepSelectCustomer({ onSelect }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 max-w-lg">
+    <div className="bg-white rounded-lg shadow p-4 sm:p-6 max-w-lg">
       <h2 className="text-base font-semibold mb-4 text-gray-700">Step 1: Select Customer</h2>
       {isLoading ? (
         <p className="text-sm text-gray-500">Loading customers...</p>
@@ -106,11 +106,11 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-semibold text-gray-700">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
+        <h2 className="text-base font-semibold text-gray-700 break-words">
           Step 2: Browse Products — <span className="text-vaya-primary">{customer.name} ({customer.unc})</span>
         </h2>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
           <span className="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-medium">
             Cart: {cartCount} item{cartCount !== 1 ? 's' : ''}
           </span>
@@ -121,14 +121,16 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
         </div>
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-2 mb-4 flex-wrap">
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 mb-4">
         <input value={pattern} onChange={(e) => setPattern(e.target.value)}
-          placeholder="Pattern" className="border rounded px-3 py-1.5 text-sm w-48 focus:outline-none focus:ring-1 focus:ring-vaya-primary" />
+          placeholder="Pattern" className="border rounded px-3 py-1.5 text-sm w-full sm:w-48 focus:outline-none focus:ring-1 focus:ring-vaya-primary" />
         <input value={color} onChange={(e) => setColor(e.target.value)}
-          placeholder="Color" className="border rounded px-3 py-1.5 text-sm w-48 focus:outline-none focus:ring-1 focus:ring-vaya-primary" />
-        <button type="submit" className="bg-gray-700 text-white px-4 py-1.5 rounded text-sm hover:bg-gray-800">Search</button>
-        <button type="button" onClick={() => { setPattern(''); setColor(''); setSearch({ pattern: '', color: '' }); setPage(1); }}
-          className="border px-4 py-1.5 rounded text-sm hover:bg-gray-50">Clear</button>
+          placeholder="Color" className="border rounded px-3 py-1.5 text-sm w-full sm:w-48 focus:outline-none focus:ring-1 focus:ring-vaya-primary" />
+        <div className="flex gap-2">
+          <button type="submit" className="bg-gray-700 text-white px-4 py-1.5 rounded text-sm hover:bg-gray-800">Search</button>
+          <button type="button" onClick={() => { setPattern(''); setColor(''); setSearch({ pattern: '', color: '' }); setPage(1); }}
+            className="border px-4 py-1.5 rounded text-sm hover:bg-gray-50">Clear</button>
+        </div>
       </form>
 
       {isLoading && <p className="text-sm text-gray-500 mb-3">Loading products...</p>}
@@ -187,12 +189,14 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center gap-2 mt-3 text-sm">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-            className="border px-3 py-1 rounded disabled:opacity-40 hover:bg-gray-50">Previous</button>
-          <span className="text-gray-600">Page {page} of {totalPages} ({total} products)</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-            className="border px-3 py-1 rounded disabled:opacity-40 hover:bg-gray-50">Next</button>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-3 text-sm">
+          <div className="flex gap-2 order-2 sm:order-1">
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+              className="border px-3 py-1 rounded disabled:opacity-40 hover:bg-gray-50">Previous</button>
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
+              className="border px-3 py-1 rounded disabled:opacity-40 hover:bg-gray-50">Next</button>
+          </div>
+          <span className="text-gray-600 order-1 sm:order-2 text-center">Page {page} of {totalPages} ({total} products)</span>
         </div>
       )}
 
@@ -279,11 +283,11 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-semibold text-gray-700">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <h2 className="text-base font-semibold text-gray-700 break-words">
           Step 3: Cart & Checkout — <span className="text-vaya-primary">{customer.name} ({customer.unc})</span>
         </h2>
-        <button onClick={onBack} className="border px-4 py-1.5 rounded text-sm hover:bg-gray-50">Back to Products</button>
+        <button onClick={onBack} className="border px-4 py-1.5 rounded text-sm hover:bg-gray-50 w-full sm:w-auto">Back to Products</button>
       </div>
 
       {/* Cart Table */}
@@ -346,7 +350,7 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
       </div>
 
       {/* Order Details */}
-      <div className="bg-white rounded-lg shadow p-5 grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="bg-white rounded-lg shadow p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className="text-xs text-gray-600 block mb-1">Shipping Address</label>
           <select value={shippingAddressId} onChange={(e) => setShippingAddressId(e.target.value)}
@@ -412,17 +416,17 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
       </div>
 
       {/* Grand Total Banner */}
-      <div className="bg-vaya-light rounded-lg p-4 mb-4 flex items-center justify-between">
+      <div className="bg-vaya-light rounded-lg p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <span className="font-semibold text-vaya-dark">Grand Total</span>
         <span className="text-xl font-bold text-vaya-dark">₹ {fmt(totals.total)}</span>
       </div>
 
-      <div className="flex gap-2">
-        <button onClick={onBack} className="border px-5 py-2 rounded text-sm hover:bg-gray-50">Back</button>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <button onClick={onBack} className="border px-5 py-2 rounded text-sm hover:bg-gray-50 w-full sm:w-auto">Back</button>
         <button
           onClick={handlePlaceOrder}
           disabled={place.isPending || cart.length === 0}
-          className="bg-vaya-primary text-white px-6 py-2 rounded text-sm hover:bg-vaya-dark disabled:opacity-60 font-medium"
+          className="bg-vaya-primary text-white px-6 py-2 rounded text-sm hover:bg-vaya-dark disabled:opacity-60 font-medium w-full sm:w-auto"
         >
           {place.isPending ? 'Placing Order...' : 'Place Order'}
         </button>

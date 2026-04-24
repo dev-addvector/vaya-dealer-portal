@@ -72,12 +72,12 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
         <button
           onClick={handleDownload}
           disabled={downloading}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm px-4 py-2 rounded font-medium"
+          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm px-4 py-2 rounded font-medium w-full sm:w-auto"
         >
           {downloading ? 'Downloading…' : 'Download ↓'}
         </button>
@@ -85,7 +85,7 @@ export default function DashboardPage() {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <select
             value={filters.consigneeName}
             onChange={(e) => setFilters((f) => ({ ...f, consigneeName: e.target.value }))}
@@ -145,51 +145,51 @@ export default function DashboardPage() {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="rounded-lg p-5 text-white bg-[#7c3aed]">
-          <div className="text-2xl mb-1">⏱</div>
-          <p className="text-3xl font-bold">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div className="rounded-lg p-4 sm:p-5 text-white bg-[#7c3aed]">
+          <div className="text-xl sm:text-2xl mb-1">⏱</div>
+          <p className="text-2xl sm:text-3xl font-bold">
             {isLoading ? '…' : (cd.averageTimeElpsed ?? 0)} s
           </p>
-          <p className="text-sm mt-1 opacity-90">Average of Elapsed Time</p>
+          <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Elapsed Time</p>
         </div>
-        <div className="rounded-lg p-5 text-white bg-[#3ec97b]">
-          <div className="text-2xl mb-1">📋</div>
-          <p className="text-3xl font-bold">
+        <div className="rounded-lg p-4 sm:p-5 text-white bg-[#3ec97b]">
+          <div className="text-xl sm:text-2xl mb-1">📋</div>
+          <p className="text-2xl sm:text-3xl font-bold">
             {isLoading ? '…' : (cd.averageRecord ?? 0)}
           </p>
-          <p className="text-sm mt-1 opacity-90">Average of Records Per Search</p>
+          <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Records Per Search</p>
         </div>
-        <div className="rounded-lg p-5 text-white bg-[#f05372]">
-          <div className="text-2xl mb-1">⚡</div>
-          <p className="text-3xl font-bold">
+        <div className="rounded-lg p-4 sm:p-5 text-white bg-[#f05372]">
+          <div className="text-xl sm:text-2xl mb-1">⚡</div>
+          <p className="text-2xl sm:text-3xl font-bold">
             {isLoading ? '…' : (cd.averageRecordPerSec ?? 0)} /s
           </p>
-          <p className="text-sm mt-1 opacity-90">Average of Records Per Search Per Sec</p>
+          <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Records Per Search Per Sec</p>
         </div>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Top 5 Search Strings - Horizontal Bar */}
         <div className="bg-white rounded-lg shadow p-5">
           <h2 className="font-semibold text-gray-700 mb-4">Top 5 Search Strings</h2>
           {searchBarData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart
                 data={searchBarData}
                 layout="vertical"
-                margin={{ top: 5, right: 40, left: 10, bottom: 5 }}
+                margin={{ top: 5, right: 30, left: 8, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={70} />
+                <XAxis type="number" tick={{ fontSize: 10 }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={60} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#7c3aed" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 11 }} />
+                <Bar dataKey="count" fill="#7c3aed" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10 }} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+            <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
               {isLoading ? 'Loading…' : 'No data'}
             </div>
           )}
@@ -213,22 +213,22 @@ export default function DashboardPage() {
       <div className="bg-white rounded-lg shadow p-5">
         <h2 className="font-semibold text-gray-700 mb-4">Search By Users</h2>
         {lineData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={lineData} margin={{ top: 5, right: 10, left: 10, bottom: 70 }}>
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={lineData} margin={{ top: 5, right: 5, left: 5, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 9 }}
+                tick={{ fontSize: 8 }}
                 angle={-45}
                 textAnchor="end"
                 interval={tickInterval}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                label={{ value: 'Search Count', angle: -90, position: 'insideLeft', offset: 10 }}
+                tick={{ fontSize: 9 }}
+                label={{ value: 'Search Count', angle: -90, position: 'insideLeft', offset: 5 }}
               />
               <Tooltip />
-              <Legend wrapperStyle={{ paddingTop: 16 }} />
+              <Legend wrapperStyle={{ paddingTop: 12 }} />
               {(cd.topConsignee?.users ?? []).map((u, i) => (
                 <Line
                   key={u.name}
@@ -242,7 +242,7 @@ export default function DashboardPage() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
+          <div className="h-40 flex items-center justify-center text-gray-400 text-sm">
             {isLoading ? 'Loading…' : 'No data'}
           </div>
         )}

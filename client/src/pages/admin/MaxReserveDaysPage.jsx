@@ -39,7 +39,7 @@ export default function MaxReserveDaysPage() {
           <button
             type="submit"
             disabled={save.isPending}
-            className="bg-vaya-primary text-white px-5 py-2 rounded text-sm hover:bg-vaya-dark disabled:opacity-60"
+            className="bg-vaya-primary text-white px-5 py-2 rounded text-sm hover:bg-vaya-dark disabled:opacity-60 w-full sm:w-auto"
           >
             {save.isPending ? 'Saving...' : 'Save'}
           </button>

@@ -41,23 +41,23 @@ export default function StocksPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h1 className="text-xl font-bold text-gray-800">Stocks</h1>
         <button
           onClick={() => refetch()}
           disabled={isFetching}
-          className="text-sm border px-3 py-1.5 rounded hover:bg-gray-100 disabled:opacity-50"
+          className="text-sm border px-3 py-1.5 rounded hover:bg-gray-100 disabled:opacity-50 w-full sm:w-auto"
         >
           {isFetching ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
         <input
           placeholder="Search by pattern or color..."
           value={search}
           onChange={handleSearch}
-          className="border rounded px-3 py-2 text-sm w-72 focus:outline-none focus:ring-1 focus:ring-vaya-primary"
+          className="border rounded px-3 py-2 text-sm w-full sm:w-72 focus:outline-none focus:ring-1 focus:ring-vaya-primary"
         />
         {!isLoading && !isError && (
           <span className="text-sm text-gray-500">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
@@ -103,24 +103,26 @@ export default function StocksPage() {
             </table>
           </div>
 
-          <div className="flex items-center gap-2 mt-4">
-            <button
-              disabled={safePage <= 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="px-3 py-1 border rounded text-sm disabled:opacity-40 hover:bg-gray-100"
-            >
-              ← Prev
-            </button>
-            <span className="text-sm text-gray-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-4">
+            <div className="flex gap-2 order-2 sm:order-1">
+              <button
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="px-3 py-1 border rounded text-sm disabled:opacity-40 hover:bg-gray-100"
+              >
+                ← Prev
+              </button>
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-3 py-1 border rounded text-sm disabled:opacity-40 hover:bg-gray-100"
+              >
+                Next →
+              </button>
+            </div>
+            <span className="text-sm text-gray-600 order-1 sm:order-2">
               Page {safePage} of {totalPages}
             </span>
-            <button
-              disabled={safePage >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="px-3 py-1 border rounded text-sm disabled:opacity-40 hover:bg-gray-100"
-            >
-              Next →
-            </button>
           </div>
           <p className="text-xs text-gray-400 mt-1">
             Stock data is cached for 1 hour. Click Refresh to fetch latest.

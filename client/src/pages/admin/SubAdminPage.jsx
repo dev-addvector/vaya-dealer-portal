@@ -19,8 +19,8 @@ function SubadminModal({ initial, onClose, onSave, isPending }) {
   const selectedRole = watch('role');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-4 sm:p-6">
         <h2 className="text-lg font-bold mb-4 text-gray-800">{isEdit ? 'Edit Subadmin' : 'Create Subadmin'}</h2>
         <form onSubmit={handleSubmit(onSave)} className="space-y-4">
           <div>
@@ -121,10 +121,10 @@ export default function SubAdminPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h1 className="text-xl font-bold text-gray-800">Subadmin</h1>
         <button onClick={() => setModal({ mode: 'create' })}
-          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600">
+          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 w-full sm:w-auto">
           Create Subadmin
         </button>
       </div>
@@ -152,7 +152,7 @@ export default function SubAdminPage() {
                   <td className="px-4 py-3">{s.zone || '-'}</td>
                   <td className="px-4 py-3 text-xs">{formatDate(s.createdAt)}</td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-1">
+                    <div className="flex flex-col sm:flex-row gap-1">
                       <button
                         onClick={() => setModal({ mode: 'edit', data: { ...s, role: s.role === 'subadmin' ? 'sub_admin' : s.role } })}
                         className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">

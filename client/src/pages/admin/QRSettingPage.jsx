@@ -33,12 +33,12 @@ export default function QRSettingPage() {
 
   return (
     <div className="max-w-lg">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h1 className="text-xl font-bold text-gray-800">QR Redirection</h1>
         <button
           onClick={handleDownload}
           disabled={downloading || !settings.qr_link}
-          className="bg-vaya-primary text-white px-4 py-2 rounded text-sm hover:bg-vaya-dark disabled:opacity-50 transition-colors"
+          className="bg-vaya-primary text-white px-4 py-2 rounded text-sm hover:bg-vaya-dark disabled:opacity-50 transition-colors w-full sm:w-auto"
         >
           {downloading ? 'Downloading...' : 'Download QR Code'}
         </button>
@@ -68,7 +68,7 @@ export default function QRSettingPage() {
           <button
             type="submit"
             disabled={save.isPending}
-            className="bg-vaya-primary text-white px-5 py-2 rounded text-sm hover:bg-vaya-dark disabled:opacity-60"
+            className="bg-vaya-primary text-white px-5 py-2 rounded text-sm hover:bg-vaya-dark disabled:opacity-60 w-full sm:w-auto"
           >
             {save.isPending ? 'Saving...' : 'Save QR Link'}
           </button>

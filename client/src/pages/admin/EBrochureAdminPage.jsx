@@ -38,9 +38,9 @@ export default function EBrochureAdminPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h1 className="text-xl font-bold text-gray-800">E-Brochure</h1>
-        <label className="bg-vaya-primary text-white px-4 py-1.5 rounded text-sm hover:bg-vaya-dark cursor-pointer">
+        <label className="bg-vaya-primary text-white px-4 py-1.5 rounded text-sm hover:bg-vaya-dark cursor-pointer w-full sm:w-auto text-center">
           {upload.isPending ? 'Uploading...' : '+ Upload PDF'}
           <input
             ref={fileRef}

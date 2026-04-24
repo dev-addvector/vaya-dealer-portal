@@ -27,7 +27,7 @@ export default function LoginImagePage() {
           <img
             src={settings.image ? `/uploads/settings/${settings.image}` : '/images/login_left_banner.png'}
             alt="Current login"
-            className="h-40 rounded border object-cover"
+            className="h-32 sm:h-40 rounded border object-cover w-full max-w-xs"
           />
         </div>
         <div>

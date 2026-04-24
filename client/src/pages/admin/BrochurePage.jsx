@@ -29,9 +29,9 @@ export default function BrochurePage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h1 className="text-xl font-bold text-gray-800">Brochures</h1>
-        <button onClick={() => setShowForm(!showForm)} className="bg-vaya-primary text-white px-4 py-1.5 rounded text-sm hover:bg-vaya-dark">
+        <button onClick={() => setShowForm(!showForm)} className="bg-vaya-primary text-white px-4 py-1.5 rounded text-sm hover:bg-vaya-dark w-full sm:w-auto">
           + New Brochure
         </button>
       </div>
@@ -41,7 +41,7 @@ export default function BrochurePage() {
           <input placeholder="Title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="w-full border rounded px-3 py-1.5 text-sm" />
           <input placeholder="Pattern Name" value={form.patternName} onChange={(e) => setForm((f) => ({ ...f, patternName: e.target.value }))} className="w-full border rounded px-3 py-1.5 text-sm" />
           <input type="file" accept=".pdf,image/*" onChange={(e) => setForm((f) => ({ ...f, file: e.target.files[0] }))} className="text-sm" />
-          <button onClick={() => create.mutate()} disabled={create.isPending} className="bg-vaya-primary text-white px-4 py-1.5 rounded text-sm hover:bg-vaya-dark disabled:opacity-60">
+          <button onClick={() => create.mutate()} disabled={create.isPending} className="bg-vaya-primary text-white px-4 py-1.5 rounded text-sm hover:bg-vaya-dark disabled:opacity-60 w-full sm:w-auto">
             {create.isPending ? 'Creating...' : 'Create'}
           </button>
         </div>

@@ -38,11 +38,11 @@ export default function UserOrdersPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-4">
         <button onClick={() => navigate('/admin/users')} className="text-sm text-vaya-primary hover:underline">
           ← Back to Users
         </button>
-        <h1 className="text-xl font-bold text-gray-800">
+        <h1 className="text-xl font-bold text-gray-800 break-words">
           Orders — {state?.userName || decodedUnc}
         </h1>
       </div>
@@ -108,17 +108,17 @@ export default function UserOrdersPage() {
       )}
 
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="fixed inset-0 z-50 flex justify-end sm:justify-center sm:items-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setSelectedOrder(null)} />
-          <div className="relative bg-white w-full max-w-2xl h-full overflow-y-auto shadow-xl p-6">
+          <div className="relative bg-white w-full sm:max-w-2xl sm:h-auto h-full overflow-y-auto shadow-xl p-4 sm:p-6">
             <button
               onClick={() => setSelectedOrder(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl leading-none"
             >
               ×
             </button>
-            <h2 className="text-lg font-bold mb-4">Order Details — {selectedOrder.OrderID}</h2>
-            <div className="grid grid-cols-2 gap-3 text-sm mb-6">
+            <h2 className="text-lg font-bold mb-4 pr-8">Order Details — {selectedOrder.OrderID}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-6">
               <div><span className="text-gray-500">Order ID:</span> <span className="font-medium ml-1">{selectedOrder.OrderID}</span></div>
               <div><span className="text-gray-500">Order Date:</span> <span className="font-medium ml-1">{fmtDate(selectedOrder.OrderDate)}</span></div>
               <div><span className="text-gray-500">Invoice ID:</span> <span className="font-medium ml-1">{selectedOrder.InvoiceNo || '—'}</span></div>
