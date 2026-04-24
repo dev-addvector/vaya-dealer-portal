@@ -1,5 +1,5 @@
 const axios = require('axios');
-const puppeteer = require('puppeteer');
+const PDFDocument = require('pdfkit');
 
 const erpClient = axios.create({
   baseURL: process.env.ERP_API_URL,
@@ -279,140 +279,6 @@ function _fmtNum(n) {
   return Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function _buildOpenOrderHtml(order, address, logoDataUri = '') {
-  const items = Array.isArray(order.OrderItems) ? order.OrderItems : [];
-  let totalAmount = 0, totalDiscount = 0, totalGst = 0;
-
-  const itemRows = items.map((item, idx) => {
-    const rate = parseFloat(item.Rate) || 0;
-    const qty = parseFloat(item.OrderdLength) || 0;
-    const subtotal = rate * qty;
-    const discountAmount = Math.max(0, parseFloat(item.DiscountVal) || 0);
-    const itemGst = parseFloat(item.TaxAmount) || 0;
-    const itemTotal = subtotal - discountAmount + itemGst;
-    totalAmount += subtotal;
-    totalDiscount += discountAmount;
-    totalGst += itemGst;
-    const rowBg = idx % 2 === 0 ? '#ffffff' : '#f9f9f7';
-    return `<tr style="background:${rowBg};">
-      <td style="padding:12px 14px;font-size:13px;color:#222;font-weight:500;border-bottom:1px solid #eee;">${item.Pattern || ''} &mdash; ${item.Color || ''}</td>
-      <td style="padding:12px 14px;font-size:13px;color:#555;text-align:right;border-bottom:1px solid #eee;">${_fmtNum(rate)}</td>
-      <td style="padding:12px 14px;font-size:13px;color:#555;text-align:right;border-bottom:1px solid #eee;">${Math.round(qty)}</td>
-      <td style="padding:12px 14px;font-size:13px;color:#555;text-align:right;border-bottom:1px solid #eee;">${_fmtNum(subtotal)}</td>
-      <td style="padding:12px 14px;font-size:13px;color:#555;text-align:right;border-bottom:1px solid #eee;">${_fmtNum(discountAmount)}</td>
-      <td style="padding:12px 14px;font-size:13px;color:#555;text-align:right;border-bottom:1px solid #eee;">${_fmtNum(itemGst)}</td>
-      <td style="padding:12px 14px;font-size:13px;color:#555;text-align:right;border-bottom:1px solid #eee;">${_fmtNum(itemTotal)}</td>
-    </tr>`;
-  }).join('');
-
-  const grandTotal = totalAmount - totalDiscount + totalGst;
-
-  // Avoid pincode duplication if address string already contains it
-  const pin = (address.PinCode || '').toString().trim();
-  const addrStr = (address.Address || '').toString().trim();
-  const addrLine = pin && !addrStr.includes(pin) ? `${addrStr} &mdash; ${pin}` : addrStr;
-  const cityState = [address.City, address.State].filter(Boolean).join(', ');
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Proforma Invoice</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:Arial,sans-serif;font-size:13px;color:#333;background:#fff;}
-</style>
-</head>
-<body>
-
-<!-- ── HEADER: logo on white, always visible ── -->
-<div style="background:#ffffff;padding:24px 32px 16px;border-bottom:3px solid #111111;">
-  <table style="width:100%;border-collapse:collapse;">
-    <tr>
-      <td style="vertical-align:middle;">
-        ${logoDataUri
-          ? `<img src="${logoDataUri}" alt="VAYA" style="max-height:52px;">`
-          : '<span style="font-size:30px;font-weight:700;letter-spacing:5px;color:#111;">VAYA</span>'
-        }
-      </td>
-      <td style="text-align:right;vertical-align:middle;">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#807A52;font-weight:700;margin-bottom:4px;">Date</div>
-        <div style="font-size:14px;font-weight:600;color:#111;">${order.OrderDate || '—'}</div>
-      </td>
-    </tr>
-  </table>
-</div>
-
-<!-- ── DOCUMENT TITLE BAR ── -->
-<div style="background:#111111;padding:16px 32px;">
-  <div style="font-size:16px;font-weight:700;color:#fff;letter-spacing:1px;">PI FOR FABRIC</div>
-  <div style="font-size:12px;color:#c8bf9a;font-weight:600;margin-top:4px;letter-spacing:0.3px;">Ref &nbsp;# &nbsp;${order.PONumber || '—'}</div>
-</div>
-
-<!-- ── BILL TO ── -->
-<div style="padding:24px 32px 20px;">
-  <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#807A52;font-weight:700;margin-bottom:10px;">Bill To</div>
-  <div style="font-size:15px;font-weight:700;color:#111;margin-bottom:4px;">${address.Name || ''}</div>
-  <div style="font-size:13px;color:#555;line-height:21px;">
-    ${addrLine ? `${addrLine}<br>` : ''}
-    ${cityState}
-  </div>
-</div>
-
-<!-- ── DIVIDER ── -->
-<div style="margin:0 32px;border-top:1px solid #e8e8e4;"></div>
-
-<!-- ── ITEMS TABLE ── -->
-<div style="padding:20px 32px 0;">
-  <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
-    <thead>
-      <tr style="background:#111111;">
-        <th style="padding:11px 14px;font-size:12px;font-weight:600;color:#fff;text-align:left;width:29%;">Item &amp; Description</th>
-        <th style="padding:11px 14px;font-size:12px;font-weight:600;color:#fff;text-align:right;width:12%;">List Price</th>
-        <th style="padding:11px 14px;font-size:12px;font-weight:600;color:#fff;text-align:right;width:7%;">Qty</th>
-        <th style="padding:11px 14px;font-size:12px;font-weight:600;color:#fff;text-align:right;width:13%;">Subtotal</th>
-        <th style="padding:11px 14px;font-size:12px;font-weight:600;color:#fff;text-align:right;width:12%;">Discount</th>
-        <th style="padding:11px 14px;font-size:12px;font-weight:600;color:#fff;text-align:right;width:12%;">GST</th>
-        <th style="padding:11px 14px;font-size:12px;font-weight:600;color:#fff;text-align:right;width:15%;">Net Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${itemRows}
-    </tbody>
-  </table>
-</div>
-
-<!-- ── TOTALS ── -->
-<div style="padding:0 32px 32px;">
-  <table style="width:100%;border-collapse:collapse;">
-    <tr>
-      <td style="padding:10px 14px 5px;font-size:13px;color:#555;text-align:right;padding-right:14px;" colspan="6">Sub Total</td>
-      <td style="padding:10px 14px 5px;font-size:13px;font-weight:700;color:#111;text-align:right;width:15%;">${_fmtNum(totalAmount)}</td>
-    </tr>
-    <tr>
-      <td style="padding:5px 14px;font-size:13px;color:#555;text-align:right;" colspan="6">Total Discount</td>
-      <td style="padding:5px 14px;font-size:13px;color:#555;text-align:right;width:15%;">${_fmtNum(totalDiscount)}</td>
-    </tr>
-    <tr>
-      <td style="padding:5px 14px 10px;font-size:13px;color:#555;text-align:right;" colspan="6">Total GST</td>
-      <td style="padding:5px 14px 10px;font-size:13px;color:#555;text-align:right;width:15%;">${_fmtNum(totalGst)}</td>
-    </tr>
-    <tr style="background:#111111;">
-      <td style="padding:14px 16px;font-size:14px;font-weight:700;color:#fff;text-align:right;" colspan="6">Grand Total</td>
-      <td style="padding:14px 16px;font-size:15px;font-weight:700;color:#fff;text-align:right;width:15%;">${_fmtNum(grandTotal)}</td>
-    </tr>
-  </table>
-</div>
-
-<!-- ── FOOTER ── -->
-<div style="margin:0 32px 28px;border-top:1px solid #e8e8e4;padding-top:14px;font-size:11px;color:#aaa;text-align:center;letter-spacing:0.2px;">
-  This is a computer-generated proforma invoice and does not require a signature.
-</div>
-
-</body>
-</html>`;
-}
-
 async function generateOpenOrderPdf({ unc, poNumber }) {
   const { data: ordersData } = await postWithFallback('/Order/GetOrderDetails', {
     UCN: unc,
@@ -440,22 +306,155 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
     } catch (_) { /* proceed without address */ }
   }
 
-  let logoDataUri = '';
+  let logoBuffer = null;
   try {
-    const logoRes = await axios.get('https://dealer.vayahome.com/public/assets/images/logo.png', { responseType: 'arraybuffer', timeout: 5000 });
-    const mime = logoRes.headers['content-type'] || 'image/png';
-    logoDataUri = `data:${mime};base64,${Buffer.from(logoRes.data).toString('base64')}`;
-  } catch (_) { /* fall back to text fallback in HTML */ }
+    const logoPath = require('path').join(__dirname, '../../../client/public/images/logo.png');
+    logoBuffer = require('fs').readFileSync(logoPath);
+  } catch (_) { /* fall back to text logo */ }
 
-  const html = _buildOpenOrderHtml(order, address, logoDataUri);
-  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
-    return await page.pdf({ format: 'A4' });
-  } finally {
-    await browser.close();
-  }
+  // Calculate line items and totals
+  const items = Array.isArray(order.OrderItems) ? order.OrderItems : [];
+  let totalAmount = 0, totalDiscount = 0, totalGst = 0;
+  const itemData = items.map((item) => {
+    const rate = parseFloat(item.Rate) || 0;
+    const qty  = parseFloat(item.OrderdLength) || 0;
+    const subtotal       = rate * qty;
+    const discountAmount = Math.max(0, parseFloat(item.DiscountVal) || 0);
+    const itemGst        = parseFloat(item.TaxAmount) || 0;
+    const itemTotal      = subtotal - discountAmount + itemGst;
+    totalAmount   += subtotal;
+    totalDiscount += discountAmount;
+    totalGst      += itemGst;
+    return { item, rate, qty, subtotal, discountAmount, itemGst, itemTotal };
+  });
+  const grandTotal = totalAmount - totalDiscount + totalGst;
+
+  const pin     = (address.PinCode || '').toString().trim();
+  const addrStr = (address.Address || '').toString().trim();
+  const addrLine  = pin && !addrStr.includes(pin) ? `${addrStr} — ${pin}` : addrStr;
+  const cityState = [address.City, address.State].filter(Boolean).join(', ');
+
+  // Build PDF with pdfkit
+  const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true });
+  const chunks = [];
+  doc.on('data', (c) => chunks.push(c));
+
+  return new Promise((resolve, reject) => {
+    doc.on('end',   () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const W  = doc.page.width;   // 595.28
+    const M  = 32;                // horizontal margin
+    const CW = W - M * 2;        // content width ≈ 531
+
+    // Column widths (sum = CW): Item | Price | Qty | Subtotal | Discount | GST | Net
+    const cols  = [154, 63, 37, 69, 63, 63, 82];
+    const colX  = cols.map((_, i) => M + cols.slice(0, i).reduce((s, v) => s + v, 0));
+    const heads = ['Item & Description', 'List Price', 'Qty', 'Subtotal', 'Discount', 'GST', 'Net Amount'];
+    const aligns = ['left', 'right', 'right', 'right', 'right', 'right', 'right'];
+
+    let y = 0;
+
+    // ── HEADER ──
+    doc.rect(0, 0, W, 83).fill('#ffffff');
+    if (logoBuffer) {
+      try { doc.image(logoBuffer, M, 20, { height: 40, fit: [160, 40] }); }
+      catch (_) { doc.font('Helvetica-Bold').fontSize(22).fillColor('#111111').text('VAYA', M, 28); }
+    } else {
+      doc.font('Helvetica-Bold').fontSize(22).fillColor('#111111').text('VAYA', M, 28);
+    }
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#807A52')
+       .text('DATE', M, 24, { width: CW, align: 'right', characterSpacing: 1.2 });
+    doc.font('Helvetica-Bold').fontSize(12).fillColor('#111111')
+       .text(order.OrderDate || '—', M, 36, { width: CW, align: 'right' });
+
+    // header border
+    doc.rect(0, 80, W, 3).fill('#111111');
+    y = 83;
+
+    // ── TITLE BAR ──
+    doc.rect(0, y, W, 52).fill('#111111');
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#ffffff')
+       .text('PI FOR FABRIC', M, y + 10, { characterSpacing: 1 });
+    doc.font('Helvetica-Bold').fontSize(11).fillColor('#c8bf9a')
+       .text(`Ref  #  ${order.PONumber || '—'}`, M, y + 30);
+    y += 52;
+
+    // ── BILL TO ──
+    y += 24;
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#807A52')
+       .text('BILL TO', M, y, { characterSpacing: 1.5 });
+    y += 14;
+    if (address.Name) {
+      doc.font('Helvetica-Bold').fontSize(14).fillColor('#111111').text(address.Name, M, y);
+      y += 20;
+    }
+    doc.font('Helvetica').fontSize(11).fillColor('#555555');
+    if (addrLine) { doc.text(addrLine, M, y); y += 16; }
+    if (cityState) { doc.text(cityState, M, y); y += 16; }
+
+    // ── DIVIDER ──
+    y += 8;
+    doc.moveTo(M, y).lineTo(W - M, y).lineWidth(0.5).strokeColor('#e8e8e4').stroke();
+    y += 16;
+
+    // ── TABLE HEADER ──
+    const rowH = 28;
+    doc.rect(M, y, CW, 32).fill('#111111');
+    heads.forEach((h, i) => {
+      doc.font('Helvetica-Bold').fontSize(9).fillColor('#ffffff')
+         .text(h, colX[i] + 4, y + 10, { width: cols[i] - 8, align: aligns[i], lineBreak: false });
+    });
+    y += 32;
+
+    // ── TABLE ROWS ──
+    itemData.forEach(({ item, rate, qty, subtotal, discountAmount, itemGst, itemTotal }, idx) => {
+      if (y + rowH > doc.page.height - 120) { doc.addPage(); y = 40; }
+      doc.rect(M, y, CW, rowH).fill(idx % 2 === 0 ? '#ffffff' : '#f9f9f7');
+      const vals = [
+        `${item.Pattern || ''} — ${item.Color || ''}`,
+        _fmtNum(rate), String(Math.round(qty)),
+        _fmtNum(subtotal), _fmtNum(discountAmount), _fmtNum(itemGst), _fmtNum(itemTotal),
+      ];
+      vals.forEach((v, i) => {
+        doc.font(i === 0 ? 'Helvetica-Bold' : 'Helvetica')
+           .fontSize(10).fillColor(i === 0 ? '#222222' : '#555555')
+           .text(v, colX[i] + 4, y + 9, { width: cols[i] - 8, align: aligns[i], lineBreak: false });
+      });
+      doc.moveTo(M, y + rowH).lineTo(W - M, y + rowH).lineWidth(0.5).strokeColor('#eeeeee').stroke();
+      y += rowH;
+    });
+
+    // ── TOTALS ──
+    const totals = [['Sub Total', _fmtNum(totalAmount)], ['Total Discount', _fmtNum(totalDiscount)], ['Total GST', _fmtNum(totalGst)]];
+    totals.forEach(([label, val]) => {
+      if (y + 24 > doc.page.height - 80) { doc.addPage(); y = 40; }
+      doc.font('Helvetica').fontSize(11).fillColor('#555555')
+         .text(label, M, y + 7, { width: CW - cols[cols.length - 1] - 4, align: 'right' });
+      doc.font('Helvetica-Bold').fontSize(11).fillColor('#111111')
+         .text(val, M, y + 7, { width: CW, align: 'right' });
+      doc.moveTo(M, y + 24).lineTo(W - M, y + 24).lineWidth(0.5).strokeColor('#eeeeee').stroke();
+      y += 24;
+    });
+
+    // Grand Total bar
+    if (y + 36 > doc.page.height - 60) { doc.addPage(); y = 40; }
+    doc.rect(M, y, CW, 36).fill('#111111');
+    doc.font('Helvetica-Bold').fontSize(12).fillColor('#ffffff')
+       .text('Grand Total', M + 4, y + 11, { width: CW - cols[cols.length - 1] - 8, align: 'right' });
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#ffffff')
+       .text(_fmtNum(grandTotal), M, y + 10, { width: CW - 4, align: 'right' });
+    y += 36;
+
+    // ── FOOTER ──
+    y += 20;
+    doc.moveTo(M, y).lineTo(W - M, y).lineWidth(0.5).strokeColor('#e8e8e4').stroke();
+    y += 10;
+    doc.font('Helvetica').fontSize(9).fillColor('#aaaaaa')
+       .text('This is a computer-generated proforma invoice and does not require a signature.', M, y, { width: CW, align: 'center' });
+
+    doc.end();
+  });
 }
 
 module.exports = { getProducts, getOpenOrders, getReservedOrders, getMyOrders, placeOrder, cancelOrder, getReservedOrderByPo, getLiveProductsRaw, getOrderPdf, generateOpenOrderPdf, getPriceList, getPriceListJson, getUserDetails, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress, getShippingModes, getStocks, getOrdersByUnc };
