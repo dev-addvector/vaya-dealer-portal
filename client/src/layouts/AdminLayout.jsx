@@ -11,6 +11,7 @@ const navItems = [
   ['/admin/qr-setting', 'QR Redirection'],
   ['/admin/ads', 'Ads'],
   ['/admin/ebrochures', 'E-Brochure'],
+  ['/admin/brochures', 'India RRP Price List'],
   ['/admin/subadmins', 'Sub Admin'],
   ['/admin/stocks', 'Stocks'],
   ['/admin/users', 'View Users'],

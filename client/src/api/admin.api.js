@@ -54,10 +54,8 @@ export const deleteAd = (id) => api.delete(`/admin/ads/${id}`);
 
 // QR Brochures (pattern-based with QR codes)
 export const getBrochures = () => api.get('/admin/brochures');
-export const createBrochure = (form) =>
-  api.post('/admin/brochures', form, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const updateBrochure = (id, form) =>
-  api.put(`/admin/brochures/${id}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const uploadBrochureCSV = (form) =>
+  api.post('/admin/brochures/upload-csv', form, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const deleteBrochure = (id) => api.delete(`/admin/brochures/${id}`);
 
 // E-Brochures (simple PDF uploads)
