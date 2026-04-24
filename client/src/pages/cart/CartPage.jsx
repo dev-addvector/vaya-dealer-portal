@@ -251,10 +251,124 @@ export default function CartPage() {
 
       {!isLoading && items.length > 0 && (
         <>
-          {/* Cart table */}
+          {/* Cart items (mobile cards) */}
+          <section className="py-5 sm:hidden">
+            <div className="max-w-[96%] mx-auto px-[15px]">
+              <div className="space-y-4">
+                {items.map((item) => {
+                  const c = calcItem(effectiveItem(item), cutDiscount, rollDiscount, globalGst);
+                  const inStock = true;
+                  return (
+                    <div key={item.id} className="border border-[#e6e6e6] rounded-[4px] overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.06)] bg-white">
+                      <div className="flex items-center justify-between px-4 py-2 border-b border-[#eee]">
+                        <div className="text-[15px] font-medium text-[#111]">
+                          {item.pattern}
+                        </div>
+                        <button
+                          onClick={() => deleteItem.mutate(item.id)}
+                          className="bg-transparent border-none cursor-pointer text-[#555] p-1"
+                          title="Remove item"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div className="px-4 py-3">
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">Color :</span>
+                          <span className="text-[13px] text-[#111] font-medium text-right break-words">{item.color}</span>
+                        </div>
+
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">Roll Rate :</span>
+                          <span className={`text-[13px] text-right ${c.isRoll ? 'text-vaya-green font-bold underline' : 'text-[#111]'}`}>
+                            ₹ {rupeeFormat(c.rollPrice)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">Cut Rate :</span>
+                          <span className={`text-[13px] text-right ${!c.isRoll ? 'text-vaya-green font-bold underline' : 'text-[#111]'}`}>
+                            ₹ {rupeeFormat(c.cutPrice)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-start gap-4 py-[6px] relative">
+                          <span className="text-[12px] text-[#555] pt-[7px]">Order Length :</span>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={getLength(item)}
+                              onChange={e => handleLengthChange(item.id, e.target.value)}
+                              onBlur={e => handleLengthBlur(item.id, e.target.value)}
+                              className="w-[86px] h-[34px] border border-[#ccc] rounded-[3px] px-[8px] py-1 text-[13px] outline-none text-right"
+                            />
+                            <button
+                              onClick={() => setPopupItemId(popupItemId === item.id ? null : item.id)}
+                              className="bg-transparent border-none cursor-pointer text-[#555] p-[2px] flex items-center"
+                              title="Specify panel lengths"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                              </svg>
+                            </button>
+                          </div>
+                          {popupItemId === item.id && (
+                            <PanelLengthPopup
+                              item={item}
+                              onClose={() => setPopupItemId(null)}
+                              onSave={(text) => handlePanelSave(item.id, text)}
+                            />
+                          )}
+                        </div>
+
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">Status :</span>
+                          <span className={`text-[13px] text-right ${inStock ? 'text-[#28a745]' : 'text-[#dc3545]'}`}>
+                            {inStock ? 'In Stock' : 'No Stock - Delivery date TBD'}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">Price :</span>
+                          <span className="text-[13px] text-[#111] font-medium text-right">₹ {rupeeFormat(c.price)}</span>
+                        </div>
+
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">Discount :</span>
+                          <span className="text-[13px] text-[#111] font-medium text-right">₹ {rupeeFormat(c.itemDiscount)}</span>
+                        </div>
+
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">GST %:</span>
+                          <span className="text-[13px] text-[#111] font-medium text-right">{c.gstPct}%</span>
+                        </div>
+
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">GST :</span>
+                          <span className="text-[13px] text-[#111] font-medium text-right">₹ {rupeeFormat(c.gstAmount)}</span>
+                        </div>
+
+                        <div className="flex justify-between gap-4 py-[6px]">
+                          <span className="text-[12px] text-[#555]">Final Amount :</span>
+                          <span className="text-[13px] text-[#111] font-semibold text-right">₹ {rupeeFormat(c.finalAmount)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* Cart table (desktop) */}
           <section className="py-5">
             <div className="max-w-[96%] mx-auto px-[15px]">
-              <div className="overflow-x-auto shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+              <div className="hidden sm:block overflow-x-auto shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
                 <table className="w-full border-collapse bg-white">
                   <thead>
                     <tr>
@@ -394,7 +508,7 @@ export default function CartPage() {
 
                   {/* Order form */}
                   <div className="bg-vaya-light rounded p-6 pb-5">
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 mb-4">
                       <div>
                         <label className={labelCls}>Shipping address</label>
                         <select value={shippingAddressId} onChange={e => setShippingAddressId(e.target.value)} className={inputCls}>
@@ -479,12 +593,12 @@ export default function CartPage() {
                     </div>
 
                     {/* Buttons */}
-                    <div className="flex items-center justify-center gap-6 mt-2">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-2">
                       <button
                         type="button"
                         onClick={() => handleSubmit('Reserved')}
                         disabled={submitting}
-                        className={`bg-white text-[#333] border-2 border-[#333] px-8 py-[10px] text-sm font-semibold rounded-[2px] tracking-[0.5px] ${submitting ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                        className={`bg-white text-[#333] border-2 border-[#333] px-8 py-[10px] text-sm font-semibold rounded-[2px] tracking-[0.5px] w-full sm:w-auto ${submitting ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                       >
                         Reserve Stock
                       </button>
@@ -493,7 +607,7 @@ export default function CartPage() {
                         type="button"
                         onClick={() => handleSubmit('Ordered')}
                         disabled={submitting}
-                        className={`bg-white text-[#333] border-2 border-[#333] px-8 py-[10px] text-sm font-semibold rounded-[2px] tracking-[0.5px] ${submitting ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                        className={`bg-white text-[#333] border-2 border-[#333] px-8 py-[10px] text-sm font-semibold rounded-[2px] tracking-[0.5px] w-full sm:w-auto ${submitting ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                       >
                         Place Order
                       </button>
