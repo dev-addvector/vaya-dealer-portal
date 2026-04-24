@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLoadProducts, useAddToCart, useEditCartItem, useCart, useProductFilters } from '@/hooks/useProducts';
+import SearchableSelect from '@/components/SearchableSelect';
 
 const thBase = 'bg-vaya-black text-white px-[10px] py-[10px] text-left border border-[#333] font-normal whitespace-nowrap text-sm select-none';
 const tdBase = 'px-[10px] py-[6px] border border-[#dee2e6] align-middle text-sm text-[#333]';
@@ -175,9 +176,28 @@ function ProductCard({ p, orderLengths, setOrderLengths, panelNotes, setPanelNot
 }
 
 export default function ProductsPage() {
-  const [filters, setFilters] = useState({ pattern: '', color: '', page: 1, perPage: 10 });
-  const [draftPattern, setDraftPattern] = useState('');
-  const [draftColor, setDraftColor] = useState('');
+  // Initialize filters from localStorage
+  const getInitialFilters = () => {
+    try {
+      const saved = localStorage.getItem('productFilters');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          pattern: parsed.pattern || '',
+          color: parsed.color || '',
+          page: 1, // Always reset to page 1 when returning
+          perPage: parsed.perPage || 10
+        };
+      }
+    } catch (error) {
+      console.warn('Error loading filters from localStorage:', error);
+    }
+    return { pattern: '', color: '', page: 1, perPage: 10 };
+  };
+
+  const [filters, setFilters] = useState(getInitialFilters);
+  const [draftPattern, setDraftPattern] = useState(getInitialFilters().pattern);
+  const [draftColor, setDraftColor] = useState(getInitialFilters().color);
   const [orderLengths, setOrderLengths] = useState({});
   const [panelNotes, setPanelNotes] = useState({});
   const [panelPopupKey, setPanelPopupKey] = useState(null);
@@ -199,6 +219,20 @@ export default function ProductsPage() {
   const editCartItem = useEditCartItem();
   const { data: cartData } = useCart();
   const debounceTimers = useRef({});
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    try {
+      const filtersToSave = {
+        pattern: filters.pattern,
+        color: filters.color,
+        perPage: filters.perPage
+      };
+      localStorage.setItem('productFilters', JSON.stringify(filtersToSave));
+    } catch (error) {
+      console.warn('Error saving filters to localStorage:', error);
+    }
+  }, [filters.pattern, filters.color, filters.perPage]);
 
   useEffect(() => {
     return () => {
@@ -350,6 +384,13 @@ export default function ProductsPage() {
     setDraftColor('');
     setSort({ key: null, dir: 'asc' });
     setMobileDraftFilters({ pattern: '', color: '', sortBy: '' });
+    
+    // Clear localStorage
+    try {
+      localStorage.removeItem('productFilters');
+    } catch (error) {
+      console.warn('Error clearing filters from localStorage:', error);
+    }
   };
 
   const handleAddToCart = (p) => {
@@ -424,26 +465,26 @@ export default function ProductsPage() {
           {/* Search bar */}
           <div className="flex items-center justify-between pt-[15px] pb-[10px] flex-wrap gap-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <input
-                type="text"
-                placeholder="Search Pattern"
+              <SearchableSelect
                 value={draftPattern}
-                className="border border-[#C8C8C8] rounded-[3px] px-2 py-[7px] text-sm bg-white outline-none min-w-0 flex-1 md:w-[200px] md:flex-none h-[36px]"
-                onChange={e => setDraftPattern(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                onChange={setDraftPattern}
+                options={patterns}
+                placeholder="Search Pattern"
+                className="min-w-0 flex-1 md:w-[200px] md:flex-none h-[36px]"
+                containerClassName="flex-1 md:flex-none"
               />
-              <input
-                type="text"
-                placeholder="Search Color"
+              <SearchableSelect
                 value={draftColor}
-                className="border border-[#C8C8C8] rounded-[3px] px-2 py-[7px] text-sm bg-white outline-none min-w-0 flex-1 md:w-[200px] md:flex-none h-[36px] ml-[5px]"
-                onChange={e => setDraftColor(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                onChange={setDraftColor}
+                options={colors}
+                placeholder="Search Color"
+                className="min-w-0 flex-1 md:w-[200px] md:flex-none h-[36px]"
+                containerClassName="flex-1 md:flex-none"
               />
               <button
                 onClick={handleSearch}
                 title="Search"
-                className="w-[40px] h-[36px] border border-transparent rounded-[4px] bg-vaya-green cursor-pointer shrink-0 ml-[5px] flex items-center justify-center"
+                className="w-[40px] h-[36px] border border-transparent rounded-[4px] bg-vaya-green cursor-pointer shrink-0 flex items-center justify-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#fff" viewBox="0 0 16 16">
                   <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
@@ -650,20 +691,26 @@ export default function ProductsPage() {
                   key: 'pattern',
                   label: 'Pattern',
                   content: (
-                    <select value={mobileDraftFilters.pattern} onChange={e => setMobileDraftFilter('pattern', e.target.value)} className="w-full px-[6px] py-1 text-[13px] border border-[#ccc] rounded-[3px] h-[30px] bg-white">
-                      <option value="">Select Pattern</option>
-                      {mobilePatterns.map(v => <option key={v} value={v}>{v}</option>)}
-                    </select>
+                    <SearchableSelect
+                      value={mobileDraftFilters.pattern}
+                      onChange={(value) => setMobileDraftFilter('pattern', value)}
+                      options={mobilePatterns}
+                      placeholder="Select Pattern"
+                      className="w-full h-[30px]"
+                    />
                   ),
                 },
                 {
                   key: 'color',
                   label: 'Color',
                   content: (
-                    <select value={mobileDraftFilters.color} onChange={e => setMobileDraftFilter('color', e.target.value)} className="w-full px-[6px] py-1 text-[13px] border border-[#ccc] rounded-[3px] h-[30px] bg-white">
-                      <option value="">Select Color</option>
-                      {mobileColors.map(v => <option key={v} value={v}>{v}</option>)}
-                    </select>
+                    <SearchableSelect
+                      value={mobileDraftFilters.color}
+                      onChange={(value) => setMobileDraftFilter('color', value)}
+                      options={mobileColors}
+                      placeholder="Select Color"
+                      className="w-full h-[30px]"
+                    />
                   ),
                 },
               ].map((item) => (
