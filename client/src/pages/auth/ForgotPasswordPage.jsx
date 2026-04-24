@@ -6,55 +6,42 @@ import { useForgotPassword } from '@/hooks/useAuth';
 
 const schema = z.object({ email: z.string().email('Invalid email') });
 
-const inputStyle = {
-  width: '100%', height: '60px', background: '#FFFFFF',
-  border: '1px solid #C8C8C8', borderRadius: '3px',
-  padding: '15px 20px', color: '#a4a7ab', fontSize: '15px',
-  outline: 'none', boxSizing: 'border-box',
-};
-
 export default function ForgotPasswordPage() {
   const forgotPassword = useForgotPassword();
   const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f3e5' }}>
-      <div style={{ background: '#fff', boxShadow: '0px 2px 15px #00000038', borderRadius: '10px', padding: '50px', width: '100%', maxWidth: '500px' }}>
-        <h1 style={{ fontSize: '35px', fontWeight: 400, textAlign: 'center', marginBottom: '30px', marginTop: '30px', color: '#111' }}>Forgot Password</h1>
+    <div className="min-h-screen flex items-center justify-center bg-[#f1f3e5]">
+      <div className="bg-white shadow-[0px_2px_15px_rgba(0,0,0,0.22)] rounded-[10px] p-[50px] w-full max-w-[500px]">
+        <h1 className="text-[35px] font-normal text-center mb-[30px] mt-[30px] text-[#111]">Forgot Password</h1>
 
-        <form onSubmit={handleSubmit((d) => forgotPassword.mutate(d))} style={{ paddingLeft: '20px', paddingRight: '20px' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '7px', color: '#000', fontSize: '16px' }}>Enter Email ID</label>
+        <form onSubmit={handleSubmit((d) => forgotPassword.mutate(d))} className="px-5">
+          <div className="mb-5">
+            <label className="block mb-[7px] text-black text-[16px]">Enter Email ID</label>
             <input
               {...register('email')}
               type="email"
               placeholder="mail@domain.com"
-              style={inputStyle}
+              className="w-full h-[60px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 py-[15px] text-[#a4a7ab] text-[15px] outline-none"
             />
-            {errors.email && <p style={{ color: '#e3342f', fontSize: '12px', marginTop: '4px' }}>{errors.email.message}</p>}
+            {errors.email && <p className="text-[#e3342f] text-[12px] mt-1">{errors.email.message}</p>}
           </div>
 
           <button
             type="submit"
             disabled={forgotPassword.isPending}
-            style={{
-              display: 'block', width: '100%', marginTop: '30px',
-              padding: '15px 30px', backgroundColor: '#007bff', color: '#fff',
-              border: 'none', borderRadius: '4px', fontSize: '16px',
-              cursor: forgotPassword.isPending ? 'not-allowed' : 'pointer',
-              opacity: forgotPassword.isPending ? 0.6 : 1,
-            }}
+            className={`block w-full mt-[30px] px-[30px] py-[15px] bg-[#007bff] text-white border-none rounded-[4px] text-[16px] ${forgotPassword.isPending ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
           >
             {forgotPassword.isPending ? 'Sending...' : 'Get Reset Link'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px' }}>
-          <Link to="/login" style={{ color: '#AEC148', textDecoration: 'none' }}>Back to Login</Link>
+        <p className="text-center mt-5 text-[14px]">
+          <Link to="/login" className="text-vaya-green no-underline">Back to Login</Link>
         </p>
 
         {forgotPassword.isSuccess && (
-          <p style={{ color: '#28a745', textAlign: 'center', marginTop: '12px', fontSize: '14px' }}>Reset link sent! Check your email.</p>
+          <p className="text-[#28a745] text-center mt-3 text-[14px]">Reset link sent! Check your email.</p>
         )}
       </div>
     </div>

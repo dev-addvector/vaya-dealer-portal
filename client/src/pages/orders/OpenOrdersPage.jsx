@@ -1,42 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useOpenOrders } from '@/hooks/useOrders';
 import { downloadOpenOrderPdf } from '@/api/order.api';
-import { container, breadcrumb } from '@/styles/page';
-
-const th = {
-  backgroundColor: '#111111',
-  color: '#ffffff',
-  padding: '10px 10px',
-  textAlign: 'center',
-  fontWeight: 400,
-  fontSize: '14px',
-  border: '1px solid #333',
-  whiteSpace: 'nowrap',
-};
-
-const td = {
-  padding: '8px 10px',
-  textAlign: 'center',
-  color: '#555',
-  fontSize: '14px',
-  border: '1px solid #dee2e6',
-  verticalAlign: 'middle',
-};
-
-const filterCell = { padding: '4px 6px', border: '1px solid #dee2e6' };
-
-const filterSelect = {
-  width: '100%',
-  padding: '4px 6px',
-  fontSize: '13px',
-  border: '1px solid #ccc',
-  borderRadius: '3px',
-  height: '30px',
-  boxSizing: 'border-box',
-  backgroundColor: '#fff',
-};
-
-const filterInput = { ...filterSelect };
 
 function parseErpDate(v) {
   if (!v || String(v).toLowerCase() === 'null') return 0;
@@ -67,13 +31,16 @@ function formatNetPayable(order) {
   return '—';
 }
 
-// ERP returns dates as "DD-MM-YYYY HH:MM:SS"; HTML date input gives "YYYY-MM-DD"
 function matchesDate(orderDate, filterDate) {
   if (!filterDate || !orderDate) return true;
-  // Convert filterDate "YYYY-MM-DD" → "DD-MM-YYYY" for prefix match
   const [y, m, d] = filterDate.split('-');
   return (orderDate || '').startsWith(`${d}-${m}-${y}`);
 }
+
+const thBase = 'bg-vaya-black text-white px-[10px] py-[10px] text-center font-normal text-sm border border-[#333] whitespace-nowrap select-none';
+const tdBase = 'px-[10px] py-2 text-center text-[#555] text-sm border border-[#dee2e6] align-middle';
+const filterCellCls = 'px-[6px] py-1 border border-[#dee2e6]';
+const filterInputCls = 'w-full px-[6px] py-1 text-[13px] border border-[#ccc] rounded-[3px] h-[30px] bg-white';
 
 export default function OpenOrdersPage() {
   const { data, isLoading } = useOpenOrders();
@@ -89,11 +56,11 @@ export default function OpenOrdersPage() {
 
   const unique = (key) => [...new Set(orders.map(o => o[key]).filter(v => v && String(v).toLowerCase() !== 'null'))];
 
-  const orderIds = useMemo(() => unique('OrderID'), [orders]);
-  const poNumbers = useMemo(() => unique('PONumber'), [orders]);
+  const orderIds      = useMemo(() => unique('OrderID'),      [orders]);
+  const poNumbers     = useMemo(() => unique('PONumber'),     [orders]);
   const shippingModes = useMemo(() => unique('ShippingMode'), [orders]);
-  const orderTypes = useMemo(() => unique('OrderType'), [orders]);
-  const orderStatuses = useMemo(() => unique('OrderStatus'), [orders]);
+  const orderTypes    = useMemo(() => unique('OrderType'),    [orders]);
+  const orderStatuses = useMemo(() => unique('OrderStatus'),  [orders]);
 
   const filtered = useMemo(() => orders.filter(o => {
     if (filters.orderId && o.OrderID !== filters.orderId) return false;
@@ -112,7 +79,7 @@ export default function OpenOrdersPage() {
     if (!sort.key) return filtered;
     return [...filtered].sort((a, b) => {
       let av, bv;
-      if (sort.key === 'OrderDate')     { av = parseErpDate(a.OrderDate);  bv = parseErpDate(b.OrderDate); }
+      if (sort.key === 'OrderDate')       { av = parseErpDate(a.OrderDate);  bv = parseErpDate(b.OrderDate); }
       else if (sort.key === 'NetPayable') { av = netPayableNum(a); bv = netPayableNum(b); }
       else { av = (a[sort.key] || '').toLowerCase(); bv = (b[sort.key] || '').toLowerCase(); }
       if (av < bv) return sort.dir === 'asc' ? -1 : 1;
@@ -123,7 +90,6 @@ export default function OpenOrdersPage() {
 
   const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / pageSize));
   const paged = sortedFiltered.slice((page - 1) * pageSize, page * pageSize);
-
   const setFilter = (key, val) => { setFilters(f => ({ ...f, [key]: val })); setPage(1); };
 
   const handleDownload = async (po) => {
@@ -148,30 +114,30 @@ export default function OpenOrdersPage() {
 
   return (
     <div>
-      <div style={breadcrumb.wrap}>
-        <div style={container}>
-          <span style={breadcrumb.title}>Open Orders</span>
+      <div className="border-b border-[rgba(112,112,112,0.2)] py-[5px]">
+        <div className="max-w-[90%] mx-auto px-[15px]">
+          <span className="text-vaya-green text-[28px] leading-[43px]">Open Orders</span>
         </div>
       </div>
 
       <section>
-        <div style={{ ...container, paddingBottom: '40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '20px', marginBottom: '8px', fontSize: '14px', color: '#555' }}>
+        <div className="max-w-[90%] mx-auto px-[15px] pb-10">
+          <div className="flex justify-end items-center mt-5 mb-2 text-sm text-[#555]">
             Show&nbsp;
             <select
               value={pageSize}
               onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
-              style={{ margin: '0 6px', padding: '2px 6px', fontSize: '14px', border: '1px solid #ccc', borderRadius: '3px' }}
+              className="mx-[6px] px-[6px] py-[2px] text-sm border border-[#ccc] rounded-[3px]"
             >
               {[10, 25, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
             &nbsp;entries
           </div>
 
-          <div style={{ boxShadow: '0px 2px 15px #00000038', overflowX: 'auto' }}>
-            {isLoading && <p style={{ padding: '24px', color: '#999', fontSize: '14px' }}>Loading...</p>}
+          <div className="shadow-[0px_2px_15px_rgba(0,0,0,0.22)] overflow-x-auto">
+            {isLoading && <p className="p-6 text-[#999] text-sm">Loading...</p>}
             {!isLoading && (
-              <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff', fontSize: '14px' }}>
+              <table className="w-full border-collapse bg-white text-sm">
                 <thead>
                   <tr>
                     {[
@@ -186,81 +152,77 @@ export default function OpenOrdersPage() {
                     ].map(({ label, key }) => (
                       <th
                         key={label}
-                        style={{ ...th, cursor: key ? 'pointer' : 'default', userSelect: 'none' }}
+                        className={`${thBase} ${key ? 'cursor-pointer' : 'cursor-default'}`}
                         onClick={() => key && handleSort(key)}
                       >
                         {label}
-                        {key && <span style={{ marginLeft: '5px', opacity: sort.key === key ? 1 : 0.3, fontSize: '11px' }}>{sort.key === key && sort.dir === 'desc' ? '▼' : '▲'}</span>}
+                        {key && <span className={`ml-[5px] text-[11px] ${sort.key === key ? 'opacity-100' : 'opacity-30'}`}>{sort.key === key && sort.dir === 'desc' ? '▼' : '▲'}</span>}
                       </th>
                     ))}
                   </tr>
-                  <tr style={{ backgroundColor: '#fff' }}>
-                    <td style={filterCell}>
-                      <select value={filters.orderId} onChange={e => setFilter('orderId', e.target.value)} style={filterSelect}>
+                  <tr className="bg-white">
+                    <td className={filterCellCls}>
+                      <select value={filters.orderId} onChange={e => setFilter('orderId', e.target.value)} className={filterInputCls}>
                         <option value="">Select OrderID</option>
                         {orderIds.map(v => <option key={v} value={v}>{v}</option>)}
                       </select>
                     </td>
-                    <td style={filterCell}>
-                      <input type="date" value={filters.orderDate} onChange={e => setFilter('orderDate', e.target.value)} style={filterInput} />
+                    <td className={filterCellCls}>
+                      <input type="date" value={filters.orderDate} onChange={e => setFilter('orderDate', e.target.value)} className={filterInputCls} />
                     </td>
-                    <td style={filterCell}>
-                      <input type="text" placeholder="Net Payable" value={filters.netPayable} onChange={e => setFilter('netPayable', e.target.value)} style={filterInput} />
+                    <td className={filterCellCls}>
+                      <input type="text" placeholder="Net Payable" value={filters.netPayable} onChange={e => setFilter('netPayable', e.target.value)} className={filterInputCls} />
                     </td>
-                    <td style={filterCell}>
-                      <select value={filters.po} onChange={e => setFilter('po', e.target.value)} style={filterSelect}>
+                    <td className={filterCellCls}>
+                      <select value={filters.po} onChange={e => setFilter('po', e.target.value)} className={filterInputCls}>
                         <option value="">Search PO</option>
                         {poNumbers.map(v => <option key={v} value={v}>{v}</option>)}
                       </select>
                     </td>
-                    <td style={filterCell}>
-                      <select value={filters.shipping} onChange={e => setFilter('shipping', e.target.value)} style={filterSelect}>
+                    <td className={filterCellCls}>
+                      <select value={filters.shipping} onChange={e => setFilter('shipping', e.target.value)} className={filterInputCls}>
                         <option value="">Shipping Mode</option>
                         {shippingModes.map(v => <option key={v} value={v}>{v}</option>)}
                       </select>
                     </td>
-                    <td style={filterCell}>
-                      <select value={filters.orderType} onChange={e => setFilter('orderType', e.target.value)} style={filterSelect}>
+                    <td className={filterCellCls}>
+                      <select value={filters.orderType} onChange={e => setFilter('orderType', e.target.value)} className={filterInputCls}>
                         <option value="">Select Type</option>
                         {orderTypes.map(v => <option key={v} value={v}>{v}</option>)}
                       </select>
                     </td>
-                    <td style={filterCell}>
-                      <select value={filters.orderStatus} onChange={e => setFilter('orderStatus', e.target.value)} style={filterSelect}>
+                    <td className={filterCellCls}>
+                      <select value={filters.orderStatus} onChange={e => setFilter('orderStatus', e.target.value)} className={filterInputCls}>
                         <option value="">Select Status</option>
                         {orderStatuses.map(v => <option key={v} value={v}>{v}</option>)}
                       </select>
                     </td>
-                    <td style={filterCell} />
+                    <td className={filterCellCls} />
                   </tr>
                 </thead>
                 <tbody>
                   {paged.length === 0 ? (
                     <tr>
-                      <td colSpan={8} style={{ ...td, color: '#999', padding: '24px' }}>No open orders found.</td>
+                      <td colSpan={8} className="text-center text-[#999] p-6 text-sm border border-[#dee2e6]">No open orders found.</td>
                     </tr>
                   ) : paged.map((o, i) => {
                     const orderId = (!o.OrderID || String(o.OrderID).toLowerCase() === 'null') ? 'N/A' : o.OrderID;
                     return (
-                      <tr
-                        key={o.PONumber ?? i}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = ''}
-                      >
-                        <td style={td}>{orderId}</td>
-                        <td style={td}>{o.OrderDate ?? 'N/A'}</td>
-                        <td style={{ ...td, textAlign: 'right' }}>{formatNetPayable(o)}</td>
-                        <td style={td}>{o.PONumber ?? 'N/A'}</td>
-                        <td style={td}>{o.ShippingMode ?? 'N/A'}</td>
-                        <td style={td}>{o.OrderType ?? 'N/A'}</td>
-                        <td style={td}>{o.OrderStatus ?? 'N/A'}</td>
-                        <td style={td}>
+                      <tr key={o.PONumber ?? i} className="hover:bg-[#f8f9fa]">
+                        <td className={tdBase}>{orderId}</td>
+                        <td className={tdBase}>{o.OrderDate ?? 'N/A'}</td>
+                        <td className={`${tdBase} text-right`}>{formatNetPayable(o)}</td>
+                        <td className={tdBase}>{o.PONumber ?? 'N/A'}</td>
+                        <td className={tdBase}>{o.ShippingMode ?? 'N/A'}</td>
+                        <td className={tdBase}>{o.OrderType ?? 'N/A'}</td>
+                        <td className={tdBase}>{o.OrderStatus ?? 'N/A'}</td>
+                        <td className={tdBase}>
                           {o.PONumber ? (
                             <button
                               onClick={() => handleDownload(o.PONumber)}
                               disabled={downloading === o.PONumber}
                               title="Download PDF"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555', fontSize: '18px', lineHeight: 1, padding: 0 }}
+                              className="bg-transparent border-none cursor-pointer text-[#555] text-[18px] leading-none p-0"
                             >
                               &#8681;
                             </button>
@@ -275,11 +237,11 @@ export default function OpenOrdersPage() {
           </div>
 
           {!isLoading && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginTop: '20px', fontSize: '14px' }}>
+            <div className="flex justify-center items-center gap-1 mt-5 text-sm">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                style={{ background: 'none', border: '1px solid #dee2e6', padding: '4px 10px', cursor: page === 1 ? 'default' : 'pointer', borderRadius: '3px', color: page === 1 ? '#ccc' : '#555' }}
+                className={`bg-transparent border border-[#dee2e6] px-[10px] py-1 rounded-[3px] ${page === 1 ? 'cursor-default text-[#ccc]' : 'cursor-pointer text-[#555]'}`}
               >
                 &lt;
               </button>
@@ -287,7 +249,7 @@ export default function OpenOrdersPage() {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  style={{ background: page === p ? '#111' : 'none', color: page === p ? '#fff' : '#555', border: '1px solid #dee2e6', padding: '4px 10px', cursor: 'pointer', borderRadius: '3px', minWidth: '34px' }}
+                  className={`border border-[#dee2e6] px-[10px] py-1 cursor-pointer rounded-[3px] min-w-[34px] ${page === p ? 'bg-vaya-black text-white' : 'bg-transparent text-[#555]'}`}
                 >
                   {p}
                 </button>
@@ -295,7 +257,7 @@ export default function OpenOrdersPage() {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                style={{ background: 'none', border: '1px solid #dee2e6', padding: '4px 10px', cursor: page === totalPages ? 'default' : 'pointer', borderRadius: '3px', color: page === totalPages ? '#ccc' : '#555' }}
+                className={`bg-transparent border border-[#dee2e6] px-[10px] py-1 rounded-[3px] ${page === totalPages ? 'cursor-default text-[#ccc]' : 'cursor-pointer text-[#555]'}`}
               >
                 &gt;
               </button>

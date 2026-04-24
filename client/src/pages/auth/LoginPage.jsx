@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import { useLogin } from '@/hooks/useAuth';
 
+/* Height-based responsive breakpoints — not expressible with Tailwind utilities */
 const responsiveStyles = `
   .login-wrapper {
     min-height: 100vh;
@@ -43,18 +44,10 @@ const responsiveStyles = `
     width: 100%;
     max-width: 480px;
   }
-  .login-title-wrap {
-    margin-bottom: 40px;
-  }
-  .login-field-email {
-    margin-bottom: 25px;
-  }
-  .login-field-password {
-    margin-bottom: 20px;
-  }
-  .login-remember-row {
-    margin-bottom: 25px;
-  }
+  .login-title-wrap { margin-bottom: 40px; }
+  .login-field-email { margin-bottom: 25px; }
+  .login-field-password { margin-bottom: 20px; }
+  .login-remember-row { margin-bottom: 25px; }
   .login-image-panel {
     width: 50%;
     background-repeat: no-repeat;
@@ -63,52 +56,22 @@ const responsiveStyles = `
     min-height: 0;
   }
   @media (max-height: 820px) {
-    .login-header {
-      height: 56px;
-    }
-    .login-header-inner {
-      height: 56px;
-    }
-    .login-form-panel {
-      padding: 24px 40px;
-      align-items: flex-start;
-    }
-    .login-title-wrap {
-      margin-bottom: 24px;
-    }
-    .login-field-email {
-      margin-bottom: 16px;
-    }
-    .login-field-password {
-      margin-bottom: 14px;
-    }
-    .login-remember-row {
-      margin-bottom: 16px;
-    }
+    .login-header { height: 56px; }
+    .login-header-inner { height: 56px; }
+    .login-form-panel { padding: 24px 40px; align-items: flex-start; }
+    .login-title-wrap { margin-bottom: 24px; }
+    .login-field-email { margin-bottom: 16px; }
+    .login-field-password { margin-bottom: 14px; }
+    .login-remember-row { margin-bottom: 16px; }
   }
   @media (max-height: 680px) {
-    .login-header {
-      height: 48px;
-    }
-    .login-header-inner {
-      height: 48px;
-    }
-    .login-form-panel {
-      padding: 16px 32px;
-      align-items: flex-start;
-    }
-    .login-title-wrap {
-      margin-bottom: 16px;
-    }
-    .login-field-email {
-      margin-bottom: 12px;
-    }
-    .login-field-password {
-      margin-bottom: 10px;
-    }
-    .login-remember-row {
-      margin-bottom: 12px;
-    }
+    .login-header { height: 48px; }
+    .login-header-inner { height: 48px; }
+    .login-form-panel { padding: 16px 32px; align-items: flex-start; }
+    .login-title-wrap { margin-bottom: 16px; }
+    .login-field-email { margin-bottom: 12px; }
+    .login-field-password { margin-bottom: 10px; }
+    .login-remember-row { margin-bottom: 12px; }
   }
 `;
 
@@ -117,27 +80,6 @@ const schema = z.object({
   password: z.string().min(1, 'Password required'),
   remember: z.boolean().optional(),
 });
-
-const inputStyle = {
-  width: '100%',
-  height: '60px',
-  background: '#FFFFFF',
-  border: '1px solid #C8C8C8',
-  borderRadius: '3px',
-  padding: '15px 20px',
-  color: '#a4a7ab',
-  fontSize: '15px',
-  outline: 'none',
-  boxSizing: 'border-box',
-};
-
-const labelStyle = {
-  display: 'block',
-  marginBottom: '7px',
-  color: '#000000',
-  fontSize: '16px',
-  lineHeight: '140%',
-};
 
 function EyeIcon({ visible }) {
   return visible ? (
@@ -175,13 +117,13 @@ export default function LoginPage() {
         {/* Header */}
         <header className="login-header">
           <div className="login-header-inner">
-            <div style={{ width: '33%', padding: '20px 30px' }}>
-              <img src="/images/logo.png" alt="Vaya" style={{ height: '28px', objectFit: 'contain', display: 'block' }} />
+            <div className="w-1/3 px-[30px] py-5">
+              <img src="/images/logo.png" alt="Vaya" className="h-7 object-contain block" />
             </div>
-            <div style={{ width: '33%', textAlign: 'center' }}>
-              <span style={{ fontSize: '25px', color: '#111111', fontWeight: 400 }}>Dealer Portal</span>
+            <div className="w-1/3 text-center">
+              <span className="text-[25px] text-vaya-black font-normal">Dealer Portal</span>
             </div>
-            <div style={{ width: '33%' }} />
+            <div className="w-1/3" />
           </div>
         </header>
 
@@ -193,49 +135,49 @@ export default function LoginPage() {
             <div className="login-form-inner">
 
               <div className="login-title-wrap">
-                <h1 style={{ fontSize: '35px', fontWeight: 400, margin: 0, color: '#111111' }}>Dealer Login</h1>
+                <h1 className="text-[35px] font-normal m-0 text-vaya-black">Dealer Login</h1>
               </div>
 
               <form onSubmit={handleSubmit((d) => login.mutate(d))}>
                 <div className="login-field-email">
-                  <label style={labelStyle}>Email</label>
+                  <label className="block mb-[7px] text-black text-[16px] leading-[140%]">Email</label>
                   <input
                     {...register('email')}
                     type="email"
                     placeholder="mail@domain.com"
-                    style={inputStyle}
+                    className="w-full h-[60px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 py-[15px] text-[#a4a7ab] text-[15px] outline-none"
                     autoComplete="off"
                   />
-                  {errors.email && <p style={{ color: '#e3342f', fontSize: '12px', marginTop: '4px' }}>{errors.email.message}</p>}
+                  {errors.email && <p className="text-[#e3342f] text-[12px] mt-1">{errors.email.message}</p>}
                 </div>
 
                 <div className="login-field-password">
-                  <label style={labelStyle}>Password</label>
-                  <div style={{ position: 'relative' }}>
+                  <label className="block mb-[7px] text-black text-[16px] leading-[140%]">Password</label>
+                  <div className="relative">
                     <input
                       {...register('password')}
                       type={showPwd ? 'text' : 'password'}
                       placeholder="Min. 8 Characters"
-                      style={{ ...inputStyle, paddingRight: '48px' }}
+                      className="w-full h-[60px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 pr-[48px] py-[15px] text-[#a4a7ab] text-[15px] outline-none"
                       autoComplete="off"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPwd((v) => !v)}
-                      style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                      className="absolute right-[14px] top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer p-0 flex items-center"
                     >
                       <EyeIcon visible={showPwd} />
                     </button>
                   </div>
-                  {errors.password && <p style={{ color: '#e3342f', fontSize: '12px', marginTop: '4px' }}>{errors.password.message}</p>}
+                  {errors.password && <p className="text-[#e3342f] text-[12px] mt-1">{errors.password.message}</p>}
                 </div>
 
-                <div className="login-remember-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer', color: '#333' }}>
-                    <input {...register('remember')} type="checkbox" style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                <div className="login-remember-row flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer text-[#333]">
+                    <input {...register('remember')} type="checkbox" className="w-4 h-4 cursor-pointer" />
                     Remember me
                   </label>
-                  <Link to="/forgot-password" style={{ color: '#000000', fontSize: '14px', textDecoration: 'none' }}>
+                  <Link to="/forgot-password" className="text-vaya-black text-sm no-underline">
                     Forgot Password?
                   </Link>
                 </div>
@@ -243,25 +185,13 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={login.isPending}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: '12px 30px',
-                    backgroundColor: 'transparent',
-                    color: '#111111',
-                    border: 'none',
-                    borderBottom: '2px solid #000000',
-                    fontSize: '21px',
-                    fontWeight: 400,
-                    cursor: login.isPending ? 'not-allowed' : 'pointer',
-                    letterSpacing: '0.5px',
-                  }}
+                  className={`block w-full px-[30px] py-3 bg-transparent text-vaya-black border-none border-b-2 border-black text-[21px] font-normal tracking-[0.5px] ${login.isPending ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   {login.isPending ? 'Signing in...' : 'Submit'}
                 </button>
 
                 {login.isError && (
-                  <p style={{ color: '#e3342f', fontSize: '14px', marginTop: '12px', textAlign: 'center' }}>
+                  <p className="text-[#e3342f] text-sm mt-3 text-center">
                     {login.error?.message || 'Invalid credentials. Please try again.'}
                   </p>
                 )}
@@ -277,14 +207,14 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <footer style={{ backgroundColor: '#f5f5f5', borderTop: '1px solid #e0e0e0', flexShrink: 0 }}>
-          <div style={{ padding: '16px', textAlign: 'center' }}>
-            <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#666' }}>VAYA Home By Universal Textile Mills</p>
-            <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
+        <footer className="bg-[#f5f5f5] border-t border-[#e0e0e0] shrink-0">
+          <div className="p-4 text-center">
+            <p className="m-0 mb-1 text-[13px] text-[#666]">VAYA Home By Universal Textile Mills</p>
+            <p className="m-0 text-[13px] text-[#666]">
               Customer Care :{' '}
-              <a href="mailto:sales@vayahome.com" style={{ color: '#666', textDecoration: 'none' }}>sales@vayahome.com</a>
+              <a href="mailto:sales@vayahome.com" className="text-[#666] no-underline">sales@vayahome.com</a>
               {' | '}
-              <a href="tel:+918068170500" style={{ color: '#666', textDecoration: 'none' }}>+91 8068170500</a>
+              <a href="tel:+918068170500" className="text-[#666] no-underline">+91 8068170500</a>
             </p>
           </div>
         </footer>

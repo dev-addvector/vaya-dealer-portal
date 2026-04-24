@@ -4,26 +4,8 @@ import { useCart, useDeleteCartItem, useEditCartItem, usePlaceOrder, useShipping
 import { useAddresses } from '@/hooks/useAddresses';
 import toast from 'react-hot-toast';
 
-const containerStyle = { maxWidth: '96%', margin: '0 auto', padding: '0 15px' };
-
-const thStyle = {
-  backgroundColor: '#111111',
-  color: '#ffffff',
-  padding: '10px 12px',
-  textAlign: 'center',
-  fontWeight: 400,
-  fontSize: '13px',
-  whiteSpace: 'nowrap',
-  border: '1px solid #333',
-};
-
-const tdStyle = {
-  padding: '8px 10px',
-  borderBottom: '1px solid #e0e0e0',
-  verticalAlign: 'middle',
-  fontSize: '13px',
-  color: '#333',
-};
+const thBase = 'bg-vaya-black text-white px-[12px] py-[10px] text-center font-normal text-[13px] whitespace-nowrap border border-[#333]';
+const tdBase = 'px-[10px] py-2 border-b border-[#e0e0e0] align-middle text-[13px] text-[#333]';
 
 function rupeeFormat(val) {
   const n = parseFloat(val) || 0;
@@ -49,29 +31,29 @@ function calcItem(item, cutDiscount, rollDiscount, globalGst) {
 function PanelLengthPopup({ item, onClose, onSave }) {
   const [text, setText] = useState(item.remark || '');
   return (
-    <div style={{ position: 'absolute', top: '100%', left: 0, zIndex: 200, background: '#fff', border: '1px solid #ccc', borderRadius: 4, padding: '12px', width: '280px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontWeight: 600, fontSize: 13 }}>Specify Panel Lengths</span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, lineHeight: 1, color: '#555' }}>×</button>
+    <div className="absolute top-full left-0 z-[200] bg-white border border-[#ccc] rounded p-3 w-[280px] shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
+      <div className="flex justify-between items-center mb-2">
+        <span className="font-semibold text-[13px]">Specify Panel Lengths</span>
+        <button onClick={onClose} className="bg-transparent border-none cursor-pointer text-[16px] leading-none text-[#555]">×</button>
       </div>
-      <p style={{ fontSize: 11, color: '#888', margin: '0 0 6px', fontStyle: 'italic' }}>Optional — helps us send adequate roll lengths</p>
+      <p className="text-[11px] text-[#888] m-0 mb-[6px] italic">Optional — helps us send adequate roll lengths</p>
       <textarea
         rows={4}
         value={text}
         onChange={e => setText(e.target.value)}
-        style={{ width: '100%', border: '1px solid #ccc', borderRadius: 3, padding: '6px', fontSize: 12, boxSizing: 'border-box', resize: 'vertical' }}
+        className="w-full border border-[#ccc] rounded-[3px] p-[6px] text-[12px] resize-y"
         placeholder="e.g. 3m×2, 4m×1..."
       />
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+      <div className="flex gap-2 mt-2">
         <button
           onClick={() => onSave(text)}
-          style={{ flex: 1, backgroundColor: '#111', color: '#fff', border: 'none', padding: '6px 0', borderRadius: 3, cursor: 'pointer', fontSize: 12 }}
+          className="flex-1 bg-vaya-black text-white border-none py-[6px] rounded-[3px] cursor-pointer text-[12px]"
         >
           Confirm length
         </button>
         <button
           onClick={onClose}
-          style={{ flex: 1, backgroundColor: '#fff', color: '#333', border: '1px solid #ccc', padding: '6px 0', borderRadius: 3, cursor: 'pointer', fontSize: 12 }}
+          className="flex-1 bg-white text-[#333] border border-[#ccc] py-[6px] rounded-[3px] cursor-pointer text-[12px]"
         >
           Skip
         </button>
@@ -101,12 +83,10 @@ export default function CartPage() {
   const billingAddress = addresses.find(a => a.isBillingDefault) || addresses.find(a => a.addressType === 'Billing');
   const shippingModes = modesData?.modes ?? [];
 
-  // local length state (before API save)
   const [localLengths, setLocalLengths] = useState({});
   const [popupItemId, setPopupItemId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // order form state
   const [shippingAddressId, setShippingAddressId] = useState('');
   const [shipmentMode, setShipmentMode] = useState('');
   const [poNumber, setPoNumber] = useState('');
@@ -117,7 +97,6 @@ export default function CartPage() {
 
   const debounceTimers = useRef({});
 
-  // Init form from saved defaults / localStorage
   useEffect(() => {
     if (shippingAddresses.length && !shippingAddressId) {
       const def = shippingAddresses.find(a => a.isDefault) || shippingAddresses[0];
@@ -137,7 +116,6 @@ export default function CartPage() {
     }
   }, []);
 
-  // Pre-fill form when arriving from convert-reserved flow
   useEffect(() => {
     const rd = location.state?.reserveDetails;
     if (!rd) return;
@@ -226,7 +204,6 @@ export default function CartPage() {
     return item;
   };
 
-  // Totals
   let totalPrice = 0, totalDiscount = 0, totalGst = 0;
   items.forEach(item => {
     const c = calcItem(effectiveItem(item), cutDiscount, rollDiscount, globalGst);
@@ -236,44 +213,36 @@ export default function CartPage() {
   });
   const grandTotal = totalPrice - totalDiscount + totalGst;
 
-  const labelStyle = { fontSize: 12, color: '#555', marginBottom: 4, display: 'block', fontWeight: 500 };
-  const inputStyle = {
-    width: '100%', border: '1px solid #ccc', borderRadius: 3,
-    padding: '6px 8px', fontSize: 13,
-    background: '#fff', outline: 'none', boxSizing: 'border-box',
-  };
-  const selectStyle = {
-    width: '100%', border: '1px solid #ccc', borderRadius: 3,
-    padding: '6px 8px', fontSize: 13, background: '#fff', outline: 'none', cursor: 'pointer',
-  };
+  const inputCls = 'w-full border border-[#ccc] rounded-[3px] px-2 py-[6px] text-[13px] bg-white outline-none';
+  const labelCls = 'text-[12px] text-[#555] mb-1 block font-medium';
 
   return (
-    <div style={{ background: '#fff', minHeight: '100vh' }}>
+    <div className="bg-white min-h-screen">
       {/* Breadcrumb */}
-      <div style={{ borderBottom: '1px solid rgba(112,112,112,0.2)', padding: '8px 0' }}>
-        <div style={containerStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div className="border-b border-[rgba(112,112,112,0.2)] py-2">
+        <div className="max-w-[96%] mx-auto px-[15px]">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/products')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555', padding: '4px 6px', display: 'flex', alignItems: 'center' }}
+              className="bg-transparent border-none cursor-pointer text-[#555] px-[6px] py-1 flex items-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
               </svg>
             </button>
-            <span style={{ fontSize: 16, fontWeight: 500, color: '#333' }}>Order Cart</span>
+            <span className="text-[16px] font-medium text-[#333]">Order Cart</span>
           </div>
         </div>
       </div>
 
-      {isLoading && <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>Loading cart...</p>}
+      {isLoading && <p className="text-center text-[#999] p-10">Loading cart...</p>}
 
       {!isLoading && items.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 60 }}>
-          <p style={{ color: '#666', fontSize: 16, marginBottom: 16 }}>Your cart is empty</p>
+        <div className="text-center p-[60px]">
+          <p className="text-[#666] text-[16px] mb-4">Your cart is empty</p>
           <button
             onClick={() => navigate('/products')}
-            style={{ backgroundColor: '#807A52', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 4, cursor: 'pointer', fontSize: 14 }}
+            className="bg-vaya-primary text-white border-none px-6 py-[10px] rounded cursor-pointer text-sm"
           >
             Continue Shopping
           </button>
@@ -283,69 +252,69 @@ export default function CartPage() {
       {!isLoading && items.length > 0 && (
         <>
           {/* Cart table */}
-          <section style={{ padding: '20px 0' }}>
-            <div style={containerStyle}>
-              <div style={{ overflowX: 'auto', boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}>
+          <section className="py-5">
+            <div className="max-w-[96%] mx-auto px-[15px]">
+              <div className="overflow-x-auto shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
+                <table className="w-full border-collapse bg-white">
                   <thead>
                     <tr>
-                      <th style={thStyle}>Product Descriptions</th>
-                      <th style={thStyle}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                          <span title="Rates/Prices are excluding taxes" style={{ cursor: 'help', fontSize: 11, border: '1px solid #aaa', borderRadius: '50%', width: 14, height: 14, lineHeight: '14px', textAlign: 'center', display: 'inline-block' }}>i</span>
+                      <th className={thBase}>Product Descriptions</th>
+                      <th className={thBase}>
+                        <div className="flex items-center justify-center gap-1">
+                          <span title="Rates/Prices are excluding taxes" className="cursor-help text-[11px] border border-[#aaa] rounded-full w-[14px] h-[14px] leading-[14px] text-center inline-block">i</span>
                           Roll Rate
                         </div>
                       </th>
-                      <th style={thStyle}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                          <span title="Rates/Prices are excluding taxes" style={{ cursor: 'help', fontSize: 11, border: '1px solid #aaa', borderRadius: '50%', width: 14, height: 14, lineHeight: '14px', textAlign: 'center', display: 'inline-block' }}>i</span>
+                      <th className={thBase}>
+                        <div className="flex items-center justify-center gap-1">
+                          <span title="Rates/Prices are excluding taxes" className="cursor-help text-[11px] border border-[#aaa] rounded-full w-[14px] h-[14px] leading-[14px] text-center inline-block">i</span>
                           Cut Rate
                         </div>
                       </th>
-                      <th style={thStyle}>Ordered Length</th>
-                      <th style={thStyle}>Status</th>
-                      <th style={thStyle}>Price</th>
-                      <th style={thStyle}>Discount</th>
-                      <th style={thStyle}>GST %</th>
-                      <th style={thStyle}>GST</th>
-                      <th style={thStyle}>Final Amount</th>
-                      <th style={thStyle}></th>
+                      <th className={thBase}>Ordered Length</th>
+                      <th className={thBase}>Status</th>
+                      <th className={thBase}>Price</th>
+                      <th className={thBase}>Discount</th>
+                      <th className={thBase}>GST %</th>
+                      <th className={thBase}>GST</th>
+                      <th className={thBase}>Final Amount</th>
+                      <th className={thBase}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item) => {
                       const c = calcItem(effectiveItem(item), cutDiscount, rollDiscount, globalGst);
-                      const inStock = true; // stock was validated at add-to-cart time
+                      const inStock = true;
                       return (
-                        <tr key={item.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                          <td style={tdStyle}>
+                        <tr key={item.id} className="border-b border-[#f0f0f0]">
+                          <td className={tdBase}>
                             Pattern: {item.pattern}, Color: {item.color}
                           </td>
-                          <td style={{ ...tdStyle, textAlign: 'right' }}>
+                          <td className={`${tdBase} text-right`}>
                             ₹{' '}
-                            <span style={c.isRoll ? { color: '#aec148', fontWeight: 'bold', textDecoration: 'underline' } : {}}>
+                            <span className={c.isRoll ? 'text-vaya-green font-bold underline' : ''}>
                               {rupeeFormat(c.rollPrice)}
                             </span>
                           </td>
-                          <td style={{ ...tdStyle, textAlign: 'right' }}>
+                          <td className={`${tdBase} text-right`}>
                             ₹{' '}
-                            <span style={!c.isRoll ? { color: '#aec148', fontWeight: 'bold', textDecoration: 'underline' } : {}}>
+                            <span className={!c.isRoll ? 'text-vaya-green font-bold underline' : ''}>
                               {rupeeFormat(c.cutPrice)}
                             </span>
                           </td>
-                          <td style={{ ...tdStyle, position: 'relative' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <td className={`${tdBase} relative`}>
+                            <div className="flex items-center gap-1">
                               <input
                                 type="text"
                                 inputMode="decimal"
                                 value={getLength(item)}
                                 onChange={e => handleLengthChange(item.id, e.target.value)}
                                 onBlur={e => handleLengthBlur(item.id, e.target.value)}
-                                style={{ width: 80, border: '1px solid #ccc', borderRadius: 3, padding: '4px 6px', fontSize: 13, outline: 'none' }}
+                                className="w-[80px] border border-[#ccc] rounded-[3px] px-[6px] py-1 text-[13px] outline-none"
                               />
                               <button
                                 onClick={() => setPopupItemId(popupItemId === item.id ? null : item.id)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555', padding: 2, display: 'flex', alignItems: 'center' }}
+                                className="bg-transparent border-none cursor-pointer text-[#555] p-[2px] flex items-center"
                                 title="Specify panel lengths"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
@@ -361,20 +330,20 @@ export default function CartPage() {
                               />
                             )}
                           </td>
-                          <td style={{ ...tdStyle, textAlign: 'center' }}>
-                            <span style={{ fontSize: 12, color: inStock ? '#28a745' : '#dc3545' }}>
+                          <td className={`${tdBase} text-center`}>
+                            <span className={`text-[12px] ${inStock ? 'text-[#28a745]' : 'text-[#dc3545]'}`}>
                               {inStock ? 'In Stock' : 'No Stock - Delivery date TBD'}
                             </span>
                           </td>
-                          <td style={{ ...tdStyle, textAlign: 'right' }}>₹ {rupeeFormat(c.price)}</td>
-                          <td style={{ ...tdStyle, textAlign: 'right' }}>₹ {rupeeFormat(c.itemDiscount)}</td>
-                          <td style={{ ...tdStyle, textAlign: 'center' }}>{c.gstPct}%</td>
-                          <td style={{ ...tdStyle, textAlign: 'right' }}>₹ {rupeeFormat(c.gstAmount)}</td>
-                          <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 500 }}>₹ {rupeeFormat(c.finalAmount)}</td>
-                          <td style={{ ...tdStyle, textAlign: 'center' }}>
+                          <td className={`${tdBase} text-right`}>₹ {rupeeFormat(c.price)}</td>
+                          <td className={`${tdBase} text-right`}>₹ {rupeeFormat(c.itemDiscount)}</td>
+                          <td className={`${tdBase} text-center`}>{c.gstPct}%</td>
+                          <td className={`${tdBase} text-right`}>₹ {rupeeFormat(c.gstAmount)}</td>
+                          <td className={`${tdBase} text-right font-medium`}>₹ {rupeeFormat(c.finalAmount)}</td>
+                          <td className={`${tdBase} text-center`}>
                             <button
                               onClick={() => deleteItem.mutate(item.id)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc3545', padding: 4 }}
+                              className="bg-transparent border-none cursor-pointer text-[#dc3545] p-1"
                               title="Remove item"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
@@ -386,14 +355,13 @@ export default function CartPage() {
                         </tr>
                       );
                     })}
-                    {/* Totals row */}
-                    <tr style={{ backgroundColor: '#f9f9f9', fontWeight: 500 }}>
-                      <td colSpan={5} style={{ ...tdStyle, textAlign: 'right', fontWeight: 600 }}>Total</td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>₹ {rupeeFormat(totalPrice)}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>₹ {rupeeFormat(totalDiscount)}</td>
-                      <td colSpan={2} style={{ ...tdStyle, textAlign: 'right' }}>₹ {rupeeFormat(totalGst)}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>₹ {rupeeFormat(grandTotal)}</td>
-                      <td style={tdStyle}></td>
+                    <tr className="bg-[#f9f9f9] font-medium">
+                      <td colSpan={5} className={`${tdBase} text-right font-semibold`}>Total</td>
+                      <td className={`${tdBase} text-right`}>₹ {rupeeFormat(totalPrice)}</td>
+                      <td className={`${tdBase} text-right`}>₹ {rupeeFormat(totalDiscount)}</td>
+                      <td colSpan={2} className={`${tdBase} text-right`}>₹ {rupeeFormat(totalGst)}</td>
+                      <td className={`${tdBase} text-right`}>₹ {rupeeFormat(grandTotal)}</td>
+                      <td className={tdBase}></td>
                     </tr>
                   </tbody>
                 </table>
@@ -402,39 +370,34 @@ export default function CartPage() {
           </section>
 
           {/* Summary + Order Form */}
-          <section style={{ padding: '10px 0 40px' }}>
-            <div style={containerStyle}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <div style={{ width: '100%', maxWidth: 720 }}>
-                  {/* Total summary */}
-                  <div style={{ marginBottom: 20 }}>
+          <section className="py-[10px] pb-10">
+            <div className="max-w-[96%] mx-auto px-[15px]">
+              <div className="flex justify-end">
+                <div className="w-full max-w-[720px]">
+                  {/* Totals */}
+                  <div className="mb-5">
                     {[
                       ['Total:', totalPrice],
                       ['Discount:', totalDiscount],
                       ['GST/Tax :', totalGst],
                     ].map(([label, val]) => (
-                      <div key={label} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 24, padding: '4px 0', borderBottom: '1px solid #eee' }}>
-                        <span style={{ fontSize: 14, color: '#555', minWidth: 100, textAlign: 'right' }}>{label}</span>
-                        <span style={{ fontSize: 14, color: '#333', minWidth: 110, textAlign: 'right' }}>₹&nbsp;&nbsp;{rupeeFormat(val)}</span>
+                      <div key={label} className="flex justify-end items-center gap-6 py-1 border-b border-[#eee]">
+                        <span className="text-sm text-[#555] min-w-[100px] text-right">{label}</span>
+                        <span className="text-sm text-[#333] min-w-[110px] text-right">₹&nbsp;&nbsp;{rupeeFormat(val)}</span>
                       </div>
                     ))}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 24, padding: '8px 0' }}>
-                      <span style={{ fontSize: 16, fontWeight: 700, color: '#333', minWidth: 100, textAlign: 'right' }}>Total Amount:</span>
-                      <span style={{ fontSize: 18, fontWeight: 700, color: '#333', minWidth: 110, textAlign: 'right' }}>₹&nbsp;&nbsp;{rupeeFormat(grandTotal)}</span>
+                    <div className="flex justify-end items-center gap-6 py-2">
+                      <span className="text-[16px] font-bold text-[#333] min-w-[100px] text-right">Total Amount:</span>
+                      <span className="text-[18px] font-bold text-[#333] min-w-[110px] text-right">₹&nbsp;&nbsp;{rupeeFormat(grandTotal)}</span>
                     </div>
                   </div>
 
                   {/* Order form */}
-                  <div style={{ backgroundColor: '#e3e8cc', borderRadius: 4, padding: '24px 24px 20px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 24px', marginBottom: 16 }}>
-                      {/* Shipping Address */}
+                  <div className="bg-vaya-light rounded p-6 pb-5">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-4 mb-4">
                       <div>
-                        <label style={labelStyle}>Shipping address</label>
-                        <select
-                          value={shippingAddressId}
-                          onChange={e => setShippingAddressId(e.target.value)}
-                          style={selectStyle}
-                        >
+                        <label className={labelCls}>Shipping address</label>
+                        <select value={shippingAddressId} onChange={e => setShippingAddressId(e.target.value)} className={inputCls}>
                           {shippingAddresses.length === 0 && <option value="">No addresses found</option>}
                           {shippingAddresses.map(a => (
                             <option key={a.id} value={String(a.id)}>
@@ -444,26 +407,19 @@ export default function CartPage() {
                         </select>
                       </div>
 
-                      {/* Billing Address */}
                       <div>
-                        <label style={labelStyle}>Billing Address</label>
+                        <label className={labelCls}>Billing Address</label>
                         <input
                           readOnly
                           value={billingAddress ? [billingAddress.line1, billingAddress.pincode, billingAddress.city, billingAddress.state].filter(Boolean).join(', ') : ''}
-                          style={{ ...inputStyle, color: '#555', cursor: 'default' }}
+                          className={`${inputCls} text-[#555] cursor-default`}
                           placeholder="No billing address found"
                         />
                       </div>
 
-                      {/* Shipment Mode */}
                       <div>
-                        <label style={labelStyle}>Shipment Mode</label>
-                        <select
-                          value={shipmentMode}
-                          onChange={e => setShipmentMode(e.target.value)}
-                          style={selectStyle}
-                          required
-                        >
+                        <label className={labelCls}>Shipment Mode</label>
+                        <select value={shipmentMode} onChange={e => setShipmentMode(e.target.value)} className={inputCls} required>
                           {shippingModes.length === 0 && <option value="">Loading...</option>}
                           {shippingModes.map((m, i) => (
                             <option key={i} value={m['Shipping Mode']}>{m['Shipping Mode']}</option>
@@ -471,36 +427,33 @@ export default function CartPage() {
                         </select>
                       </div>
 
-                      {/* PO Number */}
                       <div>
-                        <label style={labelStyle}>PO Number (Optional)</label>
+                        <label className={labelCls}>PO Number (Optional)</label>
                         <input
                           type="text"
                           value={poNumber}
                           onChange={e => setPoNumber(e.target.value)}
-                          style={inputStyle}
+                          className={inputCls}
                           placeholder="PO No./Reference No./Name"
                           autoComplete="off"
                         />
                       </div>
 
-                      {/* Reserve/Delivery Date */}
                       <div>
-                        <label style={labelStyle}>Select reserve / delivery date</label>
+                        <label className={labelCls}>Select reserve / delivery date</label>
                         <input
                           type="date"
                           value={orderDate}
                           onChange={e => setOrderDate(e.target.value)}
                           min={today}
                           max={maxDate}
-                          style={inputStyle}
+                          className={inputCls}
                           required
                         />
                       </div>
 
-                      {/* Auth Password */}
                       <div>
-                        <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                        <label className={`${labelCls} flex items-center gap-[6px] cursor-pointer`}>
                           <input
                             type="checkbox"
                             checked={rememberPassword}
@@ -508,7 +461,7 @@ export default function CartPage() {
                               setRememberPassword(e.target.checked);
                               handleRememberPassword(authPassword, e.target.checked);
                             }}
-                            style={{ cursor: 'pointer' }}
+                            className="cursor-pointer"
                           />
                           Remember Password
                         </label>
@@ -517,7 +470,7 @@ export default function CartPage() {
                           value={authPassword}
                           onChange={e => setAuthPassword(e.target.value)}
                           onBlur={() => handleRememberPassword(authPassword, rememberPassword)}
-                          style={inputStyle}
+                          className={inputCls}
                           placeholder="Enter Authorization Password"
                           autoComplete="new-password"
                           required
@@ -526,50 +479,28 @@ export default function CartPage() {
                     </div>
 
                     {/* Buttons */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginTop: 8 }}>
+                    <div className="flex items-center justify-center gap-6 mt-2">
                       <button
                         type="button"
                         onClick={() => handleSubmit('Reserved')}
                         disabled={submitting}
-                        style={{
-                          backgroundColor: '#fff',
-                          color: '#333',
-                          border: '2px solid #333',
-                          padding: '10px 32px',
-                          fontSize: 14,
-                          fontWeight: 600,
-                          cursor: submitting ? 'not-allowed' : 'pointer',
-                          borderRadius: 2,
-                          opacity: submitting ? 0.6 : 1,
-                          letterSpacing: '0.5px',
-                        }}
+                        className={`bg-white text-[#333] border-2 border-[#333] px-8 py-[10px] text-sm font-semibold rounded-[2px] tracking-[0.5px] ${submitting ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                       >
                         Reserve Stock
                       </button>
-                      <span style={{ color: '#888', fontSize: 13 }}>OR</span>
+                      <span className="text-[#888] text-[13px]">OR</span>
                       <button
                         type="button"
                         onClick={() => handleSubmit('Ordered')}
                         disabled={submitting}
-                        style={{
-                          backgroundColor: '#fff',
-                          color: '#333',
-                          border: '2px solid #333',
-                          padding: '10px 32px',
-                          fontSize: 14,
-                          fontWeight: 600,
-                          cursor: submitting ? 'not-allowed' : 'pointer',
-                          borderRadius: 2,
-                          opacity: submitting ? 0.6 : 1,
-                          letterSpacing: '0.5px',
-                        }}
+                        className={`bg-white text-[#333] border-2 border-[#333] px-8 py-[10px] text-sm font-semibold rounded-[2px] tracking-[0.5px] ${submitting ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                       >
                         Place Order
                       </button>
                     </div>
 
                     {submitting && (
-                      <p style={{ textAlign: 'center', marginTop: 12, fontSize: 14, color: '#555' }}>
+                      <p className="text-center mt-3 text-sm text-[#555]">
                         Processing your order. Please wait...
                       </p>
                     )}

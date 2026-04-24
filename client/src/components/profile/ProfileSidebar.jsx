@@ -12,20 +12,21 @@ export default function ProfileSidebar() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ background: '#AEC148', borderRadius: '8px', padding: '24px 20px', minWidth: '220px' }}>
-      <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: 400, marginBottom: '18px', lineHeight: 1.3 }}>
+    <div className="bg-vaya-green rounded-[8px] py-6 px-5 min-w-[220px]">
+      <h3 className="text-white text-[18px] font-normal mb-[18px] leading-[1.3]">
         Useful Links
       </h3>
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      <ul className="list-none p-0 m-0">
         {links.map(({ to, label }) => {
           const active = pathname === to;
           return (
-            <li key={to}
+            <li
+              key={to}
               onClick={() => navigate(to)}
-              style={{ padding: '10px 0', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', gap: '8px' }}
+              className="py-[10px] cursor-pointer border-b border-[rgba(255,255,255,0.25)] flex items-center gap-2"
             >
-              <span style={{ color: '#fff', fontSize: '12px', flexShrink: 0 }}>›</span>
-              <span style={{ color: '#fff', fontSize: '14px', fontWeight: active ? 700 : 400 }}>{label}</span>
+              <span className="text-white text-[12px] shrink-0">›</span>
+              <span className={`text-white text-[14px] ${active ? 'font-bold' : 'font-normal'}`}>{label}</span>
             </li>
           );
         })}

@@ -146,21 +146,21 @@ export default function DashboardPage() {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="rounded-lg p-5 text-white" style={{ background: '#7c3aed' }}>
+        <div className="rounded-lg p-5 text-white bg-[#7c3aed]">
           <div className="text-2xl mb-1">⏱</div>
           <p className="text-3xl font-bold">
             {isLoading ? '…' : (cd.averageTimeElpsed ?? 0)} s
           </p>
           <p className="text-sm mt-1 opacity-90">Average of Elapsed Time</p>
         </div>
-        <div className="rounded-lg p-5 text-white" style={{ background: '#3ec97b' }}>
+        <div className="rounded-lg p-5 text-white bg-[#3ec97b]">
           <div className="text-2xl mb-1">📋</div>
           <p className="text-3xl font-bold">
             {isLoading ? '…' : (cd.averageRecord ?? 0)}
           </p>
           <p className="text-sm mt-1 opacity-90">Average of Records Per Search</p>
         </div>
-        <div className="rounded-lg p-5 text-white" style={{ background: '#f05372' }}>
+        <div className="rounded-lg p-5 text-white bg-[#f05372]">
           <div className="text-2xl mb-1">⚡</div>
           <p className="text-3xl font-bold">
             {isLoading ? '…' : (cd.averageRecordPerSec ?? 0)} /s
@@ -201,10 +201,7 @@ export default function DashboardPage() {
             <h2 className="font-semibold text-gray-700">Search By Region</h2>
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <span>0 Worst</span>
-              <div
-                className="w-20 h-3 rounded"
-                style={{ background: 'linear-gradient(to right, #ececf6, #7c3aed)' }}
-              />
+              <div className="w-20 h-3 rounded bg-gradient-to-r from-[#ececf6] to-[#7c3aed]" />
               <span>Highest</span>
             </div>
           </div>

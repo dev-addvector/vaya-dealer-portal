@@ -10,49 +10,30 @@ export default function EBrochurePage() {
   const brochures = data?.data || [];
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 90px)', backgroundColor: '#fff' }}>
-      {/* Breadcrumb */}
-      <div style={{ backgroundColor: '#f5f5ef', padding: '12px 0' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 30px' }}>
-          <span style={{ fontSize: '18px', color: '#807A52', fontWeight: 500 }}>Download Brochures</span>
+    <div className="min-h-[calc(100vh-90px)] bg-white">
+      <div className="bg-[#f5f5ef] py-3">
+        <div className="max-w-[1200px] mx-auto px-[30px]">
+          <span className="text-[18px] text-vaya-primary font-medium">Download Brochures</span>
         </div>
       </div>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 30px' }}>
-        {isLoading && (
-          <p style={{ color: '#707070', fontSize: '14px' }}>Loading brochures...</p>
-        )}
-        {isError && (
-          <p style={{ color: '#c00', fontSize: '14px' }}>Failed to load brochures.</p>
-        )}
+      <div className="max-w-[1200px] mx-auto px-[30px] py-10">
+        {isLoading && <p className="text-vaya-gray text-sm">Loading brochures...</p>}
+        {isError && <p className="text-red-700 text-sm">Failed to load brochures.</p>}
         {!isLoading && !isError && brochures.length === 0 && (
-          <p style={{ color: '#707070', fontSize: '14px' }}>No brochures available.</p>
+          <p className="text-vaya-gray text-sm">No brochures available.</p>
         )}
         {brochures.map((b) => (
           <div
             key={b.id ?? b.filename}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '12px 0',
-              borderBottom: '1px solid #E3E8CC',
-            }}
+            className="flex items-center gap-4 py-3 border-b border-vaya-light"
           >
-            <span style={{ fontWeight: 400, color: '#AEC148', fontSize: '15px' }}>{b.name}</span>
+            <span className="font-normal text-vaya-green text-[15px]">{b.name}</span>
             <a
               href={b.url}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                backgroundColor: '#AEC148',
-                color: '#fff',
-                padding: '6px 18px',
-                borderRadius: '3px',
-                textDecoration: 'none',
-                fontSize: '13px',
-                fontWeight: 500,
-              }}
+              className="bg-vaya-green text-white px-[18px] py-[6px] rounded-[3px] no-underline text-[13px] font-medium"
             >
               Download
             </a>

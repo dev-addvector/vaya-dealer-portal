@@ -99,5 +99,5 @@ export function IndiaMap({ locationMap }) {
     };
   }, [locationMap]);
 
-  return <div ref={chartDivRef} style={{ width: '100%', height: 320 }} />;
+  return <div ref={chartDivRef} className="w-full h-[320px]" />;
 }

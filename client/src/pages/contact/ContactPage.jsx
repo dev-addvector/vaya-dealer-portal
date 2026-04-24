@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { useContacts, useAddContact, useUpdateContact, useDeleteContact } from '@/hooks/useContacts';
-import { container, breadcrumb } from '@/styles/page';
 import ProfileSidebar from '@/components/profile/ProfileSidebar';
 import toast from 'react-hot-toast';
-
-const card = { background: '#fff', boxShadow: '0 2px 15px #00000038', borderRadius: '10px', padding: '28px 32px' };
-const inputStyle = {
-  width: '100%', height: '45px', border: '1px solid #C8C8C8', borderRadius: '4px',
-  padding: '8px 14px', fontSize: '14px', color: '#333', outline: 'none', boxSizing: 'border-box',
-};
-const labelStyle = { display: 'block', marginBottom: '6px', fontSize: '14px', color: '#111' };
 
 const EMPTY = { name: '', phone: '', email: '', department: '' };
 
@@ -24,29 +16,32 @@ function ContactModal({ initial, onSave, onClose, saving }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: '#fff', borderRadius: '12px', padding: '32px', width: '460px', maxWidth: '92vw', position: 'relative' }}>
-        <button onClick={onClose} style={{ position: 'absolute', top: '14px', right: '16px', background: 'none', border: '1px solid #ccc', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontSize: '16px', color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-        <h4 style={{ fontSize: '20px', fontWeight: 600, textAlign: 'center', marginBottom: '24px' }}>{initial ? 'Edit Contact' : 'Add Contact'}</h4>
+    <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-[1000] flex items-center justify-center">
+      <div className="bg-white rounded-[12px] p-8 w-[460px] max-w-[92vw] relative">
+        <button
+          onClick={onClose}
+          className="absolute top-[14px] right-4 bg-transparent border border-[#ccc] rounded-full w-7 h-7 cursor-pointer text-[16px] text-[#888] flex items-center justify-center"
+        >×</button>
+        <h4 className="text-[20px] font-semibold text-center mb-6">{initial ? 'Edit Contact' : 'Add Contact'}</h4>
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '16px' }}>
-            <label style={labelStyle}>Name<span style={{ color: '#dc3545' }}>*</span></label>
-            <input value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} placeholder="Name" />
+          <div className="mb-4">
+            <label className="block mb-[6px] text-sm text-[#111]">Name<span className="text-[#dc3545]">*</span></label>
+            <input value={form.name} onChange={e => set('name', e.target.value)} className="w-full h-[45px] border border-[#C8C8C8] rounded-[4px] px-[14px] py-2 text-sm text-[#333] outline-none" placeholder="Name" />
           </div>
-          <div style={{ marginBottom: '16px' }}>
-            <label style={labelStyle}>Contact Number<span style={{ color: '#dc3545' }}>*</span></label>
-            <input value={form.phone} onChange={e => set('phone', e.target.value)} style={inputStyle} placeholder="Contact Number" type="tel" />
+          <div className="mb-4">
+            <label className="block mb-[6px] text-sm text-[#111]">Contact Number<span className="text-[#dc3545]">*</span></label>
+            <input value={form.phone} onChange={e => set('phone', e.target.value)} className="w-full h-[45px] border border-[#C8C8C8] rounded-[4px] px-[14px] py-2 text-sm text-[#333] outline-none" placeholder="Contact Number" type="tel" />
           </div>
-          <div style={{ marginBottom: '16px' }}>
-            <label style={labelStyle}>Email ID<span style={{ color: '#dc3545' }}>*</span></label>
-            <input value={form.email} onChange={e => set('email', e.target.value)} style={inputStyle} placeholder="Email ID" type="email" />
+          <div className="mb-4">
+            <label className="block mb-[6px] text-sm text-[#111]">Email ID<span className="text-[#dc3545]">*</span></label>
+            <input value={form.email} onChange={e => set('email', e.target.value)} className="w-full h-[45px] border border-[#C8C8C8] rounded-[4px] px-[14px] py-2 text-sm text-[#333] outline-none" placeholder="Email ID" type="email" />
           </div>
-          <div style={{ marginBottom: '24px' }}>
-            <label style={labelStyle}>Department<span style={{ color: '#dc3545' }}>*</span></label>
-            <input value={form.department} onChange={e => set('department', e.target.value)} style={inputStyle} placeholder="Department" />
+          <div className="mb-6">
+            <label className="block mb-[6px] text-sm text-[#111]">Department<span className="text-[#dc3545]">*</span></label>
+            <input value={form.department} onChange={e => set('department', e.target.value)} className="w-full h-[45px] border border-[#C8C8C8] rounded-[4px] px-[14px] py-2 text-sm text-[#333] outline-none" placeholder="Department" />
           </div>
-          <div style={{ textAlign: 'center', borderTop: '2px solid #111', paddingTop: '16px' }}>
-            <button type="submit" disabled={saving} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: 600, color: '#111' }}>
+          <div className="text-center border-t-2 border-[#111] pt-4">
+            <button type="submit" disabled={saving} className="bg-transparent border-none cursor-pointer text-[15px] font-semibold text-[#111]">
               {saving ? 'Saving...' : 'Save Contact'}
             </button>
           </div>
@@ -85,50 +80,50 @@ export default function ContactPage() {
 
   return (
     <div>
-      <div style={breadcrumb.wrap}>
-        <div style={container}>
-          <span style={breadcrumb.title}>My Contact</span>
+      <div className="border-b border-[rgba(112,112,112,0.2)] py-[5px]">
+        <div className="max-w-[90%] mx-auto px-[15px]">
+          <span className="text-vaya-green text-[28px] leading-[43px]">My Contact</span>
         </div>
       </div>
 
       <section>
-        <div style={{ ...container, paddingTop: '30px', paddingBottom: '40px' }}>
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(112,112,112,0.15)', paddingBottom: '14px', marginBottom: '20px' }}>
-                  <h4 style={{ fontSize: '18px', fontWeight: 500, color: '#111', margin: 0 }}>Reset Default Contact</h4>
+        <div className="max-w-[90%] mx-auto px-[15px] pt-[30px] pb-10">
+          <div className="flex gap-6 items-start">
+            <div className="flex-1 min-w-0">
+              <div className="bg-white shadow-[0_2px_15px_rgba(0,0,0,0.22)] rounded-[10px] py-7 px-8">
+                <div className="flex justify-between items-center border-b border-[rgba(112,112,112,0.15)] pb-[14px] mb-5">
+                  <h4 className="text-[18px] font-medium text-vaya-black m-0">Reset Default Contact</h4>
                   <button
                     onClick={() => setShowAdd(true)}
-                    style={{ background: 'none', border: '1px solid #555', borderRadius: '50px', padding: '4px 14px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', color: '#555' }}
+                    className="bg-transparent border border-[#555] rounded-[50px] px-[14px] py-1 text-[13px] cursor-pointer flex items-center gap-[5px] text-[#555]"
                   >
-                    <span style={{ fontSize: '16px', lineHeight: 1 }}>⊕</span> New Contact
+                    <span className="text-[16px] leading-none">⊕</span> New Contact
                   </button>
                 </div>
 
-                {isLoading && <p style={{ color: '#999', fontSize: '14px' }}>Loading...</p>}
+                {isLoading && <p className="text-[#999] text-sm">Loading...</p>}
 
                 {!isLoading && contacts.length === 0 && (
-                  <p style={{ color: '#999', fontSize: '14px', padding: '10px 0' }}>&nbsp;</p>
+                  <p className="text-[#999] text-sm py-[10px]">&nbsp;</p>
                 )}
 
                 {!isLoading && contacts.map((c) => (
-                  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '14px 0', borderBottom: '1px solid rgba(112,112,112,0.12)' }}>
+                  <div key={c.id} className="flex justify-between items-start py-[14px] border-b border-[rgba(112,112,112,0.12)]">
                     <div>
-                      <div style={{ fontWeight: 500, fontSize: '14px', color: '#111', marginBottom: '3px' }}>{c.name}</div>
-                      <div style={{ fontSize: '13px', color: '#666', marginBottom: '2px' }}>{c.phone}</div>
-                      <div style={{ fontSize: '13px', color: '#666' }}>{c.email}</div>
+                      <div className="font-medium text-sm text-[#111] mb-[3px]">{c.name}</div>
+                      <div className="text-[13px] text-[#666] mb-[2px]">{c.phone}</div>
+                      <div className="text-[13px] text-[#666]">{c.email}</div>
                     </div>
-                    <div style={{ display: 'flex', gap: '10px', paddingTop: '2px' }}>
-                      <button onClick={() => setEditing(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: '15px' }} title="Edit">✎</button>
-                      <button onClick={() => setDeleting(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: '15px' }} title="Delete">🗑</button>
+                    <div className="flex gap-[10px] pt-[2px]">
+                      <button onClick={() => setEditing(c)} className="bg-transparent border-none cursor-pointer text-[#888] text-[15px]" title="Edit">✎</button>
+                      <button onClick={() => setDeleting(c.id)} className="bg-transparent border-none cursor-pointer text-[#888] text-[15px]" title="Delete">🗑</button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ width: '260px', flexShrink: 0 }}>
+            <div className="w-[260px] shrink-0">
               <ProfileSidebar />
             </div>
           </div>
@@ -139,14 +134,17 @@ export default function ContactPage() {
       {editing && <ContactModal initial={editing} onSave={handleEdit} onClose={() => setEditing(null)} saving={updateContact.isPending} />}
 
       {deleting && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '32px', width: '360px', maxWidth: '90vw', position: 'relative', textAlign: 'center' }}>
-            <button onClick={() => setDeleting(null)} style={{ position: 'absolute', top: '14px', right: '16px', background: 'none', border: '1px solid #ccc', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontSize: '16px', color: '#888' }}>×</button>
-            <p style={{ fontSize: '15px', color: '#111', marginBottom: '24px' }}>Do you want to delete contact?</p>
+        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-[1000] flex items-center justify-center">
+          <div className="bg-white rounded-[12px] p-8 w-[360px] max-w-[90vw] relative text-center">
+            <button
+              onClick={() => setDeleting(null)}
+              className="absolute top-[14px] right-4 bg-transparent border border-[#ccc] rounded-full w-7 h-7 cursor-pointer text-[16px] text-[#888]"
+            >×</button>
+            <p className="text-[15px] text-[#111] mb-6">Do you want to delete contact?</p>
             <button
               onClick={handleDelete}
               disabled={deleteContact.isPending}
-              style={{ background: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', padding: '8px 20px', cursor: 'pointer', fontSize: '14px', fontWeight: 500 }}
+              className="bg-[#dc3545] text-white border-none rounded-[4px] px-5 py-2 cursor-pointer text-sm font-medium"
             >
               {deleteContact.isPending ? 'Deleting...' : 'Yes, Delete Contact'}
             </button>
