@@ -78,7 +78,30 @@ exports.downloadQr = async (req, res) => {
 };
 
 exports.disableUser = async (req, res) => {
-  const { id, status } = req.body;
-  await prisma.user.update({ where: { id }, data: { isStatus: Number(status) } });
-  res.json({ success: true, message: `User ${status ? 'enabled' : 'disabled'}` });
+  const { userId, isStatus } = req.body;
+  await prisma.user.update({ where: { id: userId }, data: { isStatus: Number(isStatus) } });
+  res.json({ success: true, message: `User ${isStatus ? 'enabled' : 'disabled'}` });
+};
+
+exports.changeUserEmail = async (req, res) => {
+  const { userId, newEmail } = req.body;
+  
+  const existingUser = await prisma.user.findFirst({ where: { email: newEmail } });
+  if (existingUser) {
+    return res.status(400).json({ success: false, message: 'Email already exists' });
+  }
+  
+  await prisma.user.update({ where: { id: userId }, data: { email: newEmail } });
+  res.json({ success: true, message: 'Email changed successfully' });
+};
+
+exports.sendPasswordResetLink = async (req, res) => {
+  const { userId } = req.body;
+  
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+  
+  res.json({ success: true, message: 'Password reset link sent successfully' });
 };

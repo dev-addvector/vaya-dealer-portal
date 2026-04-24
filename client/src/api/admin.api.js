@@ -40,6 +40,8 @@ export const uploadLoginImage = (form) =>
 // Users
 export const getUsers = (params) => api.get('/admin/settings/users', { params });
 export const disableUser = (data) => api.post('/admin/settings/users/disable', data);
+export const changeUserEmail = (data) => api.post('/admin/settings/users/change-email', data);
+export const sendPasswordResetLink = (data) => api.post('/admin/settings/users/send-reset-password', data);
 
 // Ads
 export const getAds = () => api.get('/admin/ads');

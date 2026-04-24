@@ -14,5 +14,7 @@ router.post('/upload-login-image', upload.single('image'), c.uploadLoginImage);
 router.get('/qr/download', c.downloadQr);
 router.get('/users', c.listUsers);
 router.post('/users/disable', c.disableUser);
+router.post('/users/change-email', c.changeUserEmail);
+router.post('/users/send-reset-password', c.sendPasswordResetLink);
 
 module.exports = router;
