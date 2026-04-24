@@ -226,7 +226,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={login.isPending}
-                  className={`block w-full px-[30px] py-3 bg-transparent text-vaya-black border-none border-b-2 border-black text-[21px] font-normal tracking-[0.5px] ${login.isPending ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                  className={`block w-full px-[30px] py-3 bg-black text-white border-none text-[21px] font-normal tracking-[0.5px] ${login.isPending ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   {login.isPending ? 'Signing in...' : 'Submit'}
                 </button>

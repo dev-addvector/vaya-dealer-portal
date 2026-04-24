@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useLoadProducts, useAddToCart, useEditCartItem, useCart } from '@/hooks/useProducts';
+import { useLoadProducts, useAddToCart, useEditCartItem, useCart, useProductFilters } from '@/hooks/useProducts';
 
 const thBase = 'bg-vaya-black text-white px-[10px] py-[10px] text-left border border-[#333] font-normal whitespace-nowrap text-sm select-none';
 const tdBase = 'px-[10px] py-[6px] border border-[#dee2e6] align-middle text-sm text-[#333]';
@@ -184,7 +184,17 @@ export default function ProductsPage() {
   const [rollModal, setRollModal] = useState(null);
   const [sort, setSort] = useState({ key: null, dir: 'asc' });
 
+  // Mobile filter states
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileDraftFilters, setMobileDraftFilters] = useState({ pattern: '', color: '', sortBy: '' });
+  const [mobileExpanded, setMobileExpanded] = useState({
+    pattern: false,
+    color: false,
+    sortBy: false,
+  });
+
   const { data, isLoading, isError } = useLoadProducts(filters);
+  const { data: filtersData, isLoading: filtersLoading } = useProductFilters();
   const addToCart = useAddToCart();
   const editCartItem = useEditCartItem();
   const { data: cartData } = useCart();
@@ -229,6 +239,28 @@ export default function ProductsPage() {
   const total = data?.data?.total ?? 0;
   const totalPages = Math.ceil(total / filters.perPage);
 
+  // Get unique values for filters from API with dependent filtering
+  const allPatterns = useMemo(() => filtersData?.data?.patterns ?? [], [filtersData]);
+  const allColors = useMemo(() => filtersData?.data?.colors ?? [], [filtersData]);
+  const patternColorsMap = useMemo(() => filtersData?.data?.patternColors ?? {}, [filtersData]);
+  const colorPatternsMap = useMemo(() => filtersData?.data?.colorPatterns ?? {}, [filtersData]);
+
+  // Filter patterns based on selected color
+  const patterns = useMemo(() => {
+    if (filters.color && colorPatternsMap[filters.color]) {
+      return colorPatternsMap[filters.color];
+    }
+    return allPatterns;
+  }, [allPatterns, filters.color, colorPatternsMap]);
+
+  // Filter colors based on selected pattern
+  const colors = useMemo(() => {
+    if (filters.pattern && patternColorsMap[filters.pattern]) {
+      return patternColorsMap[filters.pattern];
+    }
+    return allColors;
+  }, [allColors, filters.pattern, patternColorsMap]);
+
   const handleSort = (key) => {
     setSort(prev => ({ key, dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc' }));
   };
@@ -251,6 +283,73 @@ export default function ProductsPage() {
 
   const handleSearch = () => {
     setFilters(f => ({ ...f, pattern: draftPattern, color: draftColor, page: 1 }));
+  };
+
+  // Mobile filter functions
+  const setMobileDraftFilter = (key, val) => { 
+    const newFilters = { ...mobileDraftFilters, [key]: val };
+    
+    // Clear dependent filter when the other one changes
+    if (key === 'pattern' && val) {
+      // If pattern is selected, clear color if it's not available for this pattern
+      if (newFilters.color && !patternColorsMap[val]?.includes(newFilters.color)) {
+        newFilters.color = '';
+      }
+    } else if (key === 'color' && val) {
+      // If color is selected, clear pattern if it's not available for this color
+      if (newFilters.pattern && !colorPatternsMap[val]?.includes(newFilters.pattern)) {
+        newFilters.pattern = '';
+      }
+    }
+    
+    setMobileDraftFilters(newFilters); 
+  };
+
+  // Mobile dependent filtering
+  const mobilePatterns = useMemo(() => {
+    if (mobileDraftFilters.color && colorPatternsMap[mobileDraftFilters.color]) {
+      return colorPatternsMap[mobileDraftFilters.color];
+    }
+    return allPatterns;
+  }, [allPatterns, mobileDraftFilters.color, colorPatternsMap]);
+
+  const mobileColors = useMemo(() => {
+    if (mobileDraftFilters.pattern && patternColorsMap[mobileDraftFilters.pattern]) {
+      return patternColorsMap[mobileDraftFilters.pattern];
+    }
+    return allColors;
+  }, [allColors, mobileDraftFilters.pattern, patternColorsMap]);
+
+  const applyMobileFilters = () => {
+    const newFilters = { 
+      ...filters, 
+      pattern: mobileDraftFilters.pattern, 
+      color: mobileDraftFilters.color, 
+      page: 1 
+    };
+    
+    // Handle sort by
+    if (mobileDraftFilters.sortBy) {
+      const sortOptions = {
+        'stock': { key: 'stock', dir: 'asc' },
+        'pattern': { key: 'pattern', dir: 'asc' },
+        'color': { key: 'color', dir: 'asc' },
+        'qty': { key: 'qty', dir: 'desc' },
+        'rolls': { key: 'rolls', dir: 'desc' },
+      };
+      setSort(sortOptions[mobileDraftFilters.sortBy] || { key: null, dir: 'asc' });
+    }
+    
+    setFilters(newFilters);
+    setMobileFiltersOpen(false);
+  };
+
+  const clearFilters = () => {
+    setFilters({ pattern: '', color: '', page: 1, perPage: 10 });
+    setDraftPattern('');
+    setDraftColor('');
+    setSort({ key: null, dir: 'asc' });
+    setMobileDraftFilters({ pattern: '', color: '', sortBy: '' });
   };
 
   const handleAddToCart = (p) => {
@@ -298,7 +397,24 @@ export default function ProductsPage() {
       {/* Breadcrumb */}
       <div className="border-b border-[rgba(112,112,112,0.2)] py-[5px]">
         <div className="max-w-[90%] mx-auto px-[15px]">
-          <span className="text-vaya-green text-[28px] leading-[43px]">Stock</span>
+          <div className="flex items-center justify-between">
+            <span className="text-vaya-green text-[28px] leading-[43px]">Stock</span>
+            <button
+              type="button"
+              onClick={() => { setMobileDraftFilters({ pattern: filters.pattern, color: filters.color, sortBy: '' }); setMobileFiltersOpen(true); }}
+              disabled={filtersLoading}
+              className={`md:hidden w-[44px] h-[44px] rounded-[6px] flex items-center justify-center ${
+                filtersLoading 
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                  : 'bg-vaya-green text-white cursor-pointer'
+              }`}
+              aria-label="Open filters"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 5H21L14 13V19L10 21V13L3 5Z" fill="currentColor" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -491,6 +607,103 @@ export default function ProductsPage() {
       </section>
 
       <RollModal product={rollModal} onClose={() => setRollModal(null)} />
+
+      {/* Mobile Filter Sidebar */}
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen(false)}
+            className="absolute inset-0 bg-black/50"
+            aria-label="Close filters"
+          />
+
+          <div className="absolute right-0 top-0 h-full w-[86%] max-w-[360px] bg-white shadow-xl flex flex-col">
+            <div className="h-[62px] flex items-center justify-end px-4 border-b border-[#eee]">
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="text-[#666] text-[28px] leading-none"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {[
+                {
+                  key: 'sortBy',
+                  label: 'Sort by',
+                  content: (
+                    <select value={mobileDraftFilters.sortBy} onChange={e => setMobileDraftFilter('sortBy', e.target.value)} className="w-full px-[6px] py-1 text-[13px] border border-[#ccc] rounded-[3px] h-[30px] bg-white">
+                      <option value="">Select Sorting</option>
+                      <option value="stock">Stock Status</option>
+                      <option value="pattern">Pattern</option>
+                      <option value="color">Color</option>
+                      <option value="qty">Quantity Available</option>
+                      <option value="rolls">Number of Rolls</option>
+                    </select>
+                  ),
+                },
+                {
+                  key: 'pattern',
+                  label: 'Pattern',
+                  content: (
+                    <select value={mobileDraftFilters.pattern} onChange={e => setMobileDraftFilter('pattern', e.target.value)} className="w-full px-[6px] py-1 text-[13px] border border-[#ccc] rounded-[3px] h-[30px] bg-white">
+                      <option value="">Select Pattern</option>
+                      {mobilePatterns.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  ),
+                },
+                {
+                  key: 'color',
+                  label: 'Color',
+                  content: (
+                    <select value={mobileDraftFilters.color} onChange={e => setMobileDraftFilter('color', e.target.value)} className="w-full px-[6px] py-1 text-[13px] border border-[#ccc] rounded-[3px] h-[30px] bg-white">
+                      <option value="">Select Color</option>
+                      {mobileColors.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  ),
+                },
+              ].map((item) => (
+                <div key={item.key} className="border-b border-[#eee]">
+                  <button
+                    type="button"
+                    onClick={() => setMobileExpanded(s => ({ ...s, [item.key]: !s[item.key] }))}
+                    className="w-full px-5 py-4 flex items-center justify-between text-left"
+                  >
+                    <span className="text-[16px] font-semibold text-[#111]">{item.label}</span>
+                    <span className="text-[22px] font-semibold text-[#111]">{mobileExpanded[item.key] ? '−' : '+'}</span>
+                  </button>
+                  {mobileExpanded[item.key] && (
+                    <div className="px-5 pb-4">
+                      {item.content}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="p-5">
+              <button
+                type="button"
+                onClick={applyMobileFilters}
+                className="w-full bg-black text-white py-3 font-semibold"
+              >
+                Apply Filters
+              </button>
+              <button
+                type="button"
+                onClick={() => { clearFilters(); setMobileFiltersOpen(false); }}
+                className="w-full mt-4 border border-black text-black py-3 font-semibold bg-white"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

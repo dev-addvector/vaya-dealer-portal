@@ -100,6 +100,129 @@ exports.getShippingModes = async (req, res) => {
   }
 };
 
+// Simple in-memory cache with TTL
+const filterCache = new Map();
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+const getCachedFilters = (cacheKey) => {
+  const cached = filterCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  if (cached) {
+    filterCache.delete(cacheKey); // Remove expired cache
+  }
+  return null;
+};
+
+const setCachedFilters = (cacheKey, data) => {
+  filterCache.set(cacheKey, {
+    data,
+    timestamp: Date.now()
+  });
+  
+  // Clean up old entries periodically (simple cleanup)
+  if (filterCache.size > 100) {
+    const now = Date.now();
+    for (const [key, value] of filterCache.entries()) {
+      if (now - value.timestamp >= CACHE_TTL) {
+        filterCache.delete(key);
+      }
+    }
+  }
+};
+
+exports.getProductFilters = async (req, res) => {
+  try {
+    const cacheKey = `product-filters:${req.user.unc}:${req.user.zone}`;
+    
+    // Check cache first
+    const cached = getCachedFilters(cacheKey);
+    if (cached) {
+      return res.json({ success: true, data: cached });
+    }
+    
+    // Get all products without pagination to extract filter data
+    const data = await erpService.getProducts({
+      pattern: '',
+      color: '',
+      page: 1,
+      perPage: 10000, // Large number to get all products
+      unc: req.user.unc,
+      zone: req.user.zone,
+    });
+    
+    const products = data?.items || [];
+    
+    // Extract unique patterns and colors
+    const patterns = [...new Set(products.map(p => p.Pattern).filter(v => v && String(v).trim()))].sort();
+    const colors = [...new Set(products.map(p => p.Color).filter(v => v && String(v).trim()))].sort();
+    
+    // Build pattern-color relationships
+    const patternColorsMap = {};
+    const colorPatternsMap = {};
+    
+    products.forEach(product => {
+      const pattern = product.Pattern?.trim();
+      const color = product.Color?.trim();
+      
+      if (pattern && color) {
+        // Add color to pattern
+        if (!patternColorsMap[pattern]) {
+          patternColorsMap[pattern] = new Set();
+        }
+        patternColorsMap[pattern].add(color);
+        
+        // Add pattern to color
+        if (!colorPatternsMap[color]) {
+          colorPatternsMap[color] = new Set();
+        }
+        colorPatternsMap[color].add(pattern);
+      }
+    });
+    
+    // Convert Sets to sorted arrays
+    const patternColors = {};
+    Object.keys(patternColorsMap).forEach(pattern => {
+      patternColors[pattern] = Array.from(patternColorsMap[pattern]).sort();
+    });
+    
+    const colorPatterns = {};
+    Object.keys(colorPatternsMap).forEach(color => {
+      colorPatterns[color] = Array.from(colorPatternsMap[color]).sort();
+    });
+    
+    const result = {
+      patterns,
+      colors,
+      patternColors,
+      colorPatterns
+    };
+    
+    // Cache the result
+    setCachedFilters(cacheKey, result);
+    
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error getting product filters:', error);
+    res.json({ 
+      success: true, 
+      data: { 
+        patterns: [],
+        colors: [],
+        patternColors: {},
+        colorPatterns: {}
+      } 
+    });
+  }
+};
+
+// Keep the old endpoint for backward compatibility but mark as deprecated
+exports.getPatternColorRelations = async (req, res) => {
+  console.warn('getPatternColorRelations is deprecated, use getProductFilters instead');
+  return exports.getProductFilters(req, res);
+};
+
 exports.placeOrder = async (req, res) => {
   const { shippingAddressId, billingAddressId, shipmentMode, poNumber, orderDate, orderType, authPassword, refPoNumber } = req.body;
   const user = req.user;

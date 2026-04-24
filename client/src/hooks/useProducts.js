@@ -12,6 +12,13 @@ export const useLoadProducts = (filters) =>
     enabled: !!filters,
   });
 
+export const useProductFilters = () =>
+  useQuery({
+    queryKey: ['product-filters'],
+    queryFn: productApi.getProductFilters,
+    staleTime: 15 * 60 * 1000, // 15 minutes - server has 24h cache
+  });
+
 export const useCart = () =>
   useQuery({ queryKey: ['cart'], queryFn: productApi.getCart });
 
