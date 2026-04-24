@@ -3,6 +3,9 @@ const prisma = require('../config/database');
 const { sign } = require('../utils/jwt');
 const { randomToken } = require('../utils/helpers');
 const emailService = require('../services/email.service');
+const erpService = require('../services/erp.service');
+
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -54,4 +57,73 @@ exports.resetPassword = async (req, res) => {
   await prisma.user.update({ where: { id: record.userId }, data: { password: hashed } });
   await prisma.passwordResetToken.delete({ where: { token } });
   res.json({ success: true, message: 'Password reset successfully' });
+};
+
+// Decode UNC from URL-safe base64, fetch ERP data, check if already registered
+exports.getRegisterInfo = async (req, res) => {
+  const { encrypted_unc, key_phrase } = req.params;
+  const b64 = encrypted_unc.replace(/-/g, '/');
+  const unc = Buffer.from(b64, 'base64').toString('utf-8');
+
+  const erpData = await erpService.getUserDetails(unc, key_phrase);
+  if (!erpData.customerName && !erpData.erpEmail)
+    return res.status(404).json({ success: false, message: 'Invalid or expired invite link' });
+
+  const existing = await prisma.user.findFirst({ where: { unc } });
+  if (existing)
+    return res.status(409).json({ success: false, message: 'Already registered', redirect: true });
+
+  res.json({ success: true, unc, keyPhrase: key_phrase, erpData });
+};
+
+exports.checkEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
+  res.json({ exists: !!user });
+};
+
+exports.register = async (req, res) => {
+  const { unc, keyPhrase, email, accountingEmail, password, authorizationPassword } = req.body;
+
+  if (!email || !password || !authorizationPassword || !unc)
+    return res.status(400).json({ success: false, message: 'All fields are required' });
+
+  if (!PASSWORD_REGEX.test(password))
+    return res.status(400).json({ success: false, message: 'Password must be 8–20 chars with uppercase, lowercase, digit, and special character (@$!%*?&)' });
+
+  if (!PASSWORD_REGEX.test(authorizationPassword))
+    return res.status(400).json({ success: false, message: 'Authorization password must be 8–20 chars with uppercase, lowercase, digit, and special character (@$!%*?&)' });
+
+  const emailExists = await prisma.user.findUnique({ where: { email } });
+  if (emailExists)
+    return res.status(400).json({ success: false, message: 'Email already registered' });
+
+  const uncExists = await prisma.user.findFirst({ where: { unc } });
+  if (uncExists)
+    return res.status(409).json({ success: false, message: 'Already registered', redirect: true });
+
+  const erpData = await erpService.getUserDetails(unc, keyPhrase);
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedAuthPassword = await bcrypt.hash(authorizationPassword, 10);
+
+  await prisma.user.create({
+    data: {
+      name: erpData.customerName || '',
+      email,
+      accountingEmail: accountingEmail || '',
+      password: hashedPassword,
+      authorizationPassword: hashedAuthPassword,
+      unc,
+      keyParse: keyPhrase,
+      role: 'user',
+      isStatus: 1,
+    },
+  });
+
+  try {
+    await erpService.postAccountingEmail(unc, email, accountingEmail || '');
+  } catch (_) { /* non-critical — don't fail registration */ }
+
+  res.json({ success: true, message: 'Account set up successfully' });
 };

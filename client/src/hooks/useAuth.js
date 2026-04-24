@@ -41,3 +41,12 @@ export const useResetPassword = () => {
     onError: (err) => toast.error(err.message || 'Reset failed'),
   });
 };
+
+export const useRegister = () => {
+  const navigate = useNavigate();
+  return useMutation({
+    mutationFn: authApi.register,
+    onSuccess: () => { toast.success('Account set up successfully'); navigate('/login'); },
+    onError: (err) => toast.error(err.message || 'Registration failed'),
+  });
+};

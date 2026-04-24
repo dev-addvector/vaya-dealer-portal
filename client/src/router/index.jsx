@@ -15,6 +15,7 @@ function CatchAll() {
 import LoginPage from '@/pages/auth/LoginPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
+import RegisterPage from '@/pages/auth/RegisterPage';
 import ProductsPage from '@/pages/products/ProductsPage';
 import MyOrdersPage from '@/pages/orders/MyOrdersPage';
 import OpenOrdersPage from '@/pages/orders/OpenOrdersPage';
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
   { path: '/login', element: <PublicRoute><LoginPage /></PublicRoute> },
   { path: '/forgot-password', element: <PublicRoute><ForgotPasswordPage /></PublicRoute> },
   { path: '/reset-password/:token', element: <ResetPasswordPage /> },
+  { path: '/register/:encrypted_unc/:key_phrase', element: <RegisterPage /> },
   {
     element: <ProtectedRoute><AppLayout /></ProtectedRoute>,
     children: [

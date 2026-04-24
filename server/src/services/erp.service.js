@@ -457,4 +457,13 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
   });
 }
 
-module.exports = { getProducts, getOpenOrders, getReservedOrders, getMyOrders, placeOrder, cancelOrder, getReservedOrderByPo, getLiveProductsRaw, getOrderPdf, generateOpenOrderPdf, getPriceList, getPriceListJson, getUserDetails, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress, getShippingModes, getStocks, getOrdersByUnc };
+async function postAccountingEmail(unc, email, accountingEmail) {
+  const { data } = await postWithFallback('/Users/PostUserAccountingEmail', {
+    UCN: unc,
+    'Email ID': email,
+    'Accounting Email ID': accountingEmail,
+  });
+  return data;
+}
+
+module.exports = { getProducts, getOpenOrders, getReservedOrders, getMyOrders, placeOrder, cancelOrder, getReservedOrderByPo, getLiveProductsRaw, getOrderPdf, generateOpenOrderPdf, getPriceList, getPriceListJson, getUserDetails, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress, getShippingModes, getStocks, getOrdersByUnc, postAccountingEmail };
