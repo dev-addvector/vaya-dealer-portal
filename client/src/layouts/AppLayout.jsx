@@ -63,7 +63,7 @@ export default function AppLayout() {
     { label: 'My Profile', to: '/profile' },
     { label: 'Download e-brochure', to: '/downloads/ebrochures' },
     { label: 'Download Price list', action: () => { setMobileMenuOpen(false); setPriceListModal(true); } },
-    { label: 'About Us', to: '/about' },
+    { label: 'About Us', action: () => { window.open('https://vayahome.com/', '_blank'); setMobileMenuOpen(false); } },
   ];
 
   const handleMobileNav = (item) => {
