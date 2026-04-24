@@ -5,13 +5,14 @@ import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import { useLogin } from '@/hooks/useAuth';
 
-/* Height-based responsive breakpoints — not expressible with Tailwind utilities */
 const responsiveStyles = `
   .login-wrapper {
+    height: 100vh;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     background-color: #fff;
+    overflow: hidden;
   }
   .login-header {
     background-color: #E3E8CC;
@@ -35,6 +36,7 @@ const responsiveStyles = `
   .login-form-panel {
     width: 50%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 40px;
@@ -55,19 +57,55 @@ const responsiveStyles = `
     background-size: cover;
     min-height: 0;
   }
-  @media (max-height: 820px) {
+  .dealer-portal-label { display: block; }
+
+  /* Mobile: full-screen background image, form as overlay card */
+  @media (max-width: 767px) {
+    .login-header { height: 56px; }
+    .login-header-inner { height: 56px; justify-content: center; }
+    .dealer-portal-label { display: none; }
+    .header-logo-wrap { width: auto !important; padding: 0 !important; }
+    .header-spacer { display: none; }
+    .login-body {
+      position: relative;
+      background-image: var(--login-bg);
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+    }
+    .login-form-panel {
+      width: 100%;
+      background: transparent;
+      padding: 24px 20px;
+      align-items: flex-start;
+    }
+    .login-form-inner {
+      width: 100%;
+      max-width: 100%;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 28px 24px 20px;
+      border-radius: 4px;
+    }
+    .login-image-panel { display: none; }
+    .login-title-wrap { margin-bottom: 24px; }
+    .login-field-email { margin-bottom: 18px; }
+    .login-field-password { margin-bottom: 14px; }
+    .login-remember-row { margin-bottom: 20px; }
+  }
+
+  @media (max-height: 820px) and (min-width: 768px) {
     .login-header { height: 56px; }
     .login-header-inner { height: 56px; }
-    .login-form-panel { padding: 24px 40px; align-items: flex-start; }
+    .login-form-panel { padding: 24px 40px; }
     .login-title-wrap { margin-bottom: 24px; }
     .login-field-email { margin-bottom: 16px; }
     .login-field-password { margin-bottom: 14px; }
     .login-remember-row { margin-bottom: 16px; }
   }
-  @media (max-height: 680px) {
+  @media (max-height: 680px) and (min-width: 768px) {
     .login-header { height: 48px; }
     .login-header-inner { height: 48px; }
-    .login-form-panel { padding: 16px 32px; align-items: flex-start; }
+    .login-form-panel { padding: 16px 32px; }
     .login-title-wrap { margin-bottom: 16px; }
     .login-field-email { margin-bottom: 12px; }
     .login-field-password { margin-bottom: 10px; }
@@ -107,6 +145,7 @@ export default function LoginPage() {
       .then((d) => { if (d.image) setLoginImage(d.image); })
       .catch(() => {});
   }, []);
+
   const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
 
   return (
@@ -117,20 +156,22 @@ export default function LoginPage() {
         {/* Header */}
         <header className="login-header">
           <div className="login-header-inner">
-            <div className="w-1/3 px-[30px] py-5">
+            <div className="header-logo-wrap w-1/3 px-[30px] py-5">
               <img src="/images/logo.png" alt="Vaya" className="h-7 object-contain block" />
             </div>
-            <div className="w-1/3 text-center">
+            <div className="dealer-portal-label w-1/3 text-center">
               <span className="text-[25px] text-vaya-black font-normal">Dealer Portal</span>
             </div>
-            <div className="w-1/3" />
+            <div className="header-spacer w-1/3" />
           </div>
         </header>
 
         {/* Body */}
-        <div className="login-body">
-
-          {/* Left: Form */}
+        <div
+          className="login-body"
+          style={{ '--login-bg': `url(${loginImage})` }}
+        >
+          {/* Form panel */}
           <div className="login-form-panel">
             <div className="login-form-inner">
 
@@ -199,7 +240,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Right: Image */}
+          {/* Right: Image (desktop only) */}
           <div
             className="login-image-panel"
             style={{ backgroundImage: `url(${loginImage})` }}

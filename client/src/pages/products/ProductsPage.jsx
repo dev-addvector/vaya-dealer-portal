@@ -7,21 +7,10 @@ const tdBase = 'px-[10px] py-[6px] border border-[#dee2e6] align-middle text-sm 
 function RollModal({ product, onClose }) {
   if (!product) return null;
   return (
-    <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-[rgba(0,0,0,0.4)]" />
-      <div
-        className="relative bg-white rounded-[4px] p-5 min-w-[320px] max-w-[420px] shadow-[0_4px_24px_rgba(0,0,0,0.18)]"
-        onClick={e => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-[10px] right-[14px] bg-transparent border-none text-[20px] cursor-pointer text-[#555] leading-none"
-        >
-          ×
-        </button>
+      <div className="relative bg-white rounded-[4px] p-5 min-w-[320px] max-w-[420px] shadow-[0_4px_24px_rgba(0,0,0,0.18)]" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-[10px] right-[14px] bg-transparent border-none text-[20px] cursor-pointer text-[#555] leading-none">×</button>
         <div className="grid grid-cols-2 gap-2 mb-2">
           <div className="text-[13px] text-[#555] font-medium">Unique Roll Number</div>
           <div className="text-[13px] text-[#555] font-medium">Length</div>
@@ -29,16 +18,8 @@ function RollModal({ product, onClose }) {
         <div className="max-h-[320px] overflow-y-auto">
           {product.Rolls.map((r, i) => (
             <div key={i} className="grid grid-cols-2 gap-2 mb-2">
-              <input
-                readOnly
-                value={r.PcSINo || ''}
-                className="border border-[#C8C8C8] rounded-[3px] px-[10px] py-[6px] text-[13px] bg-[#f9f9f9] outline-none w-full"
-              />
-              <input
-                readOnly
-                value={r.Length || ''}
-                className="border border-[#C8C8C8] rounded-[3px] px-[10px] py-[6px] text-[13px] bg-[#f9f9f9] outline-none w-full"
-              />
+              <input readOnly value={r.PcSINo || ''} className="border border-[#C8C8C8] rounded-[3px] px-[10px] py-[6px] text-[13px] bg-[#f9f9f9] outline-none w-full" />
+              <input readOnly value={r.Length || ''} className="border border-[#C8C8C8] rounded-[3px] px-[10px] py-[6px] text-[13px] bg-[#f9f9f9] outline-none w-full" />
             </div>
           ))}
         </div>
@@ -49,46 +30,125 @@ function RollModal({ product, onClose }) {
 
 function PanelLengthPopup({ onClose, value, onChange }) {
   const popupRef = useRef(null);
-
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (popupRef.current && !popupRef.current.contains(e.target)) {
-        onClose();
-      }
+      if (popupRef.current && !popupRef.current.contains(e.target)) onClose();
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
   return (
-    <div
-      ref={popupRef}
-      className="absolute top-full right-0 z-[100] w-[300px] bg-white shadow-[0px_3px_40px_rgba(0,0,0,0.32)] rounded-[10px] p-5 mt-[10px]"
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-[10px] right-[14px] bg-transparent border-none text-[18px] cursor-pointer text-[#555] leading-none"
-      >
-        ×
-      </button>
-      <div className="text-center font-semibold text-[15px] mb-[6px]">
-        Specify Panel Lengths
-      </div>
+    <div ref={popupRef} className="absolute top-full right-0 z-[100] w-[300px] bg-white shadow-[0px_3px_40px_rgba(0,0,0,0.32)] rounded-[10px] p-5 mt-[10px]">
+      <button onClick={onClose} className="absolute top-[10px] right-[14px] bg-transparent border-none text-[18px] cursor-pointer text-[#555] leading-none">×</button>
+      <div className="text-center font-semibold text-[15px] mb-[6px]">Specify Panel Lengths</div>
       <div className="text-center italic text-sm mb-[10px] flex items-center justify-center gap-[6px]">
         Optional Field
-        <span
-          title="Please provide info to help us to send adequate roll lengths"
-          className="inline-flex items-center justify-center border border-black rounded-full w-[17px] h-[17px] text-[10px] cursor-default shrink-0"
-        >
-          i
-        </span>
+        <span title="Please provide info to help us to send adequate roll lengths" className="inline-flex items-center justify-center border border-black rounded-full w-[17px] h-[17px] text-[10px] cursor-default shrink-0">i</span>
       </div>
-      <textarea
-        rows={4}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full border border-[#C8C8C8] rounded-[4px] p-[6px] text-[13px] resize-y outline-none"
-      />
+      <textarea rows={4} value={value} onChange={e => onChange(e.target.value)} className="w-full border border-[#C8C8C8] rounded-[4px] p-[6px] text-[13px] resize-y outline-none" />
+    </div>
+  );
+}
+
+function ProductCard({ p, orderLengths, setOrderLengths, panelNotes, setPanelNotes, panelPopupKey, setPanelPopupKey, cartItemByKey, addToCart, editCartItem, debounceTimers, setRollModal, handleAddToCart }) {
+  const key = `${p.Pattern}||${p.Color}`;
+  const inStock = p.TotalLength > 0;
+  const inCart = !!cartItemByKey[key];
+
+  return (
+    <div className="border border-[#ddd] rounded-[4px] shadow-[0_1px_4px_rgba(0,0,0,0.08)] bg-white">
+      {/* Card header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-[#f5f5f5] border-b border-[#e0e0e0] rounded-t-[4px]">
+        <span className="text-[18px] font-normal text-[#222]">{p.Pattern}</span>
+        <span className={`w-3 h-3 rounded-full shrink-0 ${inStock ? 'bg-[#28a745]' : 'bg-[#dc3545]'}`} title={inStock ? 'In Stock' : 'Out of Stock'} />
+      </div>
+
+      {/* Card rows */}
+      <div className="divide-y divide-[#ebebeb]">
+        <div className="flex items-center justify-between px-4 py-[10px]">
+          <span className="text-[13px] text-[#555]">Color :</span>
+          <span className="text-[13px] text-[#333]">{p.Color}</span>
+        </div>
+        <div className="flex items-center justify-between px-4 py-[10px]">
+          <span className="text-[13px] text-[#555]">Quantity Available :</span>
+          <span className="text-[13px] text-[#333]">{p.TotalLength.toFixed(2)}</span>
+        </div>
+        <div className="flex items-center justify-between px-4 py-[10px]">
+          <span className="text-[13px] text-[#555]">Number of Rolls :</span>
+          {p.Rolls.length > 0 ? (
+            <button onClick={() => setRollModal(p)} className="bg-transparent border-none text-[#007bff] cursor-pointer text-[13px] p-0 underline">
+              {p.NumberOfRolls}
+            </button>
+          ) : (
+            <span className="text-[13px] text-[#333]">{p.NumberOfRolls}</span>
+          )}
+        </div>
+        <div className="flex items-center justify-between px-4 py-[10px] relative">
+          <span className="text-[13px] text-[#555]">Order Length(m) :</span>
+          <div className="inline-flex items-center relative border-b border-black">
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="Enter Length"
+              className="border-none bg-transparent py-1 px-[2px] w-[90px] text-[13px] outline-none text-[#555] text-right"
+              value={orderLengths[key] || ''}
+              onChange={e => {
+                const v = e.target.value;
+                if (v === '' || /^\d*\.?\d*$/.test(v)) {
+                  setOrderLengths(prev => ({ ...prev, [key]: v }));
+                  const cartItem = cartItemByKey[key];
+                  if (cartItem) {
+                    clearTimeout(debounceTimers.current[key]);
+                    debounceTimers.current[key] = setTimeout(() => {
+                      const num = parseFloat(v);
+                      if (!isNaN(num) && num > 0) editCartItem.mutate({ id: cartItem.id, quantity: num });
+                    }, 800);
+                  }
+                }
+              }}
+              onBlur={() => {
+                const v = parseFloat(orderLengths[key]);
+                if (!isNaN(v) && v < 1) {
+                  setOrderLengths(prev => ({ ...prev, [key]: '1' }));
+                  const cartItem = cartItemByKey[key];
+                  if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: 1 });
+                }
+              }}
+            />
+            <button
+              onClick={() => setPanelPopupKey(prev => prev === key ? null : key)}
+              title="Specify Panel Lengths"
+              disabled={!orderLengths[key]}
+              className={`bg-transparent border-none px-[2px] text-[#555] text-[18px] leading-none shrink-0 ${orderLengths[key] ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-25'}`}
+            >
+              ▾
+            </button>
+            {panelPopupKey === key && (
+              <PanelLengthPopup
+                value={panelNotes[key] || ''}
+                onChange={v => setPanelNotes(prev => ({ ...prev, [key]: v }))}
+                onClose={() => setPanelPopupKey(null)}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Add to cart footer */}
+      <div className="border-t border-[#e0e0e0] rounded-b-[4px] overflow-hidden">
+        {inCart ? (
+          <div className="py-3 text-center text-[13px] text-vaya-primary font-medium">✓ In Cart</div>
+        ) : (
+          <button
+            onClick={() => handleAddToCart(p)}
+            disabled={addToCart.isPending || !inStock}
+            className={`w-full py-3 border-none text-[14px] tracking-wide ${inStock ? 'bg-vaya-light text-[#555] cursor-pointer' : 'bg-[#f0f0f0] text-[#aaa] cursor-not-allowed'}`}
+          >
+            Add to cart
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -142,11 +202,11 @@ export default function ProductsPage() {
     if (!sort.key) return products;
     return [...products].sort((a, b) => {
       let av, bv;
-      if (sort.key === 'stock')         { av = a.TotalLength > 0 ? 1 : 0; bv = b.TotalLength > 0 ? 1 : 0; }
-      else if (sort.key === 'pattern')  { av = (a.Pattern || '').toLowerCase(); bv = (b.Pattern || '').toLowerCase(); }
-      else if (sort.key === 'color')    { av = (a.Color || '').toLowerCase(); bv = (b.Color || '').toLowerCase(); }
-      else if (sort.key === 'qty')      { av = a.TotalLength; bv = b.TotalLength; }
-      else if (sort.key === 'rolls')    { av = a.NumberOfRolls; bv = b.NumberOfRolls; }
+      if (sort.key === 'stock')        { av = a.TotalLength > 0 ? 1 : 0; bv = b.TotalLength > 0 ? 1 : 0; }
+      else if (sort.key === 'pattern') { av = (a.Pattern || '').toLowerCase(); bv = (b.Pattern || '').toLowerCase(); }
+      else if (sort.key === 'color')   { av = (a.Color || '').toLowerCase(); bv = (b.Color || '').toLowerCase(); }
+      else if (sort.key === 'qty')     { av = a.TotalLength; bv = b.TotalLength; }
+      else if (sort.key === 'rolls')   { av = a.NumberOfRolls; bv = b.NumberOfRolls; }
       else return 0;
       if (av < bv) return sort.dir === 'asc' ? -1 : 1;
       if (av > bv) return sort.dir === 'asc' ? 1 : -1;
@@ -161,14 +221,8 @@ export default function ProductsPage() {
   const handleAddToCart = (p) => {
     const key = `${p.Pattern}||${p.Color}`;
     const length = parseFloat(orderLengths[key] || 0);
-    if (!length || length < 1) {
-      alert('Please enter an order length of at least 1 m');
-      return;
-    }
-    if (length > p.TotalLength) {
-      alert(`Max available length is ${p.TotalLength.toFixed(2)} m`);
-      return;
-    }
+    if (!length || length < 1) { alert('Please enter an order length of at least 1 m'); return; }
+    if (length > p.TotalLength) { alert(`Max available length is ${p.TotalLength.toFixed(2)} m`); return; }
     addToCart.mutate({
       productId: p.Rolls[0]?.PcSINo || key,
       productName: `${p.Pattern} - ${p.Color}`,
@@ -184,6 +238,26 @@ export default function ProductsPage() {
     });
   };
 
+  const cardProps = { orderLengths, setOrderLengths, panelNotes, setPanelNotes, panelPopupKey, setPanelPopupKey, cartItemByKey, addToCart, editCartItem, debounceTimers, setRollModal, handleAddToCart };
+
+  const Pagination = () => (
+    <div className="flex gap-1 mt-4 items-center text-sm text-[#555] flex-wrap">
+      <button disabled={filters.page <= 1} onClick={() => setFilters(f => ({ ...f, page: f.page - 1 }))} className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] bg-white text-[#555] ${filters.page <= 1 ? 'cursor-not-allowed' : 'cursor-pointer'}`}>‹</button>
+      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+        const pg = i + 1;
+        return (
+          <button key={pg} onClick={() => setFilters(f => ({ ...f, page: pg }))} className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] cursor-pointer ${filters.page === pg ? 'bg-vaya-primary text-white' : 'bg-white text-[#555]'}`}>{pg}</button>
+        );
+      })}
+      {totalPages > 5 && <span className="px-[6px] py-1">…</span>}
+      {totalPages > 5 && (
+        <button onClick={() => setFilters(f => ({ ...f, page: totalPages }))} className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] cursor-pointer ${filters.page === totalPages ? 'bg-vaya-primary text-white' : 'bg-white text-[#555]'}`}>{totalPages}</button>
+      )}
+      <button disabled={filters.page >= totalPages} onClick={() => setFilters(f => ({ ...f, page: f.page + 1 }))} className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] bg-white text-[#555] ${filters.page >= totalPages ? 'cursor-not-allowed' : 'cursor-pointer'}`}>›</button>
+      <span className="ml-2 text-[#888]">{total} groups</span>
+    </div>
+  );
+
   return (
     <div>
       {/* Breadcrumb */}
@@ -196,14 +270,14 @@ export default function ProductsPage() {
       <section>
         <div className="max-w-[90%] mx-auto px-[15px] pb-[25px]">
 
-          {/* Search bar + Show entries */}
+          {/* Search bar */}
           <div className="flex items-center justify-between pt-[15px] pb-[10px] flex-wrap gap-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               <input
                 type="text"
                 placeholder="Search Pattern"
                 value={draftPattern}
-                className="border border-[#C8C8C8] rounded-[3px] px-2 py-[7px] text-sm bg-white outline-none w-[200px] h-[36px]"
+                className="border border-[#C8C8C8] rounded-[3px] px-2 py-[7px] text-sm bg-white outline-none min-w-0 flex-1 md:w-[200px] md:flex-none h-[36px]"
                 onChange={e => setDraftPattern(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
               />
@@ -211,7 +285,7 @@ export default function ProductsPage() {
                 type="text"
                 placeholder="Search Color"
                 value={draftColor}
-                className="border border-[#C8C8C8] rounded-[3px] px-2 py-[7px] text-sm bg-white outline-none w-[200px] h-[36px] ml-[5px]"
+                className="border border-[#C8C8C8] rounded-[3px] px-2 py-[7px] text-sm bg-white outline-none min-w-0 flex-1 md:w-[200px] md:flex-none h-[36px] ml-[5px]"
                 onChange={e => setDraftColor(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
               />
@@ -225,7 +299,7 @@ export default function ProductsPage() {
                 </svg>
               </button>
             </div>
-            <div className="flex items-center gap-[6px] text-sm text-[#555]">
+            <div className="hidden md:flex items-center gap-[6px] text-sm text-[#555]">
               Show
               <select
                 value={filters.perPage}
@@ -243,7 +317,18 @@ export default function ProductsPage() {
 
           {!isLoading && (
             <>
-              <div className="overflow-x-auto shadow-[0px_2px_15px_rgba(0,0,0,0.22)]">
+              {/* ── Mobile card list ── */}
+              <div className="md:hidden flex flex-col gap-4">
+                {sortedProducts.length === 0 && (
+                  <p className="text-center text-[#999] py-6 text-sm">No products found</p>
+                )}
+                {sortedProducts.map(p => (
+                  <ProductCard key={`${p.Pattern}||${p.Color}`} p={p} {...cardProps} />
+                ))}
+              </div>
+
+              {/* ── Desktop table ── */}
+              <div className="hidden md:block overflow-x-auto shadow-[0px_2px_15px_rgba(0,0,0,0.22)]">
                 <table className="w-full border-collapse bg-white text-sm">
                   <thead>
                     <tr>
@@ -256,11 +341,7 @@ export default function ProductsPage() {
                         { label: 'Order Length(m)',    key: null      },
                         { label: '',                   key: null      },
                       ].map(({ label, key }) => (
-                        <th
-                          key={label}
-                          className={`${thBase} ${key ? 'cursor-pointer' : 'cursor-default'}`}
-                          onClick={() => key && handleSort(key)}
-                        >
+                        <th key={label} className={`${thBase} ${key ? 'cursor-pointer' : 'cursor-default'}`} onClick={() => key && handleSort(key)}>
                           {label}
                           {key && (
                             <span className={`ml-[6px] text-[11px] ${sort.key === key ? 'opacity-100' : 'opacity-30'}`}>
@@ -273,9 +354,7 @@ export default function ProductsPage() {
                   </thead>
                   <tbody>
                     {products.length === 0 && (
-                      <tr>
-                        <td colSpan={7} className="text-center text-[#999] p-6 border border-[#dee2e6]">No products found</td>
-                      </tr>
+                      <tr><td colSpan={7} className="text-center text-[#999] p-6 border border-[#dee2e6]">No products found</td></tr>
                     )}
                     {sortedProducts.map((p) => {
                       const key = `${p.Pattern}||${p.Color}`;
@@ -283,22 +362,14 @@ export default function ProductsPage() {
                       return (
                         <tr key={key} className="hover:bg-[#f8f9fa]">
                           <td className={`${tdBase} text-center`}>
-                            <span
-                              className={`inline-block w-3 h-3 rounded-full ${inStock ? 'bg-[#28a745]' : 'bg-[#dc3545]'}`}
-                              title={inStock ? 'In Stock' : 'Out of Stock'}
-                            />
+                            <span className={`inline-block w-3 h-3 rounded-full ${inStock ? 'bg-[#28a745]' : 'bg-[#dc3545]'}`} title={inStock ? 'In Stock' : 'Out of Stock'} />
                           </td>
                           <td className={`${tdBase} font-normal`}>{p.Pattern}</td>
                           <td className={tdBase}>{p.Color}</td>
                           <td className={`${tdBase} text-center`}>{p.TotalLength.toFixed(2)}</td>
                           <td className={`${tdBase} text-center`}>
                             {p.Rolls.length > 0 ? (
-                              <button
-                                onClick={() => setRollModal(p)}
-                                className="bg-transparent border-none text-[#007bff] cursor-pointer text-sm p-0 underline"
-                              >
-                                {p.NumberOfRolls}
-                              </button>
+                              <button onClick={() => setRollModal(p)} className="bg-transparent border-none text-[#007bff] cursor-pointer text-sm p-0 underline">{p.NumberOfRolls}</button>
                             ) : p.NumberOfRolls}
                           </td>
                           <td className={`${tdBase} relative`}>
@@ -318,9 +389,7 @@ export default function ProductsPage() {
                                       clearTimeout(debounceTimers.current[key]);
                                       debounceTimers.current[key] = setTimeout(() => {
                                         const num = parseFloat(v);
-                                        if (!isNaN(num) && num > 0) {
-                                          editCartItem.mutate({ id: cartItem.id, quantity: num });
-                                        }
+                                        if (!isNaN(num) && num > 0) editCartItem.mutate({ id: cartItem.id, quantity: num });
                                       }, 800);
                                     }
                                   }
@@ -371,45 +440,7 @@ export default function ProductsPage() {
                 </table>
               </div>
 
-              {/* Pagination */}
-              <div className="flex gap-1 mt-4 items-center text-sm text-[#555] flex-wrap">
-                <button
-                  disabled={filters.page <= 1}
-                  onClick={() => setFilters(f => ({ ...f, page: f.page - 1 }))}
-                  className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] bg-white text-[#555] ${filters.page <= 1 ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                >
-                  ‹
-                </button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  const pg = i + 1;
-                  return (
-                    <button
-                      key={pg}
-                      onClick={() => setFilters(f => ({ ...f, page: pg }))}
-                      className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] cursor-pointer ${filters.page === pg ? 'bg-vaya-primary text-white' : 'bg-white text-[#555]'}`}
-                    >
-                      {pg}
-                    </button>
-                  );
-                })}
-                {totalPages > 5 && <span className="px-[6px] py-1">…</span>}
-                {totalPages > 5 && (
-                  <button
-                    onClick={() => setFilters(f => ({ ...f, page: totalPages }))}
-                    className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] cursor-pointer ${filters.page === totalPages ? 'bg-vaya-primary text-white' : 'bg-white text-[#555]'}`}
-                  >
-                    {totalPages}
-                  </button>
-                )}
-                <button
-                  disabled={filters.page >= totalPages}
-                  onClick={() => setFilters(f => ({ ...f, page: f.page + 1 }))}
-                  className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] bg-white text-[#555] ${filters.page >= totalPages ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                >
-                  ›
-                </button>
-                <span className="ml-2 text-[#888]">{total} groups</span>
-              </div>
+              <Pagination />
             </>
           )}
         </div>
