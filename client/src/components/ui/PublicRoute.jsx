@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 export default function PublicRoute({ children }) {
   const { token, user } = useAuthStore();
   if (token) {
-    return <Navigate to={user?.role === 'admin' ? '/admin/dashboard' : '/products'} replace />;
+    return <Navigate to={user?.role === 'user' ? '/products' : '/admin/dashboard'} replace />;
   }
   return children;
 }
