@@ -52,18 +52,22 @@ exports.convertReservedToOrder = async (req, res) => {
   for (const item of order.OrderItems) {
     const key = `${item.Pattern}||${item.Color}`;
     const liveProduct = productIndex[key];
+    const quantity       = parseFloat(item.OrderdLength || item.OrderedLength) || 0;
+    const totalAvailable = liveProduct ? (parseFloat(liveProduct.TotalLength) || 0) : null;
     await prisma.cartItem.create({
       data: {
-        userId:     user.id,
-        productId:  liveProduct?.PcSINo || key,
-        productName:`${item.Pattern} - ${item.Color}`,
-        pattern:    item.Pattern || '',
-        color:      item.Color || '',
-        price:      parseFloat(item.Rate) || 0,
-        rollPrice:  parseFloat(liveProduct?.['Roll Price']) || parseFloat(item.Rate) || 0,
-        cutPrice:   parseFloat(liveProduct?.['Cut Price'])  || parseFloat(item.Rate) || 0,
-        gstPercent: parseFloat(liveProduct?.['GST Perc'])   || 5,
-        quantity:   parseFloat(item.OrderdLength || item.OrderedLength) || 0,
+        userId:         user.id,
+        productId:      liveProduct?.PcSINo || key,
+        productName:    `${item.Pattern} - ${item.Color}`,
+        pattern:        item.Pattern || '',
+        color:          item.Color || '',
+        price:          parseFloat(item.Rate) || 0,
+        rollPrice:      parseFloat(liveProduct?.['Roll Price']) || parseFloat(item.Rate) || 0,
+        cutPrice:       parseFloat(liveProduct?.['Cut Price'])  || parseFloat(item.Rate) || 0,
+        gstPercent:     parseFloat(liveProduct?.['GST Perc'])   || 5,
+        quantity,
+        totalAvailable,
+        noStock:        totalAvailable !== null ? quantity > totalAvailable : false,
       },
     });
   }
