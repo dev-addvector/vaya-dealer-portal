@@ -4,6 +4,7 @@ import SearchableSelect from '@/components/SearchableSelect';
 
 const thBase = 'bg-vaya-black text-white px-[10px] py-[10px] text-left border border-[#333] font-normal whitespace-nowrap text-sm select-none';
 const tdBase = 'px-[10px] py-[6px] border border-[#dee2e6] align-middle text-sm text-[#333]';
+const round2 = (n) => Math.round(n * 10) / 10;
 
 function RollModal({ product, onClose }) {
   if (!product) return null;
@@ -114,19 +115,20 @@ function ProductCard({ p, orderLengths, setOrderLengths, panelNotes, setPanelNot
                   if (cartItem) {
                     clearTimeout(debounceTimers.current[key]);
                     debounceTimers.current[key] = setTimeout(() => {
-                      const num = parseFloat(v);
-                      if (!isNaN(num) && num > 0) editCartItem.mutate({ id: cartItem.id, quantity: num });
+                      const num = round2(parseFloat(v));
+                      if (!isNaN(num) && num > 0) editCartItem.mutate({ id: cartItem.id, quantity: num, noStock: num > p.TotalLength, totalAvailable: p.TotalLength });
                     }, 800);
                   }
                 }
               }}
               onBlur={() => {
-                const v = parseFloat(orderLengths[key]);
-                if (!isNaN(v) && v < 1) {
-                  setOrderLengths(prev => ({ ...prev, [key]: '1' }));
-                  const cartItem = cartItemByKey[key];
-                  if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: 1 });
-                }
+                const raw = parseFloat(orderLengths[key]);
+                if (isNaN(raw)) return;
+                const v = raw < 1 ? 1 : round2(raw);
+                clearTimeout(debounceTimers.current[key]);
+                setOrderLengths(prev => ({ ...prev, [key]: String(v) }));
+                const cartItem = cartItemByKey[key];
+                if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: v, noStock: v > p.TotalLength, totalAvailable: p.TotalLength });
               }}
             />
             <button
@@ -164,8 +166,8 @@ function ProductCard({ p, orderLengths, setOrderLengths, panelNotes, setPanelNot
         ) : (
           <button
             onClick={() => handleAddToCart(p)}
-            disabled={addToCart.isPending || !inStock}
-            className={`w-full py-3 border-none text-[14px] tracking-wide ${inStock ? 'bg-vaya-light text-[#555] cursor-pointer' : 'bg-[#f0f0f0] text-[#aaa] cursor-not-allowed'}`}
+            disabled={addToCart.isPending}
+            className="w-full py-3 border-none text-[14px] tracking-wide bg-vaya-light text-[#555] cursor-pointer"
           >
             Add to cart
           </button>
@@ -250,7 +252,11 @@ export default function ProductsPage() {
 
   useEffect(() => {
     const items = cartData?.items ?? [];
-    if (!items.length) return;
+    if (!items.length) {
+      setOrderLengths({});
+      setPanelNotes({});
+      return;
+    }
     setOrderLengths(prev => {
       const merged = { ...prev };
       items.forEach(item => {
@@ -395,9 +401,8 @@ export default function ProductsPage() {
 
   const handleAddToCart = (p) => {
     const key = `${p.Pattern}||${p.Color}`;
-    const length = parseFloat(orderLengths[key] || 0);
+    const length = round2(parseFloat(orderLengths[key] || 0));
     if (!length || length < 1) { alert('Please enter an order length of at least 1 m'); return; }
-    if (length > p.TotalLength) { alert(`Max available length is ${p.TotalLength.toFixed(2)} m`); return; }
     addToCart.mutate({
       productId: p.Rolls[0]?.PcSINo || key,
       productName: `${p.Pattern} - ${p.Color}`,
@@ -410,6 +415,8 @@ export default function ProductsPage() {
       quantity: length,
       unit: 'm',
       remark: panelNotes[key] || '',
+      noStock: length > p.TotalLength,
+      totalAvailable: p.TotalLength,
     });
   };
 
@@ -601,8 +608,8 @@ export default function ProductsPage() {
                                     if (cartItem) {
                                       clearTimeout(debounceTimers.current[key]);
                                       debounceTimers.current[key] = setTimeout(() => {
-                                        const num = parseFloat(v);
-                                        if (!isNaN(num) && num > 0) editCartItem.mutate({ id: cartItem.id, quantity: num });
+                                        const num = round2(parseFloat(v));
+                                        if (!isNaN(num) && num > 0) editCartItem.mutate({ id: cartItem.id, quantity: num, noStock: num > p.TotalLength, totalAvailable: p.TotalLength });
                                       }, 800);
                                     }
                                   }
@@ -612,7 +619,7 @@ export default function ProductsPage() {
                                   if (!isNaN(v) && v < 1) {
                                     setOrderLengths(prev => ({ ...prev, [key]: '1' }));
                                     const cartItem = cartItemByKey[key];
-                                    if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: 1 });
+                                    if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: 1, noStock: 1 > p.TotalLength, totalAvailable: p.TotalLength });
                                   }
                                 }}
                               />
@@ -648,8 +655,8 @@ export default function ProductsPage() {
                             ) : (
                               <button
                                 onClick={() => handleAddToCart(p)}
-                                disabled={addToCart.isPending || !inStock}
-                                className={`bg-white px-[14px] py-[5px] rounded-[3px] text-[13px] whitespace-nowrap border ${inStock ? 'text-vaya-primary border-vaya-primary cursor-pointer' : 'text-[#aaa] border-[#ccc] cursor-not-allowed'}`}
+                                disabled={addToCart.isPending}
+                                className="bg-white px-[14px] py-[5px] rounded-[3px] text-[13px] whitespace-nowrap border text-vaya-primary border-vaya-primary cursor-pointer"
                               >
                                 Add To Cart
                               </button>

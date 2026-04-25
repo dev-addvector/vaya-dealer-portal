@@ -44,12 +44,12 @@ exports.getCart = async (req, res) => {
 };
 
 exports.addToCart = async (req, res) => {
-  const { productId, productName, pattern, color, price, rollPrice, cutPrice, gstPercent, quantity, unit, remark } = req.body;
+  const { productId, productName, pattern, color, price, rollPrice, cutPrice, gstPercent, quantity, unit, remark, noStock, totalAvailable } = req.body;
   const existing = await prisma.cartItem.findFirst({ where: { userId: req.user.id, productId } });
   if (existing) {
     await prisma.cartItem.update({
       where: { id: existing.id },
-      data: { quantity: quantity || existing.quantity },
+      data: { quantity: quantity || existing.quantity, noStock: noStock || false, totalAvailable: totalAvailable ?? existing.totalAvailable },
     });
   } else {
     await prisma.cartItem.create({
@@ -66,6 +66,8 @@ exports.addToCart = async (req, res) => {
         quantity: quantity || 1,
         unit,
         remark,
+        noStock: noStock || false,
+        totalAvailable: totalAvailable ?? null,
       },
     });
   }
@@ -73,10 +75,12 @@ exports.addToCart = async (req, res) => {
 };
 
 exports.editCartItem = async (req, res) => {
-  const { id, quantity, remark } = req.body;
+  const { id, quantity, remark, noStock, totalAvailable } = req.body;
   const updateData = {};
   if (quantity !== undefined) updateData.quantity = quantity;
   if (remark !== undefined) updateData.remark = remark;
+  if (noStock !== undefined) updateData.noStock = noStock;
+  if (totalAvailable !== undefined) updateData.totalAvailable = totalAvailable;
   await prisma.cartItem.updateMany({
     where: { id, userId: req.user.id },
     data: updateData,
@@ -255,13 +259,12 @@ exports.placeOrder = async (req, res) => {
     const taxable = basePrice - itemDiscount;
     const gstPct = item.gstPercent || globalGst;
     const gstAmount = (taxable * gstPct) / 100;
-    const totalCost = taxable + gstAmount;
 
     return {
       Pattern: item.pattern || '',
       Color: item.color || '',
-      OrderedLength: orderedLength,
-      TotalCost: totalCost.toFixed(2),
+      OrderedLength: String(orderedLength),
+      TotalCost: taxable.toFixed(2),
       TaxAmount: gstAmount.toFixed(2),
       DiscountType: 'V',
       DiscountVal: itemDiscount.toFixed(2),
@@ -271,13 +274,12 @@ exports.placeOrder = async (req, res) => {
     };
   });
 
-  const effectiveShipping = shippingAddressId || billingAddressId || '';
-  const effectiveBilling = billingAddressId || shippingAddressId || '';
+  const effectiveShipping = String(shippingAddressId || billingAddressId || '');
+  const effectiveBilling = String(billingAddressId || shippingAddressId || '');
 
-  const dateObj = orderDate ? new Date(orderDate) : new Date();
-  const d = String(dateObj.getDate()).padStart(2, '0');
-  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const y = dateObj.getFullYear();
+  const [y, m, d] = orderDate
+    ? orderDate.split('-')
+    : new Date().toISOString().split('T')[0].split('-');
 
   const erpPayload = {
     UCN: user.unc,
@@ -292,8 +294,10 @@ exports.placeOrder = async (req, res) => {
     RefPONumber: refPoNumber || '',
   };
 
+  console.log('[placeOrder] ERP payload:', JSON.stringify(erpPayload, null, 2));
   try {
     const result = await erpService.placeOrder(erpPayload);
+    console.log('[placeOrder] ERP result:', JSON.stringify(result, null, 2));
     const isSuccess = result?.status === true || result?.status === 'TRUE' ||
       result?.return_code === 200 || result?.return_code === '200' ||
       result?.success === true;
@@ -304,6 +308,7 @@ exports.placeOrder = async (req, res) => {
     const errMsg = result?.message || result?.return_message || 'Failed to place order';
     return res.status(400).json({ success: false, message: errMsg });
   } catch (err) {
+    console.error('[placeOrder] Error:', err?.message, err?.response?.data);
     return res.status(500).json({ success: false, message: err?.message || 'Server error placing order' });
   }
 };

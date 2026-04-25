@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 const thBase = 'bg-vaya-black text-white px-[12px] py-[10px] text-center font-normal text-[13px] whitespace-nowrap border border-[#333]';
 const tdBase = 'px-[10px] py-2 border-b border-[#e0e0e0] align-middle text-[13px] text-[#333]';
 
+const round2 = (n) => Math.round(n * 10) / 10;
+
 function rupeeFormat(val) {
   const n = parseFloat(val) || 0;
   return n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -155,19 +157,24 @@ export default function CartPage() {
     setLocalLengths(prev => ({ ...prev, [itemId]: val }));
     clearTimeout(debounceTimers.current[itemId]);
     debounceTimers.current[itemId] = setTimeout(() => {
-      const num = parseFloat(val);
+      const num = round2(parseFloat(val));
       if (!isNaN(num) && num > 0) {
-        editItem.mutate({ id: itemId, quantity: num });
+        const item = items.find(i => i.id === itemId);
+        const totalAvailable = item?.totalAvailable ?? Infinity;
+        editItem.mutate({ id: itemId, quantity: num, noStock: num > totalAvailable });
       }
     }, 800);
   };
 
   const handleLengthBlur = (itemId, val) => {
-    const num = parseFloat(val);
-    if (isNaN(num) || num < 1) {
-      setLocalLengths(prev => ({ ...prev, [itemId]: '1' }));
-      editItem.mutate({ id: itemId, quantity: 1 });
-    }
+    const raw = parseFloat(val);
+    if (isNaN(raw)) return;
+    const num = raw < 1 ? 1 : round2(raw);
+    clearTimeout(debounceTimers.current[itemId]);
+    setLocalLengths(prev => ({ ...prev, [itemId]: String(num) }));
+    const item = items.find(i => i.id === itemId);
+    const totalAvailable = item?.totalAvailable ?? Infinity;
+    editItem.mutate({ id: itemId, quantity: num, noStock: num > totalAvailable });
   };
 
   const handlePanelSave = (itemId, remarkText) => {
@@ -199,7 +206,7 @@ export default function CartPage() {
         onSuccess: (data) => {
           setSubmitting(false);
           if (data?.success !== false) {
-            navigate('/products');
+            navigate('/orders/my-orders');
           }
         },
         onError: (err) => {
@@ -272,7 +279,7 @@ export default function CartPage() {
               <div className="space-y-4">
                 {items.map((item) => {
                   const c = calcItem(effectiveItem(item), cutDiscount, rollDiscount, globalGst);
-                  const inStock = true;
+                  const inStock = (parseFloat(getLength(item)) || 0) <= (item.totalAvailable ?? Infinity);
                   return (
                     <div key={item.id} className="border border-[#e6e6e6] rounded-[4px] overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.06)] bg-white">
                       <div className="flex items-center justify-between px-4 py-2 border-b border-[#eee]">
@@ -413,7 +420,7 @@ export default function CartPage() {
                   <tbody>
                     {items.map((item) => {
                       const c = calcItem(effectiveItem(item), cutDiscount, rollDiscount, globalGst);
-                      const inStock = true;
+                      const inStock = !item.noStock;
                       return (
                         <tr key={item.id} className="border-b border-[#f0f0f0]">
                           <td className={tdBase}>

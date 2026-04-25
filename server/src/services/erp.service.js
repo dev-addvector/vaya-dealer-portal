@@ -60,6 +60,7 @@ async function getProducts({ unc, pattern, color, page = 1, perPage = 50 }) {
         Rolls: [],
         RollPrice: item['Roll Price'],
         CutPrice: item['Cut Price'],
+        GstPercent: item['GST Perc'],
       };
     }
     grouped[key].TotalLength += Number(item.Length) || 0;
@@ -110,8 +111,13 @@ async function getMyOrders({ unc }) {
 }
 
 async function placeOrder(payload) {
-  const { data } = await postWithFallback('/ProductOrder/PostProductOrder', payload);
-  return data;
+  try {
+    const { data } = await postWithFallback('/ProductOrder/PostProductOrder', payload);
+    return data;
+  } catch (err) {
+    if (err?.response?.data) return err.response.data;
+    throw err;
+  }
 }
 
 async function cancelOrder(unc, id) {

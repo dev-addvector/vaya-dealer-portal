@@ -63,6 +63,8 @@ model CartItem {
   quantity    Float    @default(1)
   unit        String?
   remark      String?
+  noStock        Boolean? @default(false)
+  totalAvailable Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
