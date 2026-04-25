@@ -622,11 +622,17 @@ export default function ProductsPage() {
                                   }
                                 }}
                                 onBlur={() => {
-                                  const v = parseFloat(orderLengths[key]);
+                                  const raw = parseFloat(orderLengths[key]);
                                   const cartItem = cartItemByKey[key];
-                                  if (isNaN(v) || v < 1) {
+                                  if (isNaN(raw) || raw < 1) {
+                                    clearTimeout(debounceTimers.current[key]);
                                     setOrderLengths(prev => ({ ...prev, [key]: '1' }));
                                     if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: 1, noStock: 1 > p.TotalLength, totalAvailable: p.TotalLength });
+                                  } else {
+                                    const v = round2(raw);
+                                    clearTimeout(debounceTimers.current[key]);
+                                    setOrderLengths(prev => ({ ...prev, [key]: String(v) }));
+                                    if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: v, noStock: v > p.TotalLength, totalAvailable: p.TotalLength });
                                   }
                                 }}
                               />

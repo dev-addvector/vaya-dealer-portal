@@ -320,6 +320,7 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
 
   // Calculate line items and totals
   const items = Array.isArray(order.OrderItems) ? order.OrderItems : [];
+  console.log('[generateOpenOrderPdf] raw OrderdLength values:', items.map(i => i.OrderdLength));
   let totalAmount = 0, totalDiscount = 0, totalGst = 0;
   const itemData = items.map((item) => {
     const rate = parseFloat(item.Rate) || 0;
@@ -419,7 +420,7 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
       doc.rect(M, y, CW, rowH).fill(idx % 2 === 0 ? '#ffffff' : '#f9f9f7');
       const vals = [
         `${item.Pattern || ''} — ${item.Color || ''}`,
-        _fmtNum(rate), String(Math.round(qty)),
+        _fmtNum(rate), String(qty),
         _fmtNum(subtotal), _fmtNum(discountAmount), _fmtNum(itemGst), _fmtNum(itemTotal),
       ];
       vals.forEach((v, i) => {
