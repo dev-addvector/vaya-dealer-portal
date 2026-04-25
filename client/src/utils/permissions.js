@@ -8,14 +8,6 @@ const ROLE_ROUTES = {
     '/admin/create-order',
     '/admin/subadmins',
   ],
-  subadmin: [
-    '/admin/dashboard',
-    '/admin/users',
-    '/admin/users/:unc/orders',
-    '/admin/stocks',
-    '/admin/create-order',
-    '/admin/subadmins',
-  ],
   qr_admin: [
     '/admin/qr-setting',
     '/admin/brochures',
@@ -28,7 +20,6 @@ const ROLE_ROUTES = {
 export const ROLE_DEFAULT_ROUTE = {
   super_admin: '/admin/dashboard',
   sub_admin: '/admin/dashboard',
-  subadmin: '/admin/dashboard',
   qr_admin: '/admin/qr-setting',
   zone_admin: '/admin/create-order',
 };

@@ -159,7 +159,7 @@ export default function SubAdminPage() {
                       {canEditDelete && (
                         <>
                           <button
-                            onClick={() => setModal({ mode: 'edit', data: { ...s, role: s.role === 'subadmin' ? 'sub_admin' : s.role } })}
+                            onClick={() => setModal({ mode: 'edit', data: s })}
                             className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
                             Edit
                           </button>

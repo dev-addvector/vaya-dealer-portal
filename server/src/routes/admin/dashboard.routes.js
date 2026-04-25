@@ -3,7 +3,7 @@ const c = require('../../controllers/admin/dashboard.controller');
 const { requireRoles } = require('../../middleware/roleAuth');
 const { ROLES } = require('../../config/constants');
 
-const superOrSub = requireRoles(ROLES.ADMIN, ROLES.SUB_ADMIN, ROLES.SUBADMIN);
+const superOrSub = requireRoles(ROLES.ADMIN, ROLES.SUB_ADMIN);
 
 router.get('/', superOrSub, c.index);
 router.post('/chart-data', superOrSub, c.loadChartData);
