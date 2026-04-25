@@ -279,21 +279,21 @@ export default function ProductsPage() {
   const patternColorsMap = useMemo(() => filtersData?.data?.patternColors ?? {}, [filtersData]);
   const colorPatternsMap = useMemo(() => filtersData?.data?.colorPatterns ?? {}, [filtersData]);
 
-  // Filter patterns based on selected color
+  // Filter patterns based on draft color so top search bar options stay in sync
   const patterns = useMemo(() => {
-    if (filters.color && colorPatternsMap[filters.color]) {
-      return colorPatternsMap[filters.color];
+    if (draftColor && colorPatternsMap[draftColor]) {
+      return colorPatternsMap[draftColor];
     }
     return allPatterns;
-  }, [allPatterns, filters.color, colorPatternsMap]);
+  }, [allPatterns, draftColor, colorPatternsMap]);
 
-  // Filter colors based on selected pattern
+  // Filter colors based on draft pattern so top search bar options stay in sync
   const colors = useMemo(() => {
-    if (filters.pattern && patternColorsMap[filters.pattern]) {
-      return patternColorsMap[filters.pattern];
+    if (draftPattern && patternColorsMap[draftPattern]) {
+      return patternColorsMap[draftPattern];
     }
     return allColors;
-  }, [allColors, filters.pattern, patternColorsMap]);
+  }, [allColors, draftPattern, patternColorsMap]);
 
   const handleSort = (key) => {
     setSort(prev => ({ key, dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc' }));
@@ -467,7 +467,12 @@ export default function ProductsPage() {
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <SearchableSelect
                 value={draftPattern}
-                onChange={setDraftPattern}
+                onChange={val => {
+                  setDraftPattern(val);
+                  if (draftColor && val && !patternColorsMap[val]?.includes(draftColor)) {
+                    setDraftColor('');
+                  }
+                }}
                 options={patterns}
                 placeholder="Search Pattern"
                 className="min-w-0 flex-1 md:w-[200px] md:flex-none h-[36px]"
@@ -475,7 +480,12 @@ export default function ProductsPage() {
               />
               <SearchableSelect
                 value={draftColor}
-                onChange={setDraftColor}
+                onChange={val => {
+                  setDraftColor(val);
+                  if (draftPattern && val && !colorPatternsMap[val]?.includes(draftPattern)) {
+                    setDraftPattern('');
+                  }
+                }}
                 options={colors}
                 placeholder="Search Color"
                 className="min-w-0 flex-1 md:w-[200px] md:flex-none h-[36px]"
@@ -490,6 +500,17 @@ export default function ProductsPage() {
                   <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
                 </svg>
               </button>
+              {(filters.pattern || filters.color) && (
+                <button
+                  onClick={clearFilters}
+                  title="Clear filters"
+                  className="flex h-[36px] px-3 border border-[#ccc] rounded-[4px] bg-white text-[#555] text-[13px] cursor-pointer shrink-0 items-center gap-1 hover:bg-[#f5f5f5]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                  </svg>
+                </button>
+              )}
             </div>
             <div className="hidden md:flex items-center gap-[6px] text-sm text-[#555]">
               Show

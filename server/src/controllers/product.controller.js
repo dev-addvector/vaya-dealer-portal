@@ -154,9 +154,9 @@ exports.getProductFilters = async (req, res) => {
     
     const products = data?.items || [];
     
-    // Extract unique patterns and colors
-    const patterns = [...new Set(products.map(p => p.Pattern).filter(v => v && String(v).trim()))].sort();
-    const colors = [...new Set(products.map(p => p.Color).filter(v => v && String(v).trim()))].sort();
+    // Extract unique patterns and colors (trimmed to match map keys)
+    const patterns = [...new Set(products.map(p => p.Pattern?.trim()).filter(Boolean))].sort();
+    const colors = [...new Set(products.map(p => p.Color?.trim()).filter(Boolean))].sort();
     
     // Build pattern-color relationships
     const patternColorsMap = {};

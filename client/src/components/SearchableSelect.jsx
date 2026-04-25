@@ -142,6 +142,7 @@ const SearchableSelect = ({
               <div
                 key={option}
                 data-option-index={index}
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleOptionClick(option)}
                 className={`px-3 py-2 text-[13px] cursor-pointer hover:bg-[#f0f0f0] ${
                   highlightedIndex === index ? 'bg-[#e6f3ff]' : ''
