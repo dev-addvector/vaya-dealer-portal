@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const erpService = require('../services/erp.service');
 const prisma = require('../config/database');
 const { detectDevice, detectOS } = require('../utils/helpers');
+const { cacheGet, cacheSet } = require('../config/redis');
 
 exports.loadProducts = async (req, res) => {
   const { pattern, color, page, perPage, search } = req.body;
@@ -104,119 +105,54 @@ exports.getShippingModes = async (req, res) => {
   }
 };
 
-// Simple in-memory cache with TTL
-const filterCache = new Map();
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-
-const getCachedFilters = (cacheKey) => {
-  const cached = filterCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
-  if (cached) {
-    filterCache.delete(cacheKey); // Remove expired cache
-  }
-  return null;
-};
-
-const setCachedFilters = (cacheKey, data) => {
-  filterCache.set(cacheKey, {
-    data,
-    timestamp: Date.now()
-  });
-  
-  // Clean up old entries periodically (simple cleanup)
-  if (filterCache.size > 100) {
-    const now = Date.now();
-    for (const [key, value] of filterCache.entries()) {
-      if (now - value.timestamp >= CACHE_TTL) {
-        filterCache.delete(key);
-      }
-    }
-  }
-};
+const FILTERS_TTL = 30 * 60; // 30 minutes
 
 exports.getProductFilters = async (req, res) => {
   try {
-    const cacheKey = `product-filters:${req.user.unc}:${req.user.zone}`;
-    
-    // Check cache first
-    const cached = getCachedFilters(cacheKey);
+    const cacheKey = `erp:filters:${req.user.unc}`;
+
+    const cached = await cacheGet(cacheKey);
     if (cached) {
       return res.json({ success: true, data: cached });
     }
-    
-    // Get all products without pagination to extract filter data
-    const data = await erpService.getProducts({
-      pattern: '',
-      color: '',
-      page: 1,
-      perPage: 10000, // Large number to get all products
-      unc: req.user.unc,
-      zone: req.user.zone,
-    });
-    
-    const products = data?.items || [];
-    
-    // Extract unique patterns and colors (trimmed to match map keys)
-    const patterns = [...new Set(products.map(p => p.Pattern?.trim()).filter(Boolean))].sort();
-    const colors = [...new Set(products.map(p => p.Color?.trim()).filter(Boolean))].sort();
-    
-    // Build pattern-color relationships
+
+    // Reuse the cached raw rolls (shares erp:raw:{unc}: with getLiveProductsRaw)
+    const raw = await erpService.getLiveProductsRaw(req.user.unc);
+
     const patternColorsMap = {};
     const colorPatternsMap = {};
-    
-    products.forEach(product => {
-      const pattern = product.Pattern?.trim();
-      const color = product.Color?.trim();
-      
-      if (pattern && color) {
-        // Add color to pattern
-        if (!patternColorsMap[pattern]) {
-          patternColorsMap[pattern] = new Set();
-        }
-        patternColorsMap[pattern].add(color);
-        
-        // Add pattern to color
-        if (!colorPatternsMap[color]) {
-          colorPatternsMap[color] = new Set();
-        }
-        colorPatternsMap[color].add(pattern);
-      }
-    });
-    
-    // Convert Sets to sorted arrays
-    const patternColors = {};
-    Object.keys(patternColorsMap).forEach(pattern => {
-      patternColors[pattern] = Array.from(patternColorsMap[pattern]).sort();
-    });
-    
-    const colorPatterns = {};
-    Object.keys(colorPatternsMap).forEach(color => {
-      colorPatterns[color] = Array.from(colorPatternsMap[color]).sort();
-    });
-    
+
+    for (const item of raw) {
+      const pattern = item.Pattern?.trim();
+      const color = item.Color?.trim();
+      if (!pattern || !color) continue;
+
+      if (!patternColorsMap[pattern]) patternColorsMap[pattern] = new Set();
+      patternColorsMap[pattern].add(color);
+
+      if (!colorPatternsMap[color]) colorPatternsMap[color] = new Set();
+      colorPatternsMap[color].add(pattern);
+    }
+
     const result = {
-      patterns,
-      colors,
-      patternColors,
-      colorPatterns
+      patterns: Object.keys(patternColorsMap).sort(),
+      colors: Object.keys(colorPatternsMap).sort(),
+      patternColors: Object.fromEntries(
+        Object.entries(patternColorsMap).map(([k, v]) => [k, [...v].sort()])
+      ),
+      colorPatterns: Object.fromEntries(
+        Object.entries(colorPatternsMap).map(([k, v]) => [k, [...v].sort()])
+      ),
     };
-    
-    // Cache the result
-    setCachedFilters(cacheKey, result);
-    
+
+    await cacheSet(cacheKey, result, FILTERS_TTL);
+
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Error getting product filters:', error);
-    res.json({ 
-      success: true, 
-      data: { 
-        patterns: [],
-        colors: [],
-        patternColors: {},
-        colorPatterns: {}
-      } 
+    res.json({
+      success: true,
+      data: { patterns: [], colors: [], patternColors: {}, colorPatterns: {} },
     });
   }
 };

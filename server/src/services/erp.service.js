@@ -1,5 +1,6 @@
 const axios = require('axios');
 const PDFDocument = require('pdfkit');
+const { cacheGet, cacheSet } = require('../config/redis');
 
 const erpClient = axios.create({
   baseURL: process.env.ERP_API_URL,
@@ -34,20 +35,31 @@ async function postWithFallback(path, payload, config) {
   }
 }
 
-async function getProducts({ unc, pattern, color, page = 1, perPage = 50 }) {
+const PRODUCTS_TTL = 30 * 60; // 30 minutes, matching Laravel project
+
+async function fetchRawProducts(unc, pattern) {
+  const cacheKey = `erp:raw:${unc}:${pattern || ''}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) return cached;
+
   const { data } = await postWithFallback(
     '/ProductOrder/GetLiveProductList',
     { UCN: unc, SearchString: pattern || '' },
     { timeout: 0 }
   );
+  const raw = data?.return_field_value || [];
+  await cacheSet(cacheKey, raw, PRODUCTS_TTL);
+  return raw;
+}
 
-  let raw = data?.return_field_value || [];
+async function getProducts({ unc, pattern, color, page = 1, perPage = 50 }) {
+  let raw = await fetchRawProducts(unc, pattern);
 
   if (color) {
     raw = raw.filter(p => p.Color?.toLowerCase().includes(color.toLowerCase()));
   }
 
-  // Group by Pattern+Color (same as old project)
+  // Group by Pattern+Color
   const grouped = {};
   for (const item of raw) {
     const key = `${item.Pattern}||${item.Color}`;
@@ -261,12 +273,7 @@ async function getReservedOrderByPo(unc, poNumber) {
 }
 
 async function getLiveProductsRaw(unc) {
-  const { data } = await postWithFallback(
-    '/ProductOrder/GetLiveProductList',
-    { UCN: unc, SearchString: '' },
-    { timeout: 0 }
-  );
-  return Array.isArray(data?.return_field_value) ? data.return_field_value : [];
+  return fetchRawProducts(unc, '');
 }
 
 async function getStocks(unc = 'BC') {
