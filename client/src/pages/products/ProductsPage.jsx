@@ -123,11 +123,18 @@ function ProductCard({ p, orderLengths, setOrderLengths, panelNotes, setPanelNot
               }}
               onBlur={() => {
                 const raw = parseFloat(orderLengths[key]);
-                if (isNaN(raw)) return;
+                const cartItem = cartItemByKey[key];
+                if (isNaN(raw)) {
+                  if (cartItem) {
+                    clearTimeout(debounceTimers.current[key]);
+                    setOrderLengths(prev => ({ ...prev, [key]: '1' }));
+                    editCartItem.mutate({ id: cartItem.id, quantity: 1, noStock: 1 > p.TotalLength, totalAvailable: p.TotalLength });
+                  }
+                  return;
+                }
                 const v = raw < 1 ? 1 : round2(raw);
                 clearTimeout(debounceTimers.current[key]);
                 setOrderLengths(prev => ({ ...prev, [key]: String(v) }));
-                const cartItem = cartItemByKey[key];
                 if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: v, noStock: v > p.TotalLength, totalAvailable: p.TotalLength });
               }}
             />
@@ -616,9 +623,9 @@ export default function ProductsPage() {
                                 }}
                                 onBlur={() => {
                                   const v = parseFloat(orderLengths[key]);
-                                  if (!isNaN(v) && v < 1) {
+                                  const cartItem = cartItemByKey[key];
+                                  if (isNaN(v) || v < 1) {
                                     setOrderLengths(prev => ({ ...prev, [key]: '1' }));
-                                    const cartItem = cartItemByKey[key];
                                     if (cartItem) editCartItem.mutate({ id: cartItem.id, quantity: 1, noStock: 1 > p.TotalLength, totalAvailable: p.TotalLength });
                                   }
                                 }}

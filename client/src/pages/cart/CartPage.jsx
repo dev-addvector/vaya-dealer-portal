@@ -168,8 +168,7 @@ export default function CartPage() {
 
   const handleLengthBlur = (itemId, val) => {
     const raw = parseFloat(val);
-    if (isNaN(raw)) return;
-    const num = raw < 1 ? 1 : round2(raw);
+    const num = isNaN(raw) || raw < 1 ? 1 : round2(raw);
     clearTimeout(debounceTimers.current[itemId]);
     setLocalLengths(prev => ({ ...prev, [itemId]: String(num) }));
     const item = items.find(i => i.id === itemId);
