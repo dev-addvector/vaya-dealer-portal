@@ -5,6 +5,7 @@ const client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   enableOfflineQueue: false,
   maxRetriesPerRequest: 1,
   connectTimeout: 3000,
+  retryStrategy: (times) => times > 3 ? null : Math.min(times * 1000, 3000),
 });
 
 client.on('connect', () => console.log('[Redis] connected'));
