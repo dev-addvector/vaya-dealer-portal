@@ -53,7 +53,7 @@ export default function AppLayout() {
   };
 
   const navIconBase = 'nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] flex items-center justify-center border border-[rgba(112,112,112,0.35)] rounded-full no-underline shrink-0';
-  const dropdownItemBase = 'px-4 py-[10px] cursor-pointer text-vaya-gray text-sm flex items-center gap-2 hover:bg-vaya-green';
+  const dropdownItemBase = 'px-4 py-[10px] cursor-pointer text-vaya-gray text-sm flex items-center gap-2 hover:bg-vaya-green hover:text-vaya-black';
 
   const mobileNavItems = [
     { label: 'Home', to: '/products' },
@@ -128,16 +128,16 @@ export default function AppLayout() {
               <img src="/images/reserve-order.svg" alt="Reserved Orders" className="w-[80%] h-[80%] object-contain" />
             </NavLink>
 
-            <div ref={downloadsRef} className="relative">
+            <div ref={downloadsRef} className="relative" onMouseEnter={() => setDownloadsOpen(true)} onMouseLeave={() => setDownloadsOpen(false)}>
               <button
-                onClick={() => setDownloadsOpen(!downloadsOpen)}
                 title="Downloads"
                 className={`nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(112,112,112,0.35)] rounded-full bg-transparent cursor-pointer p-0 flex items-center justify-center shrink-0 ${downloadsOpen ? 'opacity-100' : 'opacity-60'}`}
               >
                 <img src="/images/downloads.svg" alt="Downloads" className="w-[80%] h-[80%] object-contain" />
               </button>
               {downloadsOpen && (
-                <div className="absolute top-[calc(100%+8px)] right-0 bg-white shadow-[0px_3px_20px_rgba(0,0,0,0.32)] min-w-[160px] z-[100] rounded-[4px]">
+                <div className="absolute top-full right-0 pt-2 min-w-[160px] z-[100]">
+                <div className="bg-white shadow-[0px_3px_20px_rgba(0,0,0,0.32)] rounded-[4px]">
                   <div onClick={() => { setDownloadsOpen(false); navigate('/downloads/ebrochures'); }} className={`${dropdownItemBase} border-b border-[rgba(92,92,92,0.1)]`}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0-2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0-2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/></svg>
                     E-Brochure
@@ -147,21 +147,24 @@ export default function AppLayout() {
                     Price List
                   </div>
                 </div>
+                </div>
               )}
             </div>
 
-            <div ref={profileRef} className="relative">
-              <button onClick={() => setProfileOpen(!profileOpen)} title="Profile" className="nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(84,84,84,0.5)] rounded-full p-0 bg-transparent cursor-pointer flex items-center justify-center">
+            <div ref={profileRef} className="relative" onMouseEnter={() => setProfileOpen(true)} onMouseLeave={() => setProfileOpen(false)}>
+              <button title="Profile" className="nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(84,84,84,0.5)] rounded-full p-0 bg-transparent cursor-pointer flex items-center justify-center">
                 <img src="/images/menu-icon-3.png" alt="Profile" className="w-[70%] h-[70%] object-contain opacity-70" />
               </button>
               {profileOpen && (
-                <div className="absolute top-[calc(100%+8px)] right-0 bg-white shadow-[0px_3px_20px_rgba(0,0,0,0.32)] min-w-[160px] z-[100] rounded-[4px]">
+                <div className="absolute top-full right-0 pt-2 min-w-[160px] z-[100]">
+                <div className="bg-white shadow-[0px_3px_20px_rgba(0,0,0,0.32)] rounded-[4px]">
                   {[['/profile', 'Profile'], ['/orders/my-orders', 'All Orders']].map(([to, label]) => (
                     <div key={to} onClick={() => { setProfileOpen(false); navigate(to); }} className={`${dropdownItemBase} border-b border-[rgba(92,92,92,0.1)]`}>
                       {label}
                     </div>
                   ))}
                   <div onClick={() => { setProfileOpen(false); logout.mutate(); }} className={dropdownItemBase}>Logout</div>
+                </div>
                 </div>
               )}
             </div>
