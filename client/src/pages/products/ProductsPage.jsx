@@ -282,6 +282,10 @@ export default function ProductsPage() {
     });
   }, [cartData]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [filters.page]);
+
   const products = data?.data?.items ?? [];
   const total = data?.data?.total ?? 0;
   const totalPages = Math.ceil(total / filters.perPage);
