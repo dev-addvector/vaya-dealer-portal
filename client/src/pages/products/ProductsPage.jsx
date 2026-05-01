@@ -387,6 +387,8 @@ export default function ProductsPage() {
       setSort(sortOptions[mobileDraftFilters.sortBy] || { key: null, dir: 'asc' });
     }
     
+    setDraftPattern(mobileDraftFilters.pattern);
+    setDraftColor(mobileDraftFilters.color);
     setFilters(newFilters);
     setMobileFiltersOpen(false);
   };
