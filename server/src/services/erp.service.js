@@ -7,29 +7,17 @@ const erpClient = axios.create({
   headers: { Authorization: `Bearer ${process.env.ERP_API_TOKEN}` },
 });
 
-const erpClientOld = process.env.ERP_API_URL_OLD
-  ? axios.create({
-      baseURL: process.env.ERP_API_URL_OLD,
-      headers: { Authorization: `Bearer ${process.env.ERP_API_TOKEN}` },
-    })
-  : null;
-
 async function postWithFallback(path, payload, config) {
   try {
     return await erpClient.post(path, payload, config);
   } catch (err) {
-    const status = err?.response?.status;
     const code = err?.code;
-    const isNetworkError =
+    const isTimeout =
       code === 'ETIMEDOUT' ||
-      code === 'ECONNABORTED' ||
-      code === 'ENOTFOUND' ||
-      code === 'ECONNREFUSED' ||
-      code === 'EHOSTUNREACH' ||
-      code === 'ENETUNREACH';
+      code === 'ECONNABORTED';
 
-    if ((status === 404 || isNetworkError) && erpClientOld) {
-      return await erpClientOld.post(path, payload, config);
+    if (isTimeout) {
+      return await erpClient.post(path, payload, config);
     }
     throw err;
   }
