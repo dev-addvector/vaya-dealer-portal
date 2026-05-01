@@ -376,16 +376,14 @@ export default function ProductsPage() {
     };
     
     // Handle sort by
-    if (mobileDraftFilters.sortBy) {
-      const sortOptions = {
-        'stock': { key: 'stock', dir: 'asc' },
-        'pattern': { key: 'pattern', dir: 'asc' },
-        'color': { key: 'color', dir: 'asc' },
-        'qty': { key: 'qty', dir: 'desc' },
-        'rolls': { key: 'rolls', dir: 'desc' },
-      };
-      setSort(sortOptions[mobileDraftFilters.sortBy] || { key: null, dir: 'asc' });
-    }
+    const sortOptions = {
+      'stock': { key: 'stock', dir: 'asc' },
+      'pattern': { key: 'pattern', dir: 'asc' },
+      'color': { key: 'color', dir: 'asc' },
+      'qty': { key: 'qty', dir: 'desc' },
+      'rolls': { key: 'rolls', dir: 'desc' },
+    };
+    setSort(sortOptions[mobileDraftFilters.sortBy] || { key: null, dir: 'asc' });
     
     setDraftPattern(mobileDraftFilters.pattern);
     setDraftColor(mobileDraftFilters.color);
@@ -458,7 +456,7 @@ export default function ProductsPage() {
             <span className="text-vaya-green text-[28px] leading-[43px]">Stock</span>
             <button
               type="button"
-              onClick={() => { setMobileDraftFilters({ pattern: filters.pattern, color: filters.color, sortBy: '' }); setMobileFiltersOpen(true); }}
+              onClick={() => { setMobileDraftFilters({ pattern: filters.pattern, color: filters.color, sortBy: sort.key || '' }); setMobileFiltersOpen(true); }}
               disabled={filtersLoading}
               className={`md:hidden w-[44px] h-[44px] rounded-[6px] flex items-center justify-center ${
                 filtersLoading 
