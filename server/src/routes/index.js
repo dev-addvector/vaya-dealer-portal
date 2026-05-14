@@ -9,5 +9,6 @@ router.use('/profile', require('./profile.routes'));
 router.use('/admin', require('./admin/index'));
 router.use('/mobile', require('./api/mobile.routes'));
 router.use('/downloads', require('./download.routes'));
+router.use('/stocks', require('./stocks.routes'));
 
 module.exports = router;
