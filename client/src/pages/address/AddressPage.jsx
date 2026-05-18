@@ -177,23 +177,26 @@ export default function AddressPage() {
                               )}
                             </td>
                             <td className="text-center py-[14px]">
-                              <input
-                                type="radio"
-                                name="shipping"
-                                checked={addr.isDefault === 1}
-                                onChange={() => setDefault.mutate(addr.id)}
-                                className="w-[18px] h-[18px] accent-vaya-green cursor-pointer"
-                              />
+                              {addr.addressType !== 'Billing' && (
+                                <input
+                                  type="radio"
+                                  name="shipping"
+                                  checked={addr.isDefault === 1}
+                                  onChange={() => setDefault.mutate(addr.id)}
+                                  className="w-[18px] h-[18px] accent-vaya-green cursor-pointer"
+                                />
+                              )}
                             </td>
                             <td className="text-center py-[14px]">
-                              <input
-                                type="radio"
-                                name="billing"
-                                checked={addr.isBillingDefault === 1}
-                                readOnly
-                                disabled
-                                className="w-[18px] h-[18px] accent-vaya-green cursor-default opacity-50"
-                              />
+                              {addr.addressType === 'Billing' && (
+                                <input
+                                  type="radio"
+                                  name="billing"
+                                  checked={addr.isBillingDefault === 1}
+                                  readOnly
+                                  className="w-[18px] h-[18px] accent-vaya-green cursor-pointer"
+                                />
+                              )}
                             </td>
                           </tr>
                         ))}
