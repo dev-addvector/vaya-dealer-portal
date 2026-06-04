@@ -349,7 +349,7 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
   const grandTotal = totalAmount - totalDiscount + totalGst;
 
   const pin     = (address.PinCode || '').toString().trim();
-  const addrStr = (address.Address || '').toString().trim();
+  const addrStr = (address.Address || '').toString().replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/[^\x20-\x7E\n]/g, '').trim();
   const addrLine  = pin && !addrStr.includes(pin) ? `${addrStr} — ${pin}` : addrStr;
   const cityState = [address.City, address.State].filter(Boolean).join(', ');
 
@@ -404,13 +404,14 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#807A52')
        .text('PROFORMA INVOICE CREATED FOR', M, y, { characterSpacing: 1.5 });
     y += 14;
+    const addrWidth = CW * 0.6;
     if (address.Name) {
-      doc.font('Helvetica-Bold').fontSize(14).fillColor('#111111').text(address.Name, M, y);
-      y += 20;
+      doc.font('Helvetica-Bold').fontSize(14).fillColor('#111111').text(address.Name, M, y, { width: addrWidth });
+      y = doc.y + 6;
     }
     doc.font('Helvetica').fontSize(11).fillColor('#555555');
-    if (addrLine) { doc.text(addrLine, M, y); y += 16; }
-    if (cityState) { doc.text(cityState, M, y); y += 16; }
+    if (addrLine) { doc.text(addrLine, M, y, { width: addrWidth }); y = doc.y + 4; }
+    if (cityState) { doc.text(cityState, M, y, { width: addrWidth }); y = doc.y + 4; }
 
     // ── DIVIDER ──
     y += 8;

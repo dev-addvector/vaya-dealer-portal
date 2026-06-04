@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import * as authApi from '@/api/auth.api';
@@ -21,9 +21,10 @@ export const useLogin = () => {
 export const useLogout = () => {
   const { clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: authApi.logout,
-    onSettled: () => { clearAuth(); navigate('/login'); },
+    onSettled: () => { clearAuth(); queryClient.clear(); navigate('/login'); },
   });
 };
 

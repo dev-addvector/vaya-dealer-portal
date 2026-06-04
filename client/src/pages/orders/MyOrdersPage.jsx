@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useMyOrders } from '@/hooks/useOrders';
+import { useMyOrders, useConvertReserved } from '@/hooks/useOrders';
 import { downloadOpenOrderPdf } from '@/api/order.api';
 import SearchableSelect from '@/components/SearchableSelect';
 
@@ -49,6 +49,7 @@ const filterInputCls = 'w-full px-[6px] py-1 text-[13px] border border-[#ccc] ro
 
 export default function MyOrdersPage() {
   const { data, isLoading } = useMyOrders();
+  const convert = useConvertReserved();
   const orders = data?.data ?? [];
 
   const initialFilters = {
@@ -60,6 +61,7 @@ export default function MyOrdersPage() {
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [downloading, setDownloading] = useState(null);
+  const [convertingPo, setConvertingPo] = useState(null);
   const [sort, setSort] = useState({ key: 'OrderDate', dir: 'desc' });
 
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -155,6 +157,11 @@ export default function MyOrdersPage() {
     } finally {
       setDownloading(null);
     }
+  };
+
+  const handleConvert = (po) => {
+    setConvertingPo(po);
+    convert.mutate(po, { onSettled: () => setConvertingPo(null) });
   };
 
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -294,14 +301,31 @@ export default function MyOrdersPage() {
                       <td className={tdBase}>{o.OrderStatus ?? 'N/A'}</td>
                       <td className={tdBase}>
                         {o.PONumber ? (
-                          <button
-                            onClick={() => handleDownload(o.PONumber)}
-                            disabled={downloading === o.PONumber}
-                            title="Download PDF"
-                            className="bg-transparent border-none cursor-pointer text-[#555] text-[18px] leading-none p-0"
-                          >
-                            &#8681;
-                          </button>
+                          <div className="flex justify-center items-center gap-[10px]">
+                            <button
+                              onClick={() => handleDownload(o.PONumber)}
+                              disabled={downloading === o.PONumber}
+                              title="Download PDF"
+                              className="bg-transparent border-none cursor-pointer text-[#555] text-[18px] leading-none p-0"
+                            >
+                              &#8681;
+                            </button>
+                            {String(o.OrderType || '').toLowerCase() === 'reserved' && (
+                              <button
+                                onClick={() => handleConvert(o.PONumber)}
+                                disabled={convert.isPending}
+                                title="Convert to Order"
+                                className={`bg-transparent border-none leading-none p-0 flex items-center justify-center w-[20px] h-[20px] ${convert.isPending ? `cursor-not-allowed ${convertingPo !== o.PONumber ? 'opacity-40' : ''}` : 'cursor-pointer text-[#555]'}`}
+                              >
+                                {convertingPo === o.PONumber ? (
+                                  <svg className="animate-spin w-4 h-4 text-[#222]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                  </svg>
+                                ) : <span className="text-[16px]">&#128722;</span>}
+                              </button>
+                            )}
+                          </div>
                         ) : 'N/A'}
                       </td>
                     </tr>
@@ -352,14 +376,31 @@ export default function MyOrdersPage() {
                           <div className="font-medium text-[#333]">Action :</div>
                           <div className="text-right">
                             {o.PONumber ? (
-                              <button
-                                onClick={() => handleDownload(o.PONumber)}
-                                disabled={downloading === o.PONumber}
-                                title="Download PDF"
-                                className="bg-transparent border-none cursor-pointer text-[#555] text-[20px] leading-none p-0"
-                              >
-                                &#8681;
-                              </button>
+                              <div className="flex justify-end items-center gap-[12px]">
+                                <button
+                                  onClick={() => handleDownload(o.PONumber)}
+                                  disabled={downloading === o.PONumber}
+                                  title="Download PDF"
+                                  className="bg-transparent border-none cursor-pointer text-[#555] text-[20px] leading-none p-0"
+                                >
+                                  &#8681;
+                                </button>
+                                {String(o.OrderType || '').toLowerCase() === 'reserved' && (
+                                  <button
+                                    onClick={() => handleConvert(o.PONumber)}
+                                    disabled={convert.isPending}
+                                    title="Convert to Order"
+                                    className={`bg-transparent border-none leading-none p-0 flex items-center justify-center w-[22px] h-[22px] ${convert.isPending ? `cursor-not-allowed ${convertingPo !== o.PONumber ? 'opacity-40' : ''}` : 'cursor-pointer text-[#555]'}`}
+                                  >
+                                    {convertingPo === o.PONumber ? (
+                                      <svg className="animate-spin w-[18px] h-[18px] text-[#222]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                      </svg>
+                                    ) : <span className="text-[18px]">&#128722;</span>}
+                                  </button>
+                                )}
+                              </div>
                             ) : 'N/A'}
                           </div>
                         </div>
