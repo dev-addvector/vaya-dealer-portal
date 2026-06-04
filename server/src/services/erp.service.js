@@ -402,7 +402,7 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
     // ── BILL TO ──
     y += 24;
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#807A52')
-       .text('BILL TO', M, y, { characterSpacing: 1.5 });
+       .text('PROFORMA INVOICE CREATED FOR', M, y, { characterSpacing: 1.5 });
     y += 14;
     if (address.Name) {
       doc.font('Helvetica-Bold').fontSize(14).fillColor('#111111').text(address.Name, M, y);
@@ -432,7 +432,7 @@ async function generateOpenOrderPdf({ unc, poNumber }) {
       doc.rect(M, y, CW, rowH).fill(idx % 2 === 0 ? '#ffffff' : '#f9f9f7');
       const vals = [
         `${item.Pattern || ''} — ${item.Color || ''}`,
-        _fmtNum(rate), String(qty),
+        _fmtNum(rate), _fmtNum(qty),
         _fmtNum(subtotal), _fmtNum(discountAmount), _fmtNum(itemGst), _fmtNum(itemTotal),
       ];
       vals.forEach((v, i) => {
