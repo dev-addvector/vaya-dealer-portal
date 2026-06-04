@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart, useDeleteCartItem, useEditCartItem, usePlaceOrder, useShippingModes } from '@/hooks/useProducts';
 import { useAddresses } from '@/hooks/useAddresses';
@@ -30,22 +31,34 @@ function calcItem(item, cutDiscount, rollDiscount, globalGst) {
   return { rate, rollPrice, cutPrice, price, itemDiscount, gstPct, gstAmount, finalAmount, isRoll, qty };
 }
 
-function PanelLengthPopup({ item, onClose, onSave }) {
+function PanelLengthPopup({ item, anchorRect, onClose, onSave }) {
   const [text, setText] = useState(item.remark || '');
   const textareaRef = useRef(null);
-  
+  const popupRef = useRef(null);
+
   useEffect(() => {
-    if (textareaRef.current) {
-      setTimeout(() => textareaRef.current.focus(), 0);
-    }
+    if (textareaRef.current) setTimeout(() => textareaRef.current.focus(), 0);
   }, []);
 
-  const handlePopupClick = (e) => {
-    e.stopPropagation();
-  };
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (popupRef.current && !popupRef.current.contains(e.target)) onClose();
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [onClose]);
 
-  return (
-    <div onClick={handlePopupClick} className="absolute top-full left-0 z-[1000] bg-white border border-[#ccc] rounded p-3 w-[260px] shadow-[0_4px_12px_rgba(0,0,0,0.15)] md:w-[280px]">
+  const popupWidth = 270;
+  const left = Math.min(anchorRect.left, window.innerWidth - popupWidth - 8);
+  const top = anchorRect.bottom + 6;
+
+  return createPortal(
+    <div
+      ref={popupRef}
+      style={{ position: 'fixed', top, left, width: popupWidth, zIndex: 9999 }}
+      className="bg-white border border-[#ccc] rounded p-3 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
+      onMouseDown={e => e.stopPropagation()}
+    >
       <div className="flex justify-between items-center mb-2">
         <span className="font-semibold text-[13px]">Specify Panel Lengths</span>
         <button onClick={onClose} className="bg-transparent border-none cursor-pointer text-[16px] leading-none text-[#555]">×</button>
@@ -56,8 +69,6 @@ function PanelLengthPopup({ item, onClose, onSave }) {
         rows={4}
         value={text}
         onChange={e => setText(e.target.value)}
-        onClick={handlePopupClick}
-        onMouseDown={handlePopupClick}
         className="w-full border border-[#ccc] rounded-[3px] p-[6px] text-[12px] resize-y focus:outline-none focus:border-[#007bff] focus:ring-1 focus:ring-[#007bff]"
         placeholder="e.g. 3m×2, 4m×1..."
       />
@@ -75,7 +86,8 @@ function PanelLengthPopup({ item, onClose, onSave }) {
           Skip
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -101,7 +113,7 @@ export default function CartPage() {
   const shippingModes = modesData?.modes ?? [];
 
   const [localLengths, setLocalLengths] = useState({});
-  const [popupItemId, setPopupItemId] = useState(null);
+  const [popup, setPopup] = useState(null); // { id, rect }
   const [submitting, setSubmitting] = useState(false);
 
   const [shippingAddressId, setShippingAddressId] = useState('');
@@ -178,7 +190,7 @@ export default function CartPage() {
 
   const handlePanelSave = (itemId, remarkText) => {
     editItem.mutate({ id: itemId, remark: remarkText });
-    setPopupItemId(null);
+    setPopup(null);
   };
 
   const getLength = (item) => {
@@ -258,6 +270,18 @@ export default function CartPage() {
 
       {isLoading && <p className="text-center text-[#999] p-10">Loading cart...</p>}
 
+      {popup && (() => {
+        const item = items.find(i => i.id === popup.id);
+        return item ? (
+          <PanelLengthPopup
+            item={item}
+            anchorRect={popup.rect}
+            onClose={() => setPopup(null)}
+            onSave={(text) => handlePanelSave(popup.id, text)}
+          />
+        ) : null;
+      })()}
+
       {!isLoading && items.length === 0 && (
         <div className="text-center p-[60px]">
           <p className="text-[#666] text-[16px] mb-4">Your cart is empty</p>
@@ -317,7 +341,7 @@ export default function CartPage() {
                           </span>
                         </div>
 
-                        <div className="flex justify-between items-start gap-4 py-[6px] relative">
+                        <div className="flex justify-between items-start gap-4 py-[6px]">
                           <span className="text-[12px] text-[#555] pt-[7px]">Order Length :</span>
                           <div className="flex items-center gap-1">
                             <input
@@ -329,7 +353,10 @@ export default function CartPage() {
                               className="w-[86px] h-[34px] border border-[#ccc] rounded-[3px] px-[8px] py-1 text-[13px] text-right focus:border-[#007bff] focus:ring-1 focus:ring-[#007bff] focus:outline-none"
                             />
                             <button
-                              onClick={() => setPopupItemId(popupItemId === item.id ? null : item.id)}
+                              onClick={e => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setPopup(prev => prev?.id === item.id ? null : { id: item.id, rect });
+                              }}
                               className="bg-transparent border-none cursor-pointer text-[#555] p-[2px] flex items-center"
                               title="Specify panel lengths"
                             >
@@ -338,13 +365,6 @@ export default function CartPage() {
                               </svg>
                             </button>
                           </div>
-                          {popupItemId === item.id && (
-                            <PanelLengthPopup
-                              item={item}
-                              onClose={() => setPopupItemId(null)}
-                              onSave={(text) => handlePanelSave(item.id, text)}
-                            />
-                          )}
                         </div>
 
                         <div className="flex justify-between gap-4 py-[6px]">
@@ -437,7 +457,7 @@ export default function CartPage() {
                               {rupeeFormat(c.cutPrice)}
                             </span>
                           </td>
-                          <td className={`${tdBase} relative`}>
+                          <td className={tdBase}>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -448,7 +468,10 @@ export default function CartPage() {
                                 className="w-[80px] border border-[#ccc] rounded-[3px] px-[6px] py-1 text-[13px] focus:border-[#007bff] focus:ring-1 focus:ring-[#007bff] focus:outline-none"
                               />
                               <button
-                                onClick={() => setPopupItemId(popupItemId === item.id ? null : item.id)}
+                                onClick={e => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setPopup(prev => prev?.id === item.id ? null : { id: item.id, rect });
+                                }}
                                 className="bg-transparent border-none cursor-pointer text-[#555] p-[2px] flex items-center"
                                 title="Specify panel lengths"
                               >
@@ -457,13 +480,6 @@ export default function CartPage() {
                                 </svg>
                               </button>
                             </div>
-                            {popupItemId === item.id && (
-                              <PanelLengthPopup
-                                item={item}
-                                onClose={() => setPopupItemId(null)}
-                                onSave={(text) => handlePanelSave(item.id, text)}
-                              />
-                            )}
                           </td>
                           <td className={`${tdBase} text-center`}>
                             <span className={`text-[12px] ${inStock ? 'text-[#28a745]' : 'text-[#dc3545]'}`}>
