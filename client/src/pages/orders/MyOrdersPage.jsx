@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useMyOrders } from '@/hooks/useOrders';
 import { downloadOpenOrderPdf } from '@/api/order.api';
+import SearchableSelect from '@/components/SearchableSelect';
 
 function parseErpDate(v) {
   if (!v || String(v).toLowerCase() === 'null') return 0;
@@ -89,15 +90,15 @@ export default function MyOrdersPage() {
   const orderStatuses = useMemo(() => unique('OrderStatus'),  [orders]);
 
   const filtered = useMemo(() => orders.filter(o => {
-    if (filters.orderId && o.OrderID !== filters.orderId) return false;
+    if (filters.orderId && !String(o.OrderID || '').toLowerCase().includes(filters.orderId.toLowerCase())) return false;
     if (!matchesDate(o.OrderDate, filters.orderDate)) return false;
-    if (filters.invoiceId && o.InvoiceNo !== filters.invoiceId) return false;
+    if (filters.invoiceId && !String(o.InvoiceNo || '').toLowerCase().includes(filters.invoiceId.toLowerCase())) return false;
     if (!matchesDate(o.InvoiceDate, filters.invoiceDate)) return false;
-    if (filters.netPayable && !formatNetPayable(o).includes(filters.netPayable)) return false;
-    if (filters.po && o.PONumber !== filters.po) return false;
-    if (filters.shipping && o.ShippingMode !== filters.shipping) return false;
-    if (filters.orderType && o.OrderType !== filters.orderType) return false;
-    if (filters.orderStatus && o.OrderStatus !== filters.orderStatus) return false;
+    if (filters.netPayable && !formatNetPayable(o).startsWith(filters.netPayable)) return false;
+    if (filters.po && !String(o.PONumber || '').toLowerCase().includes(filters.po.toLowerCase())) return false;
+    if (filters.shipping && !String(o.ShippingMode || '').toLowerCase().includes(filters.shipping.toLowerCase())) return false;
+    if (filters.orderType && !String(o.OrderType || '').toLowerCase().includes(filters.orderType.toLowerCase())) return false;
+    if (filters.orderStatus && !String(o.OrderStatus || '').toLowerCase().includes(filters.orderStatus.toLowerCase())) return false;
     return true;
   }), [orders, filters]);
 
@@ -226,19 +227,13 @@ export default function MyOrdersPage() {
                   </tr>
                   <tr className="bg-white">
                     <td className={filterCellCls}>
-                      <select value={filters.orderId} onChange={e => setFilter('orderId', e.target.value)} className={filterInputCls}>
-                        <option value="">Select OrderID</option>
-                        {orderIds.map(v => <option key={v} value={v}>{v}</option>)}
-                      </select>
+                      <SearchableSelect value={filters.orderId} onChange={v => setFilter('orderId', v)} options={orderIds} placeholder="Search Order ID" />
                     </td>
                     <td className={filterCellCls}>
                       <input type="date" value={filters.orderDate} onChange={e => setFilter('orderDate', e.target.value)} className={filterInputCls} />
                     </td>
                     <td className={filterCellCls}>
-                      <select value={filters.invoiceId} onChange={e => setFilter('invoiceId', e.target.value)} className={filterInputCls}>
-                        <option value="">Select Invoice Id</option>
-                        {invoiceIds.map(v => <option key={v} value={v}>{v}</option>)}
-                      </select>
+                      <SearchableSelect value={filters.invoiceId} onChange={v => setFilter('invoiceId', v)} options={invoiceIds} placeholder="Search Invoice ID" />
                     </td>
                     <td className={filterCellCls}>
                       <input type="date" value={filters.invoiceDate} onChange={e => setFilter('invoiceDate', e.target.value)} className={filterInputCls} />
@@ -247,28 +242,16 @@ export default function MyOrdersPage() {
                       <input type="text" placeholder="Net Payable" value={filters.netPayable} onChange={e => setFilter('netPayable', e.target.value)} className={filterInputCls} />
                     </td>
                     <td className={filterCellCls}>
-                      <select value={filters.po} onChange={e => setFilter('po', e.target.value)} className={filterInputCls}>
-                        <option value="">Search PO</option>
-                        {poNumbers.map(v => <option key={v} value={v}>{v}</option>)}
-                      </select>
+                      <SearchableSelect value={filters.po} onChange={v => setFilter('po', v)} options={poNumbers} placeholder="Search PO" />
                     </td>
                     <td className={filterCellCls}>
-                      <select value={filters.shipping} onChange={e => setFilter('shipping', e.target.value)} className={filterInputCls}>
-                        <option value="">Shipping Mode</option>
-                        {shippingModes.map(v => <option key={v} value={v}>{v}</option>)}
-                      </select>
+                      <SearchableSelect value={filters.shipping} onChange={v => setFilter('shipping', v)} options={shippingModes} placeholder="Shipping Mode" />
                     </td>
                     <td className={filterCellCls}>
-                      <select value={filters.orderType} onChange={e => setFilter('orderType', e.target.value)} className={filterInputCls}>
-                        <option value="">Select Type</option>
-                        {orderTypes.map(v => <option key={v} value={v}>{v}</option>)}
-                      </select>
+                      <SearchableSelect value={filters.orderType} onChange={v => setFilter('orderType', v)} options={orderTypes} placeholder="Order Type" />
                     </td>
                     <td className={filterCellCls}>
-                      <select value={filters.orderStatus} onChange={e => setFilter('orderStatus', e.target.value)} className={filterInputCls}>
-                        <option value="">Select Status</option>
-                        {orderStatuses.map(v => <option key={v} value={v}>{v}</option>)}
-                      </select>
+                      <SearchableSelect value={filters.orderStatus} onChange={v => setFilter('orderStatus', v)} options={orderStatuses} placeholder="Order Status" />
                     </td>
                     <td className={filterCellCls} />
                   </tr>
