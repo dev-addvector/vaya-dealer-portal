@@ -16,7 +16,7 @@ async function generatePriceListPdf({ userDetails, items }) {
   const logoBuffer = _logoBuffer();
   const date = new Date().toLocaleDateString('en-IN');
 
-  const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true });
+  const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true, bufferPages: true });
   const chunks = [];
   doc.on('data', (c) => chunks.push(c));
 
@@ -89,7 +89,7 @@ async function generatePriceListPdf({ userDetails, items }) {
     drawTableHeader();
 
     items.forEach((item, idx) => {
-      if (y + rowH > doc.page.height - 40) {
+      if (y + rowH > doc.page.height - 50) {
         doc.addPage();
         y = 40;
         drawTableHeader();
@@ -109,13 +109,19 @@ async function generatePriceListPdf({ userDetails, items }) {
       y += rowH;
     });
 
-    // ── FOOTER ──
-    y += 16;
-    doc.moveTo(M, y).lineTo(W - M, y).lineWidth(0.5).strokeColor('#e8e8e4').stroke();
-    y += 10;
-    doc.font('Helvetica').fontSize(9).fillColor('#aaaaaa')
-       .text('This is a computer-generated price list and is subject to change without notice.', M, y, { width: CW, align: 'center' });
+    // ── PER-PAGE FOOTER (date left, page number right) ──
+    const totalPages = doc.bufferedPageRange().count;
+    const footerY    = doc.page.height - 30;
+    for (let i = 0; i < totalPages; i++) {
+      doc.switchToPage(i);
+      doc.moveTo(M, footerY - 8).lineTo(W - M, footerY - 8).lineWidth(0.5).strokeColor('#e8e8e4').stroke();
+      doc.font('Helvetica').fontSize(8).fillColor('#aaaaaa')
+         .text(date, M, footerY, { width: CW, align: 'left', lineBreak: false });
+      doc.font('Helvetica').fontSize(8).fillColor('#aaaaaa')
+         .text(`Page ${i + 1} of ${totalPages}`, M, footerY, { width: CW, align: 'right', lineBreak: false });
+    }
 
+    doc.flushPages();
     doc.end();
   });
 }
