@@ -141,11 +141,11 @@ export default function MyOrdersPage() {
     setMobileFiltersOpen(false);
   };
 
-  const handleDownload = async (po) => {
+  const handleDownload = async (po, invoiceNo) => {
     if (!po || downloading === po) return;
     try {
       setDownloading(po);
-      const blob = await downloadOpenOrderPdf(po);
+      const blob = await downloadOpenOrderPdf(po, invoiceNo);
       const url = URL.createObjectURL(blob instanceof Blob ? blob : new Blob([blob]));
       const a = document.createElement('a');
       a.href = url;
@@ -303,7 +303,7 @@ export default function MyOrdersPage() {
                         {o.PONumber ? (
                           <div className="flex justify-center items-center gap-[10px]">
                             <button
-                              onClick={() => handleDownload(o.PONumber)}
+                              onClick={() => handleDownload(o.PONumber, o.InvoiceNo)}
                               disabled={downloading === o.PONumber}
                               title="Download PDF"
                               className="bg-transparent border-none cursor-pointer text-[#555] text-[18px] leading-none p-0"
@@ -378,7 +378,7 @@ export default function MyOrdersPage() {
                             {o.PONumber ? (
                               <div className="flex justify-end items-center gap-[12px]">
                                 <button
-                                  onClick={() => handleDownload(o.PONumber)}
+                                  onClick={() => handleDownload(o.PONumber, o.InvoiceNo)}
                                   disabled={downloading === o.PONumber}
                                   title="Download PDF"
                                   className="bg-transparent border-none cursor-pointer text-[#555] text-[20px] leading-none p-0"

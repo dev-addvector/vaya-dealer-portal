@@ -88,7 +88,16 @@ exports.convertReservedToOrder = async (req, res) => {
 exports.downloadOpenOrderPdf = async (req, res) => {
   const { po } = req.query;
   if (!po) return res.status(400).json({ error: 'po query param is required' });
-  const pdfBuffer = await erpService.generateOpenOrderPdf({ unc: req.user.unc, poNumber: po });
+
+  const { invoiceNo } = req.query;
+  let pdfBuffer;
+  try {
+    if (!invoiceNo || String(invoiceNo).toLowerCase() === 'null') throw new Error('no invoice id');
+    pdfBuffer = await erpService.getOrderPdf(invoiceNo);
+  } catch (_) {
+    pdfBuffer = await erpService.generateOpenOrderPdf({ unc: req.user.unc, poNumber: po });
+  }
+
   const safeName = po.replace(/[^a-zA-Z0-9._-]/g, '_');
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `attachment; filename="${safeName}.pdf"`);
