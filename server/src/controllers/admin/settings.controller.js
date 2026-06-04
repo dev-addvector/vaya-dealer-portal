@@ -1,5 +1,7 @@
 const prisma = require('../../config/database');
 const QRCode = require('qrcode');
+const { randomToken } = require('../../utils/helpers');
+const emailService = require('../../services/email.service');
 
 const getOrCreate = async () => {
   let s = await prisma.setting.findFirst();
@@ -97,11 +99,17 @@ exports.changeUserEmail = async (req, res) => {
 
 exports.sendPasswordResetLink = async (req, res) => {
   const { userId } = req.body;
-  
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    return res.status(404).json({ success: false, message: 'User not found' });
-  }
-  
+  if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+  const token = randomToken();
+  const expiresAt = new Date(Date.now() + 3600000);
+  await prisma.passwordResetToken.upsert({
+    where: { userId: user.id },
+    create: { userId: user.id, token, expiresAt },
+    update: { token, expiresAt },
+  });
+  const link = `${process.env.CLIENT_URL}/reset-password/${token}`;
+  await emailService.sendForgotPasswordEmail(user.email, link);
   res.json({ success: true, message: 'Password reset link sent successfully' });
 };

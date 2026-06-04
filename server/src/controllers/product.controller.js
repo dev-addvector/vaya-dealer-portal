@@ -5,10 +5,10 @@ const { detectDevice, detectOS } = require('../utils/helpers');
 const { cacheGet, cacheSet } = require('../config/redis');
 
 exports.loadProducts = async (req, res) => {
-  const { pattern, color, page, perPage, search } = req.body;
+  const { pattern, color, page, perPage, search, sortKey, sortDir } = req.body;
   const start = Date.now();
   const data = await erpService.getProducts({
-    pattern, color, page, perPage,
+    pattern, color, page, perPage, sortKey, sortDir,
     unc: req.user.unc,
     zone: req.user.zone,
   });

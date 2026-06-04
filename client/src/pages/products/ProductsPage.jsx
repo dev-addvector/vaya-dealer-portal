@@ -194,14 +194,16 @@ export default function ProductsPage() {
         return {
           pattern: parsed.pattern || '',
           color: parsed.color || '',
-          page: 1, // Always reset to page 1 when returning
-          perPage: parsed.perPage || 10
+          page: 1,
+          perPage: parsed.perPage || 10,
+          sortKey: parsed.sortKey || null,
+          sortDir: parsed.sortDir || 'asc',
         };
       }
     } catch (error) {
       console.warn('Error loading filters from localStorage:', error);
     }
-    return { pattern: '', color: '', page: 1, perPage: 10 };
+    return { pattern: '', color: '', page: 1, perPage: 10, sortKey: null, sortDir: 'asc' };
   };
 
   const [filters, setFilters] = useState(getInitialFilters);
@@ -211,7 +213,6 @@ export default function ProductsPage() {
   const [panelNotes, setPanelNotes] = useState({});
   const [panelPopupKey, setPanelPopupKey] = useState(null);
   const [rollModal, setRollModal] = useState(null);
-  const [sort, setSort] = useState({ key: null, dir: 'asc' });
 
   // Mobile filter states
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -235,13 +236,15 @@ export default function ProductsPage() {
       const filtersToSave = {
         pattern: filters.pattern,
         color: filters.color,
-        perPage: filters.perPage
+        perPage: filters.perPage,
+        sortKey: filters.sortKey,
+        sortDir: filters.sortDir,
       };
       localStorage.setItem('productFilters', JSON.stringify(filtersToSave));
     } catch (error) {
       console.warn('Error saving filters to localStorage:', error);
     }
-  }, [filters.pattern, filters.color, filters.perPage]);
+  }, [filters.pattern, filters.color, filters.perPage, filters.sortKey, filters.sortDir]);
 
   useEffect(() => {
     return () => {
@@ -313,24 +316,13 @@ export default function ProductsPage() {
   }, [allColors, draftPattern, patternColorsMap]);
 
   const handleSort = (key) => {
-    setSort(prev => ({ key, dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc' }));
+    setFilters(prev => ({
+      ...prev,
+      sortKey: key,
+      sortDir: prev.sortKey === key && prev.sortDir === 'asc' ? 'desc' : 'asc',
+      page: 1,
+    }));
   };
-
-  const sortedProducts = useMemo(() => {
-    if (!sort.key) return products;
-    return [...products].sort((a, b) => {
-      let av, bv;
-      if (sort.key === 'stock')        { av = a.TotalLength > 0 ? 1 : 0; bv = b.TotalLength > 0 ? 1 : 0; }
-      else if (sort.key === 'pattern') { av = (a.Pattern || '').toLowerCase(); bv = (b.Pattern || '').toLowerCase(); }
-      else if (sort.key === 'color')   { av = (a.Color || '').toLowerCase(); bv = (b.Color || '').toLowerCase(); }
-      else if (sort.key === 'qty')     { av = a.TotalLength; bv = b.TotalLength; }
-      else if (sort.key === 'rolls')   { av = a.NumberOfRolls; bv = b.NumberOfRolls; }
-      else return 0;
-      if (av < bv) return sort.dir === 'asc' ? -1 : 1;
-      if (av > bv) return sort.dir === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [products, sort]);
 
   const handleSearch = () => {
     setFilters(f => ({ ...f, pattern: draftPattern, color: draftColor, page: 1 }));
@@ -372,34 +364,31 @@ export default function ProductsPage() {
   }, [allColors, mobileDraftFilters.pattern, patternColorsMap]);
 
   const applyMobileFilters = () => {
-    const newFilters = { 
-      ...filters, 
-      pattern: mobileDraftFilters.pattern, 
-      color: mobileDraftFilters.color, 
-      page: 1 
-    };
-    
-    // Handle sort by
     const sortOptions = {
-      'stock': { key: 'stock', dir: 'asc' },
-      'pattern': { key: 'pattern', dir: 'asc' },
-      'color': { key: 'color', dir: 'asc' },
-      'qty': { key: 'qty', dir: 'desc' },
-      'rolls': { key: 'rolls', dir: 'desc' },
+      'stock':   { sortKey: 'stock',   sortDir: 'asc'  },
+      'pattern': { sortKey: 'pattern', sortDir: 'asc'  },
+      'color':   { sortKey: 'color',   sortDir: 'asc'  },
+      'qty':     { sortKey: 'qty',     sortDir: 'desc' },
+      'rolls':   { sortKey: 'rolls',   sortDir: 'desc' },
     };
-    setSort(sortOptions[mobileDraftFilters.sortBy] || { key: null, dir: 'asc' });
-    
+    const sortPart = sortOptions[mobileDraftFilters.sortBy] || { sortKey: null, sortDir: 'asc' };
+
     setDraftPattern(mobileDraftFilters.pattern);
     setDraftColor(mobileDraftFilters.color);
-    setFilters(newFilters);
+    setFilters(prev => ({
+      ...prev,
+      pattern: mobileDraftFilters.pattern,
+      color: mobileDraftFilters.color,
+      page: 1,
+      ...sortPart,
+    }));
     setMobileFiltersOpen(false);
   };
 
   const clearFilters = () => {
-    setFilters({ pattern: '', color: '', page: 1, perPage: 10 });
+    setFilters({ pattern: '', color: '', page: 1, perPage: 10, sortKey: null, sortDir: 'asc' });
     setDraftPattern('');
     setDraftColor('');
-    setSort({ key: null, dir: 'asc' });
     setMobileDraftFilters({ pattern: '', color: '', sortBy: '' });
     
     // Clear localStorage
@@ -434,7 +423,7 @@ export default function ProductsPage() {
   const cardProps = { orderLengths, setOrderLengths, panelNotes, setPanelNotes, panelPopupKey, setPanelPopupKey, cartItemByKey, addToCart, editCartItem, debounceTimers, setRollModal, handleAddToCart };
 
   const Pagination = () => (
-    <div className="flex gap-1 mt-4 items-center text-sm text-[#555] flex-wrap">
+    <div className="flex gap-1 mt-4 items-center justify-center text-sm text-[#555] flex-wrap">
       <button disabled={filters.page <= 1} onClick={() => setFilters(f => ({ ...f, page: f.page - 1 }))} className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] bg-white text-[#555] ${filters.page <= 1 ? 'cursor-not-allowed' : 'cursor-pointer'}`}>‹</button>
       {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
         const pg = i + 1;
@@ -447,7 +436,7 @@ export default function ProductsPage() {
         <button onClick={() => setFilters(f => ({ ...f, page: totalPages }))} className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] cursor-pointer ${filters.page === totalPages ? 'bg-vaya-primary text-white' : 'bg-white text-[#555]'}`}>{totalPages}</button>
       )}
       <button disabled={filters.page >= totalPages} onClick={() => setFilters(f => ({ ...f, page: f.page + 1 }))} className={`px-[10px] py-1 border border-[#dee2e6] rounded-[3px] bg-white text-[#555] ${filters.page >= totalPages ? 'cursor-not-allowed' : 'cursor-pointer'}`}>›</button>
-      <span className="ml-2 text-[#888]">{total} groups</span>
+      <span className="ml-2 text-[#888]">{total} products</span>
     </div>
   );
 
@@ -460,7 +449,7 @@ export default function ProductsPage() {
             <span className="text-vaya-green text-[28px] leading-[43px]">Stock</span>
             <button
               type="button"
-              onClick={() => { setMobileDraftFilters({ pattern: filters.pattern, color: filters.color, sortBy: sort.key || '' }); setMobileFiltersOpen(true); }}
+              onClick={() => { setMobileDraftFilters({ pattern: filters.pattern, color: filters.color, sortBy: filters.sortKey || '' }); setMobileFiltersOpen(true); }}
               disabled={filtersLoading}
               className={`md:hidden w-[44px] h-[44px] rounded-[6px] flex items-center justify-center ${
                 filtersLoading 
@@ -550,10 +539,10 @@ export default function ProductsPage() {
             <>
               {/* ── Mobile card list ── */}
               <div className="md:hidden flex flex-col gap-4">
-                {sortedProducts.length === 0 && (
+                {products.length === 0 && (
                   <p className="text-center text-[#999] py-6 text-sm">No products found</p>
                 )}
-                {sortedProducts.map(p => (
+                {products.map(p => (
                   <ProductCard key={`${p.Pattern}||${p.Color}`} p={p} {...cardProps} />
                 ))}
               </div>
@@ -575,8 +564,8 @@ export default function ProductsPage() {
                         <th key={label} className={`${thBase} ${key ? 'cursor-pointer' : 'cursor-default'}`} onClick={() => key && handleSort(key)}>
                           {label}
                           {key && (
-                            <span className={`ml-[6px] text-[11px] ${sort.key === key ? 'opacity-100' : 'opacity-30'}`}>
-                              {sort.key === key && sort.dir === 'desc' ? '▼' : '▲'}
+                            <span className={`ml-[6px] text-[11px] ${filters.sortKey === key ? 'opacity-100' : 'opacity-30'}`}>
+                              {filters.sortKey === key && filters.sortDir === 'desc' ? '▼' : '▲'}
                             </span>
                           )}
                         </th>
@@ -587,7 +576,7 @@ export default function ProductsPage() {
                     {products.length === 0 && (
                       <tr><td colSpan={7} className="text-center text-[#999] p-6 border border-[#dee2e6]">No products found</td></tr>
                     )}
-                    {sortedProducts.map((p) => {
+                    {products.map((p) => {
                       const key = `${p.Pattern}||${p.Color}`;
                       const inStock = p.TotalLength > 0;
                       return (

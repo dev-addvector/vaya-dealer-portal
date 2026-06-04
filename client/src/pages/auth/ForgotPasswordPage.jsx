@@ -18,12 +18,35 @@ export default function ForgotPasswordPage() {
         <form onSubmit={handleSubmit((d) => forgotPassword.mutate(d))} className="px-5">
           <div className="mb-5">
             <label className="block mb-[7px] text-black text-[16px]">Enter Email ID</label>
-            <input
-              {...register('email')}
-              type="email"
-              placeholder="mail@domain.com"
-              className="w-full h-[60px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 py-[15px] text-[#a4a7ab] text-[15px] outline-none"
-            />
+            <div className="relative">
+              <input
+                {...register('email')}
+                type="email"
+                placeholder="mail@domain.com"
+                className="w-full h-[60px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 pr-12 py-[15px] text-[#a4a7ab] text-[15px] outline-none"
+              />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 group">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#a4a7ab"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="cursor-pointer"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="8" strokeWidth="2" />
+                  <line x1="12" y1="11" x2="12" y2="16" />
+                </svg>
+                <div className="absolute right-0 top-7 z-10 hidden group-hover:block bg-white border border-[#C8C8C8] shadow-md rounded-[4px] px-3 py-2 text-[13px] text-[#555] whitespace-nowrap">
+                  Please enter your registered email id
+                </div>
+              </div>
+            </div>
             {errors.email && <p className="text-[#e3342f] text-[12px] mt-1">{errors.email.message}</p>}
           </div>
 

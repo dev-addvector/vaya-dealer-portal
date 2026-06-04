@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { getSubadmins, createSubadmin, updateSubadmin, deleteSubadmin } from '@/api/admin.api';
+import { getSubadmins, createSubadmin, updateSubadmin, deleteSubadmin, sendPasswordResetLink } from '@/api/admin.api';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
@@ -108,6 +108,12 @@ export default function SubAdminPage() {
     onError: () => toast.error('Failed to delete'),
   });
 
+  const resetPassword = useMutation({
+    mutationFn: (id) => sendPasswordResetLink({ userId: id }),
+    onSuccess: () => toast.success('Password reset link sent'),
+    onError: (err) => toast.error(err.message || 'Failed to send reset link'),
+  });
+
   const handleSave = (formData) => {
     if (modal?.mode === 'edit') {
       update.mutate({ id: modal.data.id, ...formData });
@@ -171,6 +177,17 @@ export default function SubAdminPage() {
                           </button>
                         </>
                       )}
+                      <button
+                        title="Send password reset link"
+                        onClick={() => resetPassword.mutate(s.id)}
+                        disabled={resetPassword.isPending}
+                        className="inline-flex items-center justify-center w-[28px] h-[28px] rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-60 text-gray-600"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1m0 13A6 6 0 1 1 8 2a6 6 0 0 1 0 12"/>
+                          <path d="M7.5 4.5a.5.5 0 0 1 1 0v3.25l2.25 1.3a.5.5 0 0 1-.5.866L7.75 8.5A.5.5 0 0 1 7.5 8z"/>
+                        </svg>
+                      </button>
                     </div>
                   </td>
                 </tr>

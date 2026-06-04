@@ -40,7 +40,7 @@ async function fetchRawProducts(unc, pattern) {
   return raw;
 }
 
-async function getProducts({ unc, pattern, color, page = 1, perPage = 50 }) {
+async function getProducts({ unc, pattern, color, page = 1, perPage = 50, sortKey, sortDir = 'asc' }) {
   let raw = await fetchRawProducts(unc, pattern);
 
   if (color) {
@@ -69,6 +69,23 @@ async function getProducts({ unc, pattern, color, page = 1, perPage = 50 }) {
   }
 
   const allGrouped = Object.values(grouped);
+
+  if (sortKey) {
+    const dir = sortDir === 'desc' ? -1 : 1;
+    allGrouped.sort((a, b) => {
+      let av, bv;
+      if (sortKey === 'stock')        { av = a.TotalLength > 0 ? 1 : 0; bv = b.TotalLength > 0 ? 1 : 0; }
+      else if (sortKey === 'pattern') { av = (a.Pattern || '').toLowerCase(); bv = (b.Pattern || '').toLowerCase(); }
+      else if (sortKey === 'color')   { av = (a.Color || '').toLowerCase(); bv = (b.Color || '').toLowerCase(); }
+      else if (sortKey === 'qty')     { av = a.TotalLength; bv = b.TotalLength; }
+      else if (sortKey === 'rolls')   { av = a.NumberOfRolls; bv = b.NumberOfRolls; }
+      else return 0;
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }
+
   const total = allGrouped.length;
   const offset = (page - 1) * perPage;
   const items = allGrouped.slice(offset, offset + perPage);
