@@ -193,7 +193,7 @@ exports.placeOrder = async (req, res) => {
     const discountPct = isRoll ? rollDiscount : cutDiscount;
     const itemDiscount = (basePrice * discountPct) / 100;
     const taxable = basePrice - itemDiscount;
-    const gstPct = item.gstPercent || globalGst;
+    const gstPct = globalGst || item.gstPercent || 0;
     const gstAmount = (taxable * gstPct) / 100;
 
     return {

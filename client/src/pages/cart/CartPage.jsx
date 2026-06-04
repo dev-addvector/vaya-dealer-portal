@@ -25,7 +25,7 @@ function calcItem(item, cutDiscount, rollDiscount, globalGst) {
   const discountPct = isRoll ? rollDiscount : cutDiscount;
   const itemDiscount = (price * discountPct) / 100;
   const taxable = price - itemDiscount;
-  const gstPct = parseFloat(item.gstPercent) || globalGst || 0;
+  const gstPct = globalGst || parseFloat(item.gstPercent) || 0;
   const gstAmount = (taxable * gstPct) / 100;
   const finalAmount = taxable + gstAmount;
   return { rate, rollPrice, cutPrice, price, itemDiscount, gstPct, gstAmount, finalAmount, isRoll, qty };
@@ -545,6 +545,9 @@ export default function CartPage() {
 
                   {/* Order form */}
                   <div className="bg-vaya-light rounded p-6 pb-5">
+                    {/* Hidden dummy fields — absorbs browser autofill so real fields are left alone */}
+                    <input type="text" name="fake-po" autoComplete="on" className="hidden" aria-hidden="true" readOnly tabIndex={-1} />
+                    <input type="password" name="fake-pwd" autoComplete="current-password" className="hidden" aria-hidden="true" readOnly tabIndex={-1} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 mb-4">
                       <div>
                         <label className={labelCls}>Shipping address</label>
@@ -586,6 +589,7 @@ export default function CartPage() {
                           onChange={e => setPoNumber(e.target.value)}
                           className={inputCls}
                           placeholder="PO No./Reference No./Name"
+                          name="order-po-number"
                           autoComplete="off"
                         />
                       </div>
@@ -617,13 +621,15 @@ export default function CartPage() {
                           Remember Password
                         </label>
                         <input
-                          type="password"
+                          type="text"
                           value={authPassword}
                           onChange={e => setAuthPassword(e.target.value)}
                           onBlur={() => handleRememberPassword(authPassword, rememberPassword)}
                           className={inputCls}
                           placeholder="Enter Authorization Password"
-                          autoComplete="new-password"
+                          name="order-auth-password"
+                          autoComplete="off"
+                          style={{ WebkitTextSecurity: 'disc' }}
                           required
                         />
                       </div>
