@@ -260,7 +260,15 @@ export default function OpenOrdersPage() {
                     const orderId = (!o.OrderID || String(o.OrderID).toLowerCase() === 'null') ? 'N/A' : o.OrderID;
                     return (
                       <tr key={o.PONumber ?? i} className="hover:bg-[#f8f9fa]">
-                        <td className={tdBase}>{orderId}</td>
+                        <td className={tdBase}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOrder(o)}
+                            className="text-vaya-green underline cursor-pointer bg-transparent border-none p-0 text-sm"
+                          >
+                            {orderId}
+                          </button>
+                        </td>
                         <td className={tdBase}>{o.OrderDate ?? 'N/A'}</td>
                         <td className={`${tdBase} text-right`}>{formatNetPayable(o)}</td>
                         <td className={tdBase}>{o.PONumber ?? 'N/A'}</td>

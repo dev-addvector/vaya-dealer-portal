@@ -268,7 +268,15 @@ export default function ReservedOrdersPage() {
                     const po = o.PONumber;
                     return (
                       <tr key={po ?? i} className="hover:bg-[#f8f9fa]">
-                        <td className={tdBase}>{orderId}</td>
+                        <td className={tdBase}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOrder(o)}
+                            className="text-vaya-green underline cursor-pointer bg-transparent border-none p-0 text-sm"
+                          >
+                            {orderId}
+                          </button>
+                        </td>
                         <td className={tdBase}>{o.OrderDate ?? 'N/A'}</td>
                         <td className={`${tdBase} text-right`}>{formatNetPayable(o)}</td>
                         <td className={tdBase}>{po ?? 'N/A'}</td>

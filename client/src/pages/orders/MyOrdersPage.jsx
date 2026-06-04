@@ -280,7 +280,15 @@ export default function MyOrdersPage() {
                     </tr>
                   ) : paged.map((o, i) => (
                     <tr key={o.PONumber ?? i} className="hover:bg-[#f8f9fa]">
-                      <td className={tdBase}>{nullStr(o.OrderID)}</td>
+                      <td className={tdBase}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedOrder(o)}
+                          className="text-vaya-green underline cursor-pointer bg-transparent border-none p-0 text-sm"
+                        >
+                          {nullStr(o.OrderID)}
+                        </button>
+                      </td>
                       <td className={tdBase}>{nullStr(o.OrderDate)}</td>
                       <td className={tdBase}>{nullStr(o.InvoiceNo)}</td>
                       <td className={tdBase}>{nullStr(o.InvoiceDate)}</td>
