@@ -120,6 +120,8 @@ export default function OpenOrdersPage() {
     setPage(1);
   };
 
+  const hasFilters = Object.values(filters).some(v => v !== '');
+
   const applyMobileFilters = () => {
     setFilters(mobileDraftFilters);
     setPage(1);
@@ -234,7 +236,17 @@ export default function OpenOrdersPage() {
                     <td className={filterCellCls}>
                       <SearchableSelect value={filters.orderStatus} onChange={v => setFilter('orderStatus', v)} options={orderStatuses} placeholder="Order Status" />
                     </td>
-                    <td className={filterCellCls} />
+                    <td className={filterCellCls}>
+                      {hasFilters && (
+                        <button
+                          type="button"
+                          onClick={clearFilters}
+                          className="w-full px-[6px] py-1 text-[13px] border border-[#ccc] rounded-[3px] h-[30px] bg-white text-[#555] cursor-pointer hover:bg-[#f5f5f5] whitespace-nowrap"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 </thead>
                 <tbody>
