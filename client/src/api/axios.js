@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
 
 const api = axios.create({ baseURL: '/api' });
 
@@ -10,7 +11,13 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (res) => res.data,
-  (err) => Promise.reject(err.response?.data || err)
+  (err) => {
+    if (err.response?.status === 401) {
+      useAuthStore.getState().clearAuth();
+      window.location.href = '/login';
+    }
+    return Promise.reject(err.response?.data || err);
+  }
 );
 
 export default api;
