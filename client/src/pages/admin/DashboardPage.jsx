@@ -31,6 +31,7 @@ export default function DashboardPage() {
   });
   const [downloading, setDownloading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [pdfCapturing, setPdfCapturing] = useState(false);
   const dashboardRef = useRef(null);
 
   const { data: filterRes } = useQuery({
@@ -74,9 +75,18 @@ export default function DashboardPage() {
   async function handleDownloadPDF() {
     setDropdownOpen(false);
     setDownloading(true);
+    setPdfCapturing(true);
+    await new Promise((r) => setTimeout(r, 50));
     try {
       const el = dashboardRef.current;
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#f3f4f6' });
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f3f4f6',
+        scrollY: -window.scrollY,
+        windowWidth: el.scrollWidth,
+        windowHeight: el.scrollHeight,
+      });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
@@ -92,6 +102,7 @@ export default function DashboardPage() {
       const date = new Date().toISOString().slice(0, 10).replace(/-/g, '_');
       pdf.save(`vaya_dashboard_${date}.pdf`);
     } finally {
+      setPdfCapturing(false);
       setDownloading(false);
     }
   }
@@ -132,51 +143,72 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div ref={dashboardRef}>
+      <div ref={dashboardRef} className="pt-3">
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <select
-            value={filters.consigneeName}
-            onChange={(e) => setFilters((f) => ({ ...f, consigneeName: e.target.value }))}
-            className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
-          >
-            <option value="">Consignee Name</option>
-            {(opts.consigneeNameArray ?? []).map((n) => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
+        {pdfCapturing ? (
+          <div className="grid grid-cols-4 gap-3">
+            <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
+              <span className="block text-xs text-gray-400 mb-0.5">Consignee Name</span>
+              {filters.consigneeName || <span className="text-gray-400">All</span>}
+            </div>
+            <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
+              <span className="block text-xs text-gray-400 mb-0.5">Search String</span>
+              {filters.searchString || <span className="text-gray-400">All</span>}
+            </div>
+            <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
+              <span className="block text-xs text-gray-400 mb-0.5">Location</span>
+              {filters.location || <span className="text-gray-400">All</span>}
+            </div>
+            <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
+              <span className="block text-xs text-gray-400 mb-0.5">Date Range</span>
+              {filters.from} — {filters.to}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <select
+              value={filters.consigneeName}
+              onChange={(e) => setFilters((f) => ({ ...f, consigneeName: e.target.value }))}
+              className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
+            >
+              <option value="">Consignee Name</option>
+              {(opts.consigneeNameArray ?? []).map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
 
-          <select
-            value={filters.searchString}
-            onChange={(e) => setFilters((f) => ({ ...f, searchString: e.target.value }))}
-            className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
-          >
-            <option value="">Search Strings</option>
-            {(opts.searchStringArray ?? []).map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+            <select
+              value={filters.searchString}
+              onChange={(e) => setFilters((f) => ({ ...f, searchString: e.target.value }))}
+              className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
+            >
+              <option value="">Search Strings</option>
+              {(opts.searchStringArray ?? []).map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
 
-          <select
-            value={filters.location}
-            onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value }))}
-            className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
-          >
-            <option value="">Location</option>
-            {(opts.locationArray ?? []).map((l) => (
-              <option key={l} value={l}>{l}</option>
-            ))}
-          </select>
+            <select
+              value={filters.location}
+              onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value }))}
+              className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
+            >
+              <option value="">Location</option>
+              {(opts.locationArray ?? []).map((l) => (
+                <option key={l} value={l}>{l}</option>
+              ))}
+            </select>
 
-          <DateRangeFilter
-            from={filters.from}
-            to={filters.to}
-            onChange={({ from, to }) => setFilters((f) => ({ ...f, from, to }))}
-            onClear={clearFilters}
-          />
-        </div>
+            <DateRangeFilter
+              from={filters.from}
+              to={filters.to}
+              onChange={({ from, to }) => setFilters((f) => ({ ...f, from, to }))}
+              onClear={clearFilters}
+            />
+          </div>
+        )}
       </div>
 
       {/* Metric Cards */}
