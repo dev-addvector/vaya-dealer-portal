@@ -545,9 +545,6 @@ export default function CartPage() {
 
                   {/* Order form */}
                   <div className="bg-vaya-light rounded p-6 pb-5">
-                    {/* Hidden dummy fields — absorbs browser autofill so real fields are left alone */}
-                    <input type="text" name="fake-po" autoComplete="on" className="hidden" aria-hidden="true" readOnly tabIndex={-1} />
-                    <input type="password" name="fake-pwd" autoComplete="current-password" className="hidden" aria-hidden="true" readOnly tabIndex={-1} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 mb-4">
                       <div>
                         <label className={labelCls}>Shipping address</label>
@@ -628,7 +625,7 @@ export default function CartPage() {
                           className={inputCls}
                           placeholder="Enter Authorization Password"
                           name="order-auth-password"
-                          autoComplete="off"
+                          autoComplete="current-password"
                           style={{ WebkitTextSecurity: 'disc' }}
                           required
                         />

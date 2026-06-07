@@ -14,7 +14,9 @@ function _logoBuffer() {
 
 async function generatePriceListPdf({ userDetails, items }) {
   const logoBuffer = _logoBuffer();
-  const date = new Date().toLocaleDateString('en-IN');
+  const now = new Date();
+  const date = now.toLocaleDateString('en-IN');
+  const datetime = `${date} - ${now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
 
   const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true, bufferPages: true });
   const chunks = [];
@@ -116,7 +118,7 @@ async function generatePriceListPdf({ userDetails, items }) {
       doc.switchToPage(i);
       doc.moveTo(M, footerY - 8).lineTo(W - M, footerY - 8).lineWidth(0.5).strokeColor('#e8e8e4').stroke();
       doc.font('Helvetica').fontSize(8).fillColor('#aaaaaa')
-         .text(date, M, footerY, { width: CW, align: 'left', lineBreak: false });
+         .text(datetime, M, footerY, { width: CW, align: 'left', lineBreak: false });
       doc.font('Helvetica').fontSize(8).fillColor('#aaaaaa')
          .text(`Page ${i + 1} of ${totalPages}`, M, footerY, { width: CW, align: 'right', lineBreak: false });
     }
