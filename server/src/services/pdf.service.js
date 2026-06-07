@@ -41,9 +41,9 @@ async function generatePriceListPdf({ userDetails, items }) {
       doc.font('Helvetica-Bold').fontSize(22).fillColor('#111111').text('VAYA', M, 28);
     }
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#807A52')
-       .text('DATE', M, 24, { width: CW, align: 'right', characterSpacing: 1.2 });
+       .text('DATE & TIME', M, 24, { width: CW, align: 'right', characterSpacing: 1.2 });
     doc.font('Helvetica-Bold').fontSize(12).fillColor('#111111')
-       .text(date, M, 36, { width: CW, align: 'right' });
+       .text(datetime, M, 36, { width: CW, align: 'right' });
     doc.rect(0, 80, W, 3).fill('#111111');
     y = 83;
 
