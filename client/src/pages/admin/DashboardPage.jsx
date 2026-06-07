@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { getDashboardFilters, getChartData, downloadChartData } from '@/api/admin.api';
 import { IndiaMap } from '@/components/admin/IndiaMap';
+import DateRangeFilter from '@/components/DateRangeFilter';
 
 const today = new Date().toISOString().slice(0, 10);
 const LINE_COLORS = ['#7c3aed', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
@@ -119,28 +120,12 @@ export default function DashboardPage() {
             ))}
           </select>
 
-          <div className="flex gap-2 items-center">
-            <input
-              type="date"
-              value={filters.from}
-              onChange={(e) => setFilters((f) => ({ ...f, from: e.target.value }))}
-              className="border border-gray-200 rounded px-2 py-2 text-sm flex-1 bg-gray-50 focus:outline-none focus:border-purple-400"
-            />
-            <span className="text-gray-400 text-xs">→</span>
-            <input
-              type="date"
-              value={filters.to}
-              onChange={(e) => setFilters((f) => ({ ...f, to: e.target.value }))}
-              className="border border-gray-200 rounded px-2 py-2 text-sm flex-1 bg-gray-50 focus:outline-none focus:border-purple-400"
-            />
-            <button
-              onClick={clearFilters}
-              title="Clear filters"
-              className="text-gray-400 hover:text-gray-600 text-lg leading-none px-1"
-            >
-              ✕
-            </button>
-          </div>
+          <DateRangeFilter
+            from={filters.from}
+            to={filters.to}
+            onChange={({ from, to }) => setFilters((f) => ({ ...f, from, to }))}
+            onClear={clearFilters}
+          />
         </div>
       </div>
 

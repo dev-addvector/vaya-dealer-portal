@@ -1,11 +1,16 @@
 const prisma = require('../../config/database');
 
+// Interpret date strings as IST (UTC+5:30) so records stored with UTC timestamps
+// are correctly included when filtering by the Indian calendar date.
+function toISTStart(dateStr) { return new Date(dateStr + 'T00:00:00+05:30'); }
+function toISTEnd(dateStr)   { return new Date(dateStr + 'T23:59:59+05:30'); }
+
 function buildPrismaWhere({ from, to, searchString, location, consigneeName }) {
   const where = {};
   if (from || to) {
     where.timestamp = {};
-    if (from) where.timestamp.gte = new Date(from);
-    if (to) where.timestamp.lte = new Date(to + 'T23:59:59');
+    if (from) where.timestamp.gte = toISTStart(from);
+    if (to) where.timestamp.lte = toISTEnd(to);
   }
   if (searchString) where.search_string = searchString;
   if (location) where.location = location;
@@ -17,8 +22,8 @@ function buildMongoMatch({ from, to, searchString, location, consigneeName }) {
   const match = {};
   if (from || to) {
     match.timestamp = {};
-    if (from) match.timestamp.$gte = { $date: new Date(from).toISOString() };
-    if (to) match.timestamp.$lte = { $date: new Date(to + 'T23:59:59').toISOString() };
+    if (from) match.timestamp.$gte = { $date: toISTStart(from).toISOString() };
+    if (to) match.timestamp.$lte = { $date: toISTEnd(to).toISOString() };
   }
   if (searchString) match.search_string = searchString;
   if (location) match.location = location;

@@ -5,7 +5,7 @@ const { detectDevice, detectOS, getLocation } = require('../utils/helpers');
 const { cacheGet, cacheSet } = require('../config/redis');
 
 exports.loadProducts = async (req, res) => {
-  const { pattern, color, page, perPage, search, sortKey, sortDir } = req.body;
+  const { pattern, color, page, perPage, sortKey, sortDir } = req.body;
   const start = Date.now();
   const data = await erpService.getProducts({
     pattern, color, page, perPage, sortKey, sortDir,
@@ -13,12 +13,12 @@ exports.loadProducts = async (req, res) => {
     zone: req.user.zone,
   });
   const elapsed = (Date.now() - start) / 1000;
-  if (pattern || color || search) {
+  if (pattern || color) {
     const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
     getLocation(ip).then((location) => {
       prisma.searchReport.create({
         data: {
-          search_string: search || null,
+          search_string: pattern && color ? `${pattern}:${color}` : pattern || color || null,
           pattern: pattern || null,
           color: color || null,
           consignee_name: req.user.name || null,
@@ -29,7 +29,7 @@ exports.loadProducts = async (req, res) => {
           os_type: detectOS(req.headers['user-agent']),
           user_agent: req.headers['user-agent'],
         },
-      }).catch(() => {});
+      }).catch((err) => { console.error('[searchReport] DB write failed:', err.message); });
     });
   }
   res.json({ success: true, data });
