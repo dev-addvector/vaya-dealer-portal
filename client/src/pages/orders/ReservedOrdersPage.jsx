@@ -6,7 +6,9 @@ import SearchableSelect from '@/components/SearchableSelect';
 function parseErpDate(v) {
   if (!v || String(v).toLowerCase() === 'null') return 0;
   const p = String(v).split(/[\s-]/);
-  return p.length >= 3 ? (new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime() || 0) : 0;
+  if (p.length < 3) return 0;
+  const time = p[3] || '00:00:00';
+  return new Date(`${p[2]}-${p[1]}-${p[0]}T${time}`).getTime() || 0;
 }
 
 function netPayableNum(order) {
