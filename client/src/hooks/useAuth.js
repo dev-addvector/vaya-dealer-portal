@@ -36,10 +36,17 @@ export const useForgotPassword = () =>
   });
 
 export const useResetPassword = () => {
+  const { clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: authApi.resetPassword,
-    onSuccess: () => { toast.success('Password reset successfully'); navigate('/login'); },
+    onSuccess: () => {
+      clearAuth();
+      queryClient.clear();
+      toast.success('Password reset successfully');
+      navigate('/login');
+    },
     onError: (err) => toast.error(err.message || 'Reset failed'),
   });
 };
