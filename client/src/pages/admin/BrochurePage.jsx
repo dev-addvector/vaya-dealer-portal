@@ -63,14 +63,25 @@ export default function BrochurePage() {
         <div>
           <h1 className="text-xl font-bold text-gray-800">Price List (Brochures)</h1>
           {latestFile && (
-            <p className="text-xs text-gray-500 mt-0.5">
-              Latest: <span className="font-medium text-gray-700">{latestFile}</span>
+            <div className="mt-1 space-y-0.5">
+              <p className="text-xs text-gray-500">
+                <span className="text-gray-400">File Name: </span>
+                <span className="font-medium text-gray-700">{latestFile}</span>
+              </p>
               {latestDate && (
-                <span className="ml-2">
-                  — {new Date(latestDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                </span>
+                <p className="text-xs text-gray-500">
+                  <span className="text-gray-400">Last Upload Date: </span>
+                  <span className="font-medium text-gray-700">
+                    {new Date(latestDate).toLocaleString('en-CA', {
+                      timeZone: 'Asia/Kolkata',
+                      year: 'numeric', month: '2-digit', day: '2-digit',
+                      hour: '2-digit', minute: '2-digit', second: '2-digit',
+                      hour12: false,
+                    }).replace(',', '')}
+                  </span>
+                </p>
               )}
-            </p>
+            </div>
           )}
         </div>
         <div className="flex gap-2 flex-wrap">
