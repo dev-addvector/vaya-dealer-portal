@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const erpService = require('../services/erp.service');
 const prisma = require('../config/database');
-const { detectDevice, detectOS } = require('../utils/helpers');
+const { detectDevice, detectOS, getLocation } = require('../utils/helpers');
 const { cacheGet, cacheSet } = require('../config/redis');
 
 exports.loadProducts = async (req, res) => {
@@ -13,18 +13,25 @@ exports.loadProducts = async (req, res) => {
     zone: req.user.zone,
   });
   const elapsed = (Date.now() - start) / 1000;
-  prisma.searchReport.create({
-    data: {
-      search_string: search || null,
-      pattern: pattern || null,
-      color: color || null,
-      elpsed_time: String(elapsed),
-      row_count: data?.total || 0,
-      device_type: detectDevice(req.headers['user-agent']),
-      os_type: detectOS(req.headers['user-agent']),
-      user_agent: req.headers['user-agent'],
-    },
-  }).catch(() => {});
+  if (pattern || color || search) {
+    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    getLocation(ip).then((location) => {
+      prisma.searchReport.create({
+        data: {
+          search_string: search || null,
+          pattern: pattern || null,
+          color: color || null,
+          consignee_name: req.user.name || null,
+          location: location || null,
+          elpsed_time: String(elapsed),
+          row_count: data?.total || 0,
+          device_type: detectDevice(req.headers['user-agent']),
+          os_type: detectOS(req.headers['user-agent']),
+          user_agent: req.headers['user-agent'],
+        },
+      }).catch(() => {});
+    });
+  }
   res.json({ success: true, data });
 };
 
