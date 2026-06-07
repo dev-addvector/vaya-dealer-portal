@@ -92,11 +92,22 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState({ pattern: '', color: '', rollLength: '' });
+  const [globalSearch, setGlobalSearch] = useState('');
   const debouncedSearch = useDebounce(search, 200);
+  const debouncedGlobalSearch = useDebounce(globalSearch, 200);
   const [sortCol, setSortCol] = useState('pattern');
   const [sortDir, setSortDir] = useState('asc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    function onScroll() {
+      setShowScrollTop(window.scrollY > window.innerHeight);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     fetchStocks()
@@ -105,13 +116,23 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = useMemo(() => {
+  const globalFiltered = useMemo(() => {
+    const q = debouncedGlobalSearch.toLowerCase();
+    if (!q) return stocks;
     return stocks.filter((s) =>
+      (s.pattern || '').toLowerCase().includes(q) ||
+      (s.color || '').toLowerCase().includes(q) ||
+      (s.rollLength || '').toLowerCase().includes(q)
+    );
+  }, [stocks, debouncedGlobalSearch]);
+
+  const filtered = useMemo(() => {
+    return globalFiltered.filter((s) =>
       (s.pattern || '').toLowerCase().includes(debouncedSearch.pattern.toLowerCase()) &&
       (s.color || '').toLowerCase().includes(debouncedSearch.color.toLowerCase()) &&
       (s.rollLength || '').toLowerCase().startsWith(debouncedSearch.rollLength.toLowerCase())
     );
-  }, [stocks, debouncedSearch]);
+  }, [globalFiltered, debouncedSearch]);
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -141,6 +162,11 @@ export default function App() {
     setPage(1);
   }
 
+  function handleGlobalSearch(val) {
+    setGlobalSearch(val);
+    setPage(1);
+  }
+
   function handlePageSize(e) {
     setPageSize(Number(e.target.value));
     setPage(1);
@@ -150,9 +176,6 @@ export default function App() {
     if (sortCol !== col) return <span className="ml-1 opacity-40">↕</span>;
     return <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
   };
-
-  const start = sorted.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
-  const end = Math.min(safePage * pageSize, sorted.length);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -192,9 +215,13 @@ export default function App() {
           <>
             {/* Top bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-              <p className="text-xs sm:text-sm text-gray-500">
-                Showing {start}–{end} of {sorted.length} result{sorted.length !== 1 ? 's' : ''}
-              </p>
+              <input
+                type="text"
+                placeholder="Search across all fields..."
+                value={globalSearch}
+                onChange={(e) => handleGlobalSearch(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-vaya-primary w-full sm:w-72"
+              />
               <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                 <span>Show</span>
                 <select
@@ -312,21 +339,28 @@ export default function App() {
             </div>
 
             {/* Pagination */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
-              <p className="text-xs sm:text-sm text-gray-500 order-2 sm:order-1">
-                Page {safePage} of {totalPages}
-              </p>
-              <div className="order-1 sm:order-2">
-                <Pagination
-                  page={safePage}
-                  totalPages={totalPages}
-                  onPageChange={setPage}
-                />
-              </div>
+            <div className="flex justify-center mt-4">
+              <Pagination
+                page={safePage}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
             </div>
           </>
         )}
       </div>
+
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-vaya-black text-white shadow-lg flex items-center justify-center hover:bg-vaya-dark transition-colors"
+          aria-label="Scroll to top"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
