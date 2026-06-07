@@ -63,13 +63,13 @@ export default function ContactPage() {
   const [deleting, setDeleting] = useState(null);
 
   const handleAdd = (form) => {
-    addContact.mutate({ name: form.name, phone: form.phone, email: form.email }, {
+    addContact.mutate({ name: form.name, phone: form.phone, email: form.email, department: form.department }, {
       onSuccess: () => setShowAdd(false),
     });
   };
 
   const handleEdit = (form) => {
-    updateContact.mutate({ id: editing.id, name: form.name, phone: form.phone, email: form.email }, {
+    updateContact.mutate({ id: editing.id, name: form.name, phone: form.phone, email: form.email, department: form.department }, {
       onSuccess: () => setEditing(null),
     });
   };
@@ -114,9 +114,18 @@ export default function ContactPage() {
                 {!isLoading && contacts.map((c) => (
                   <div key={c.id} className="flex justify-between items-start py-[14px] border-b border-[rgba(112,112,112,0.12)]">
                     <div>
-                      <div className="font-medium text-sm text-[#111] mb-[3px]">{c.name}</div>
-                      <div className="text-[13px] text-[#666] mb-[2px]">{c.phone}</div>
-                      <div className="text-[13px] text-[#666]">{c.email}</div>
+                      <div className="font-medium text-sm text-[#111] mb-[6px]">{c.name}</div>
+                      <div className="text-[13px] text-[#666] mb-[2px]">
+                        <span className="text-[11px] font-semibold text-[#999] uppercase tracking-wide mr-2">Phone</span>{c.phone}
+                      </div>
+                      <div className="text-[13px] text-[#666] mb-[2px]">
+                        <span className="text-[11px] font-semibold text-[#999] uppercase tracking-wide mr-2">Email</span>{c.email}
+                      </div>
+                      {c.department && (
+                        <div className="text-[13px] text-[#666]">
+                          <span className="text-[11px] font-semibold text-[#999] uppercase tracking-wide mr-2">Dept</span>{c.department}
+                        </div>
+                      )}
                     </div>
                     <div className="flex gap-[10px] pt-[2px]">
                       <button onClick={() => setEditing(c)} className="bg-transparent border-none cursor-pointer text-[#888] text-[15px]" title="Edit">✎</button>

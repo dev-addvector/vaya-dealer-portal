@@ -486,4 +486,49 @@ async function postAccountingEmail(unc, email, accountingEmail) {
   return data;
 }
 
-module.exports = { getProducts, getOpenOrders, getReservedOrders, getMyOrders, placeOrder, cancelOrder, getReservedOrderByPo, getLiveProductsRaw, getOrderPdf, generateOpenOrderPdf, getPriceList, getPriceListJson, getUserDetails, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress, getShippingModes, getStocks, getOrdersByUnc, postAccountingEmail };
+async function getContacts(unc) {
+  const { data } = await postWithFallback('/Users/GetUserContact', { UCN: unc });
+  if (Array.isArray(data?.return_field_value)) return data.return_field_value;
+  if (Array.isArray(data)) return data;
+  return [];
+}
+
+async function addContact(unc, { name, phone, email, department }) {
+  const { data } = await postWithFallback('/Users/PostUserContact', {
+    UCN: unc,
+    Name: name,
+    Number: phone,
+    EmailId: email,
+    Department: department || '',
+  });
+  return data;
+}
+
+async function updateContact(unc, { contactId, name, phone, email, department }) {
+  const { data } = await erpClient.put('/Users/PutUserContact', {
+    UCN: unc,
+    ContactId: contactId,
+    Name: name,
+    Number: phone,
+    EmailId: email,
+    Department: department || '',
+  });
+  return data;
+}
+
+async function deleteContact(unc, contactId) {
+  const { data } = await erpClient.delete('/Users/DelUserContact', {
+    data: { UCN: unc, ContactId: contactId },
+  });
+  return data;
+}
+
+async function setDefaultContact(unc, contactId) {
+  const { data } = await erpClient.put('/UpdateDefaultContact', {
+    UCN: unc,
+    ContactId: contactId,
+  });
+  return data;
+}
+
+module.exports = { getProducts, getOpenOrders, getReservedOrders, getMyOrders, placeOrder, cancelOrder, getReservedOrderByPo, getLiveProductsRaw, getOrderPdf, generateOpenOrderPdf, getPriceList, getPriceListJson, getUserDetails, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress, getShippingModes, getStocks, getOrdersByUnc, postAccountingEmail, getContacts, addContact, updateContact, deleteContact, setDefaultContact };
