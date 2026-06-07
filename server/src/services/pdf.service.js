@@ -15,8 +15,8 @@ function _logoBuffer() {
 async function generatePriceListPdf({ userDetails, items }) {
   const logoBuffer = _logoBuffer();
   const now = new Date();
-  const date = now.toLocaleDateString('en-IN');
-  const datetime = `${date} - ${now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+  const date = now.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+  const datetime = `${date} - ${now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false })}`;
 
   const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true, bufferPages: true });
   const chunks = [];

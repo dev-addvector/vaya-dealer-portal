@@ -215,7 +215,7 @@ exports.placeOrder = async (req, res) => {
 
   const [y, m, d] = orderDate
     ? orderDate.split('-')
-    : new Date().toISOString().split('T')[0].split('-');
+    : new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }).split('-');
 
   const erpPayload = {
     UCN: user.unc,
