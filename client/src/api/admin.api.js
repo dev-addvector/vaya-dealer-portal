@@ -3,7 +3,7 @@ import api from './axios';
 // Dashboard
 export const getDashboardFilters = () => api.get('/admin/dashboard');
 export const getChartData = (data) => api.post('/admin/dashboard/chart-data', data);
-export const downloadChartData = async (data) => {
+export const downloadChartDataCSV = async (data) => {
   const response = await api.post('/admin/dashboard/download', data, { responseType: 'blob' });
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const a = document.createElement('a');

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,
@@ -12,7 +12,9 @@ import {
   Line,
   Legend,
 } from 'recharts';
-import { getDashboardFilters, getChartData, downloadChartData } from '@/api/admin.api';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { getDashboardFilters, getChartData, downloadChartDataCSV } from '@/api/admin.api';
 import { IndiaMap } from '@/components/admin/IndiaMap';
 import DateRangeFilter from '@/components/DateRangeFilter';
 
@@ -28,6 +30,8 @@ export default function DashboardPage() {
     consigneeName: '',
   });
   const [downloading, setDownloading] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dashboardRef = useRef(null);
 
   const { data: filterRes } = useQuery({
     queryKey: ['dashboard-filters'],
@@ -57,10 +61,36 @@ export default function DashboardPage() {
 
   const tickInterval = lineData.length > 30 ? Math.floor(lineData.length / 20) : 0;
 
-  async function handleDownload() {
+  async function handleDownloadCSV() {
+    setDropdownOpen(false);
     setDownloading(true);
     try {
-      await downloadChartData(filters);
+      await downloadChartDataCSV(filters);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  async function handleDownloadPDF() {
+    setDropdownOpen(false);
+    setDownloading(true);
+    try {
+      const el = dashboardRef.current;
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#f3f4f6' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgW = pageW;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      let y = 0;
+      while (y < imgH) {
+        if (y > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, -y, imgW, imgH);
+        y += pageH;
+      }
+      const date = new Date().toISOString().slice(0, 10).replace(/-/g, '_');
+      pdf.save(`vaya_dashboard_${date}.pdf`);
     } finally {
       setDownloading(false);
     }
@@ -75,14 +105,34 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
-        <button
-          onClick={handleDownload}
-          disabled={downloading}
-          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm px-4 py-2 rounded font-medium w-full sm:w-auto"
-        >
-          {downloading ? 'Downloading…' : 'Download ↓'}
-        </button>
+        <div className="relative w-full sm:w-auto">
+          <button
+            onClick={() => setDropdownOpen((o) => !o)}
+            disabled={downloading}
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm px-4 py-2 rounded font-medium w-full sm:w-auto"
+          >
+            {downloading ? 'Downloading…' : 'Download ↓'}
+          </button>
+          {dropdownOpen && !downloading && (
+            <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded shadow-lg z-10">
+              <button
+                onClick={handleDownloadCSV}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Download CSV
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Download PDF
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      <div ref={dashboardRef}>
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-4">
@@ -233,6 +283,7 @@ export default function DashboardPage() {
         )}
         <p className="text-center text-xs text-gray-500 mt-2">Timeline</p>
       </div>
+      </div>{/* end dashboardRef */}
     </div>
   );
 }
