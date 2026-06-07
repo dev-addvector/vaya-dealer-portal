@@ -130,7 +130,7 @@ export default function App() {
     return globalFiltered.filter((s) =>
       (s.pattern || '').toLowerCase().includes(debouncedSearch.pattern.toLowerCase()) &&
       (s.color || '').toLowerCase().includes(debouncedSearch.color.toLowerCase()) &&
-      (s.rollLength || '').toLowerCase().startsWith(debouncedSearch.rollLength.toLowerCase())
+      (s.rollLength || '').toLowerCase().includes(debouncedSearch.rollLength.toLowerCase())
     );
   }, [globalFiltered, debouncedSearch]);
 
