@@ -45,9 +45,8 @@ export const sendPasswordResetLink = (data) => api.post('/admin/settings/users/s
 
 // Ads
 export const getAds = () => api.get('/admin/ads');
-export const getActiveAd = () => api.get('/admin/ads/active');
-export const createAd = (form) =>
-  api.post('/admin/ads', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const getActiveAd = () => api.get('/ads/active');
+export const createAd = (data) => api.post('/admin/ads', data);
 export const updateAd = (id, form) =>
   api.put(`/admin/ads/${id}`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const deleteAd = (id) => api.delete(`/admin/ads/${id}`);

@@ -1,4 +1,8 @@
 const router = require('express').Router();
+const auth = require('../middleware/auth');
+const adsController = require('../controllers/admin/ads.controller');
+
+router.get('/ads/active', auth, adsController.getActive);
 
 router.use('/auth', require('./auth.routes'));
 router.use('/products', require('./product.routes'));

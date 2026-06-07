@@ -3,22 +3,48 @@ import { useState } from 'react';
 import { getAds, createAd, deleteAd } from '@/api/admin.api';
 import toast from 'react-hot-toast';
 
+const toIST = (utcStr) => {
+  if (!utcStr) return '—';
+  return new Date(utcStr).toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: '2-digit', month: 'short', year: 'numeric',
+  });
+};
+
+function ConfirmDialog({ message, onConfirm, onCancel }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm mx-4">
+        <p className="text-sm text-gray-700 mb-5">{message}</p>
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onCancel}
+            className="px-4 py-1.5 text-sm rounded border border-gray-300 text-gray-600 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-1.5 text-sm rounded bg-red-500 text-white hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdsPage() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ['admin-ads'], queryFn: getAds });
-  const [form, setForm] = useState({ title: '', startDate: '', endDate: '', image: null });
+  const [form, setForm] = useState({ title: '', startDate: '', endDate: '' });
   const [showForm, setShowForm] = useState(false);
+  const [confirmId, setConfirmId] = useState(null);
   const ads = data?.data ?? [];
 
   const create = useMutation({
-    mutationFn: () => {
-      const f = new FormData();
-      f.append('title', form.title);
-      f.append('startDate', form.startDate);
-      f.append('endDate', form.endDate);
-      if (form.image) f.append('image', form.image);
-      return createAd(f);
-    },
+    mutationFn: () => createAd({ title: form.title, startDate: form.startDate, endDate: form.endDate }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-ads'] }); setShowForm(false); toast.success('Ad created'); },
     onError: (err) => toast.error(err.message || 'Failed'),
   });
@@ -44,7 +70,6 @@ export default function AdsPage() {
             <div><label className="text-xs text-gray-500 block mb-1">Start Date</label><input type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} className="w-full border rounded px-3 py-1.5 text-sm" /></div>
             <div><label className="text-xs text-gray-500 block mb-1">End Date</label><input type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} className="w-full border rounded px-3 py-1.5 text-sm" /></div>
           </div>
-          <input type="file" accept="image/*" onChange={(e) => setForm((f) => ({ ...f, image: e.target.files[0] }))} className="text-sm" />
           <button onClick={() => create.mutate()} disabled={create.isPending} className="bg-vaya-primary text-white px-4 py-1.5 rounded text-sm hover:bg-vaya-dark disabled:opacity-60 w-full sm:w-auto">
             {create.isPending ? 'Creating...' : 'Create Ad'}
           </button>
@@ -55,16 +80,35 @@ export default function AdsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {ads.map((ad) => (
           <div key={ad.id} className="bg-white rounded-lg shadow p-4 flex flex-col justify-between">
-            <div>
+            <div className="space-y-1.5">
               <p className="font-medium text-sm break-words">{ad.title}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {ad.startDate?.slice(0, 10)} → {ad.endDate?.slice(0, 10)}
+              <p className="text-xs text-gray-500">
+                <span className="text-gray-400">Start Date: </span>{toIST(ad.startDate)}
+              </p>
+              <p className="text-xs text-gray-500">
+                <span className="text-gray-400">End Date: </span>{toIST(ad.endDate)}
+              </p>
+              <p className="text-xs text-gray-500">
+                <span className="text-gray-400">Created At: </span>{toIST(ad.createdAt)}
               </p>
             </div>
-            <button onClick={() => remove.mutate(ad.id)} className="text-red-500 text-xs hover:underline mt-2 self-start">Delete</button>
+            <button
+              onClick={() => setConfirmId(ad.id)}
+              className="text-red-500 text-xs hover:underline mt-3 self-start"
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>
+
+      {confirmId && (
+        <ConfirmDialog
+          message="Are you sure you want to delete this ad? This action cannot be undone."
+          onConfirm={() => { remove.mutate(confirmId); setConfirmId(null); }}
+          onCancel={() => setConfirmId(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,13 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useLogout } from '@/hooks/useAuth';
+import { useAuthStore } from '@/store/authStore';
 import { useCart } from '@/hooks/useProducts';
 import { downloadPriceListCsv, downloadPriceListPdf } from '@/api/download.api';
+import { getActiveAd } from '@/api/admin.api';
 
 export default function AppLayout() {
   const logout = useLogout();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { data: cart } = useCart();
+  const { data: adRes } = useQuery({ queryKey: ['active-ad'], queryFn: getActiveAd, staleTime: 5 * 60 * 1000, enabled: user?.role === 'user' });
+  const activeAd = adRes?.data ?? null;
   const cartCount = cart?.items?.length ?? 0;
 
   const [profileOpen, setProfileOpen] = useState(false);
@@ -261,6 +267,15 @@ export default function AppLayout() {
           </button>
         </nav>
       </div>
+
+      {/* Ad banner — users only */}
+      {user?.role === 'user' && activeAd?.title && (
+        <div className="bg-[#807A52] text-white text-sm py-1.5 overflow-hidden">
+          <marquee behavior="scroll" direction="left" scrollamount="5">
+            {activeAd.title}
+          </marquee>
+        </div>
+      )}
 
       <main className="flex-1">
         <div id="wrapper" className="bg-white min-h-[calc(100vh-64px)]">

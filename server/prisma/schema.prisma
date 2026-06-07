@@ -102,6 +102,7 @@ model Ad {
   title     String?
   startDate DateTime?
   endDate   DateTime?
+  fileName  String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
