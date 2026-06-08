@@ -26,9 +26,19 @@ function fmtDate(dateStr) {
   });
 }
 
-function fmtAmount(val) {
-  if (val == null || val === 'Null') return '—';
-  return Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+function fmtAmount(order) {
+  const direct = parseFloat(order.NetPayable);
+  if (!isNaN(direct) && direct > 0) {
+    return direct.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  if (Array.isArray(order.OrderItems) && order.OrderItems.length > 0) {
+    const total = order.OrderItems.reduce(
+      (sum, item) => sum + (parseFloat(item.TotalCost) || 0) + (parseFloat(item.TaxAmount) || 0),
+      0
+    );
+    if (total > 0) return total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  return '—';
 }
 
 const STATUS_COLORS = {
@@ -53,10 +63,18 @@ const COLUMNS = [
 const DATE_FIELDS = new Set(['OrderDate', 'InvoiceDate']);
 const NUM_FIELDS  = new Set(['NetPayable']);
 
+function netPayableNum(o) {
+  const d = parseFloat(o.NetPayable);
+  if (!isNaN(d) && d > 0) return d;
+  if (Array.isArray(o.OrderItems))
+    return o.OrderItems.reduce((s, i) => s + (parseFloat(i.TotalCost) || 0) + (parseFloat(i.TaxAmount) || 0), 0);
+  return 0;
+}
+
 function getValue(o, field) {
   const v = o[field];
   if (v == null || v === 'Null' || v === '') return null;
-  if (NUM_FIELDS.has(field))  return Number(v);
+  if (NUM_FIELDS.has(field))  return netPayableNum(o);
   if (DATE_FIELDS.has(field)) return parseErpDate(v);
   return String(v).toLowerCase();
 }
@@ -213,7 +231,7 @@ export default function UserOrdersPage() {
                       <td className="px-4 py-3 whitespace-nowrap">{fmtDate(o.OrderDate)}</td>
                       <td className="px-4 py-3">{o.InvoiceNo && o.InvoiceNo !== 'Null' ? o.InvoiceNo : '—'}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{fmtDate(o.InvoiceDate)}</td>
-                      <td className="px-4 py-3 text-right">{fmtAmount(o.NetPayable)}</td>
+                      <td className="px-4 py-3 text-right">{fmtAmount(o)}</td>
                       <td className="px-4 py-3">{o.PONumber || '—'}</td>
                       <td className="px-4 py-3">{o.ShippingMode || '—'}</td>
                       <td className="px-4 py-3">{o.OrderType || '—'}</td>
@@ -259,7 +277,7 @@ export default function UserOrdersPage() {
               <div><span className="text-gray-500">Order Date:</span> <span className="font-medium ml-1">{fmtDate(selectedOrder.OrderDate)}</span></div>
               <div><span className="text-gray-500">Invoice ID:</span> <span className="font-medium ml-1">{selectedOrder.InvoiceNo || '—'}</span></div>
               <div><span className="text-gray-500">Invoice Date:</span> <span className="font-medium ml-1">{fmtDate(selectedOrder.InvoiceDate)}</span></div>
-              <div><span className="text-gray-500">Net Payable:</span> <span className="font-medium ml-1">{fmtAmount(selectedOrder.NetPayable)}</span></div>
+              <div><span className="text-gray-500">Net Payable:</span> <span className="font-medium ml-1">{fmtAmount(selectedOrder)}</span></div>
               <div><span className="text-gray-500">Order Type:</span> <span className="font-medium ml-1">{selectedOrder.OrderType || '—'}</span></div>
               <div><span className="text-gray-500">Shipping Mode:</span> <span className="font-medium ml-1">{selectedOrder.ShippingMode || '—'}</span></div>
               <div><span className="text-gray-500">Status:</span> <span className="font-medium ml-1">{selectedOrder.OrderStatus || '—'}</span></div>
