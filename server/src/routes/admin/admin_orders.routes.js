@@ -8,6 +8,7 @@ const superOrSub = requireRoles(ROLES.ADMIN, ROLES.SUB_ADMIN);
 
 // Specific routes must come before /:unc param route
 router.get('/customers', orderCreators, c.getCustomers);
+router.get('/filter-options/:unc', orderCreators, c.getFilterOptionsForOrder);
 router.get('/products/:unc', orderCreators, c.getProductsForOrder);
 router.get('/addresses/:unc', orderCreators, c.getAddressesForOrder);
 router.get('/shipping/:unc', orderCreators, c.getShippingModesForOrder);

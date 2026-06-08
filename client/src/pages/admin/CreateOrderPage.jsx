@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { getOrderCustomers, getOrderProducts, getOrderAddresses, getOrderShippingModes, placeAdminOrder } from '@/api/admin.api';
+import { getOrderCustomers, getOrderProducts, getOrderAddresses, getOrderShippingModes, placeAdminOrder, getOrderFilterOptions } from '@/api/admin.api';
+import SearchableSelect from '@/components/SearchableSelect';
 import toast from 'react-hot-toast';
 import { todayIST } from '@/utils/dateUtils';
 
@@ -53,10 +54,31 @@ function StepSelectCustomer({ onSelect }) {
 
 // ── Step 2: Product Browse & Cart ──────────────────────────────────────────
 function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
-  const [pattern, setPattern] = useState('');
-  const [color, setColor] = useState('');
+  const [draftPattern, setDraftPattern] = useState('');
+  const [draftColor, setDraftColor] = useState('');
   const [search, setSearch] = useState({ pattern: '', color: '' });
   const [page, setPage] = useState(1);
+
+  const { data: filtersData, isLoading: filtersLoading } = useQuery({
+    queryKey: ['order-filter-options', customer.unc],
+    queryFn: () => getOrderFilterOptions(customer.unc),
+    staleTime: 30 * 60 * 1000,
+  });
+
+  const allPatterns = useMemo(() => filtersData?.data?.patterns ?? [], [filtersData]);
+  const allColors = useMemo(() => filtersData?.data?.colors ?? [], [filtersData]);
+  const patternColorsMap = useMemo(() => filtersData?.data?.patternColors ?? {}, [filtersData]);
+  const colorPatternsMap = useMemo(() => filtersData?.data?.colorPatterns ?? {}, [filtersData]);
+
+  const patterns = useMemo(() => {
+    if (draftColor && colorPatternsMap[draftColor]) return colorPatternsMap[draftColor];
+    return allPatterns;
+  }, [allPatterns, draftColor, colorPatternsMap]);
+
+  const colors = useMemo(() => {
+    if (draftPattern && patternColorsMap[draftPattern]) return patternColorsMap[draftPattern];
+    return allColors;
+  }, [allColors, draftPattern, patternColorsMap]);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['order-products', customer.unc, search.pattern, search.color, page],
@@ -101,7 +123,14 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setSearch({ pattern, color });
+    setSearch({ pattern: draftPattern, color: draftColor });
+    setPage(1);
+  };
+
+  const handleClear = () => {
+    setDraftPattern('');
+    setDraftColor('');
+    setSearch({ pattern: '', color: '' });
     setPage(1);
   };
 
@@ -122,14 +151,36 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
         </div>
       </div>
 
-      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 mb-4">
-        <input value={pattern} onChange={(e) => setPattern(e.target.value)}
-          placeholder="Pattern" className="border rounded px-3 py-1.5 text-sm w-full sm:w-48 focus:outline-none focus:ring-1 focus:ring-vaya-primary" />
-        <input value={color} onChange={(e) => setColor(e.target.value)}
-          placeholder="Color" className="border rounded px-3 py-1.5 text-sm w-full sm:w-48 focus:outline-none focus:ring-1 focus:ring-vaya-primary" />
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 mb-4 items-end">
+        <div className="w-full sm:w-48">
+          <SearchableSelect
+            value={draftPattern}
+            onChange={(val) => {
+              setDraftPattern(val);
+              if (draftColor && val && !patternColorsMap[val]?.includes(draftColor)) setDraftColor('');
+            }}
+            options={patterns}
+            placeholder={filtersLoading ? 'Loading...' : 'Pattern'}
+            disabled={filtersLoading}
+            className="h-[34px]"
+          />
+        </div>
+        <div className="w-full sm:w-48">
+          <SearchableSelect
+            value={draftColor}
+            onChange={(val) => {
+              setDraftColor(val);
+              if (draftPattern && val && !colorPatternsMap[val]?.includes(draftPattern)) setDraftPattern('');
+            }}
+            options={colors}
+            placeholder={filtersLoading ? 'Loading...' : 'Color'}
+            disabled={filtersLoading}
+            className="h-[34px]"
+          />
+        </div>
         <div className="flex gap-2">
           <button type="submit" className="bg-gray-700 text-white px-4 py-1.5 rounded text-sm hover:bg-gray-800">Search</button>
-          <button type="button" onClick={() => { setPattern(''); setColor(''); setSearch({ pattern: '', color: '' }); setPage(1); }}
+          <button type="button" onClick={handleClear}
             className="border px-4 py-1.5 rounded text-sm hover:bg-gray-50">Clear</button>
         </div>
       </form>
@@ -218,7 +269,6 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
   const [orderType, setOrderType] = useState('Ordered');
   const [poNumber, setPoNumber] = useState('');
   const [shippingAddressId, setShippingAddressId] = useState('');
-  const [billingAddressId, setBillingAddressId] = useState('');
   const [shipmentMode, setShipmentMode] = useState('');
 
   const { data: addrData } = useQuery({
@@ -232,6 +282,11 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
 
   const addresses = addrData?.data ?? [];
   const shippingModes = shipData?.data ?? [];
+
+  const billingAddress = addresses.find(
+    (a) => a['Address Type'] === 'Billing' || a.AddressType === 'Billing' || a.isBillingDefault
+  ) || addresses[0] || null;
+  const billingAddressId = billingAddress?.['Address ID'] || billingAddress?.AddressId || '';
 
   const cutDiscount = parseFloat(customer.cutDiscount || 0);
   const rollDiscount = parseFloat(customer.rollDiscount || 0);
@@ -367,15 +422,14 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
 
         <div>
           <label className="text-xs text-gray-600 block mb-1">Billing Address</label>
-          <select value={billingAddressId} onChange={(e) => setBillingAddressId(e.target.value)}
-            className="w-full border rounded px-3 py-2 text-sm">
-            <option value="">Select Billing Address</option>
-            {addresses.map((a, i) => (
-              <option key={i} value={a['Address ID'] || a.AddressId || i}>
-                {a['Address'] || a.address}, {a['City'] || a.city}
-              </option>
-            ))}
-          </select>
+          <input
+            readOnly
+            value={billingAddress
+              ? `${billingAddress['Address'] || billingAddress.address || ''}, ${billingAddress['City'] || billingAddress.city || ''}`.replace(/^,\s*|,\s*$/, '')
+              : ''}
+            placeholder="No billing address found"
+            className="w-full border rounded px-3 py-2 text-sm bg-gray-50 text-gray-500 cursor-default"
+          />
         </div>
 
         <div>

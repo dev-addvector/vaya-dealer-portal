@@ -1,6 +1,35 @@
 const prisma = require('../../config/database');
 const erpService = require('../../services/erp.service');
 
+exports.getFilterOptionsForOrder = async (req, res) => {
+  const unc = decodeURIComponent(req.params.unc);
+  try {
+    const raw = await erpService.getLiveProductsRaw(unc);
+    const patternColorsMap = {};
+    const colorPatternsMap = {};
+    for (const item of raw) {
+      const pattern = item.Pattern?.trim();
+      const color = item.Color?.trim();
+      if (!pattern || !color) continue;
+      if (!patternColorsMap[pattern]) patternColorsMap[pattern] = new Set();
+      patternColorsMap[pattern].add(color);
+      if (!colorPatternsMap[color]) colorPatternsMap[color] = new Set();
+      colorPatternsMap[color].add(pattern);
+    }
+    res.json({
+      success: true,
+      data: {
+        patterns: Object.keys(patternColorsMap).sort(),
+        colors: Object.keys(colorPatternsMap).sort(),
+        patternColors: Object.fromEntries(Object.entries(patternColorsMap).map(([k, v]) => [k, [...v].sort()])),
+        colorPatterns: Object.fromEntries(Object.entries(colorPatternsMap).map(([k, v]) => [k, [...v].sort()])),
+      },
+    });
+  } catch (err) {
+    res.status(502).json({ success: false, message: 'Failed to load filter options from ERP', error: err.message });
+  }
+};
+
 exports.viewOrders = async (req, res) => {
   const unc = decodeURIComponent(req.params.unc);
   if (!unc) return res.status(400).json({ success: false, message: 'UNC is required' });
@@ -71,13 +100,12 @@ exports.placeAdminOrder = async (req, res) => {
     const taxable = basePrice - itemDiscount;
     const gstPct = item.gstPercent || globalGst;
     const gstAmount = (taxable * gstPct) / 100;
-    const totalCost = taxable + gstAmount;
 
     return {
       Pattern: item.pattern || '',
       Color: item.color || '',
-      OrderedLength: qty,
-      TotalCost: totalCost.toFixed(2),
+      OrderedLength: String(qty),
+      TotalCost: taxable.toFixed(2),
       TaxAmount: gstAmount.toFixed(2),
       DiscountType: 'V',
       DiscountVal: itemDiscount.toFixed(2),
@@ -87,16 +115,18 @@ exports.placeAdminOrder = async (req, res) => {
     };
   });
 
-  const dateObj = orderDate ? new Date(orderDate) : new Date();
-  const d = String(dateObj.getDate()).padStart(2, '0');
-  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const y = dateObj.getFullYear();
+  const [y, m, d] = orderDate
+    ? orderDate.split('-')
+    : new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }).split('-');
+
+  const effectiveShipping = String(shippingAddressId || billingAddressId || '');
+  const effectiveBilling = String(billingAddressId || shippingAddressId || '');
 
   const erpPayload = {
     UCN: unc,
     OrderItems: orderItems,
-    ShippingAddressID: shippingAddressId || billingAddressId || '',
-    BillingAddressID: billingAddressId || shippingAddressId || '',
+    ShippingAddressID: effectiveShipping,
+    BillingAddressID: effectiveBilling,
     PONumber: poNumber || '',
     ShippingMode: orderType === 'Reserved' ? 'TBD' : (shipmentMode || ''),
     OrderType: orderType || 'Ordered',
@@ -105,9 +135,13 @@ exports.placeAdminOrder = async (req, res) => {
     RefPONumber: '',
   };
 
+  console.log('[placeAdminOrder] ERP payload:', JSON.stringify(erpPayload, null, 2));
   try {
     const result = await erpService.placeOrder(erpPayload);
-    const isSuccess = result?.status === true || result?.return_code === 200 || result?.success === true;
+    console.log('[placeAdminOrder] ERP result:', JSON.stringify(result, null, 2));
+    const isSuccess = result?.status === true || result?.status === 'TRUE' ||
+      result?.return_code === 200 || result?.return_code === '200' ||
+      result?.success === true;
     if (isSuccess) return res.json({ success: true, message: 'Order placed successfully' });
     const errMsg = result?.message || result?.return_message || 'Failed to place order';
     return res.status(400).json({ success: false, message: errMsg });

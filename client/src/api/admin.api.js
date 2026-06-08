@@ -77,6 +77,7 @@ export const getOrdersByUnc = (unc) => api.get(`/admin/orders/${encodeURICompone
 
 // Admin Create Order
 export const getOrderCustomers = () => api.get('/admin/orders/customers');
+export const getOrderFilterOptions = (unc) => api.get(`/admin/orders/filter-options/${encodeURIComponent(unc)}`);
 export const getOrderProducts = (unc, params) => api.get(`/admin/orders/products/${encodeURIComponent(unc)}`, { params });
 export const getOrderAddresses = (unc) => api.get(`/admin/orders/addresses/${encodeURIComponent(unc)}`);
 export const getOrderShippingModes = (unc) => api.get(`/admin/orders/shipping/${encodeURIComponent(unc)}`);
