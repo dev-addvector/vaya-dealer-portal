@@ -10,6 +10,8 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortDir, setSortDir] = useState('desc');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
@@ -18,9 +20,24 @@ export default function UsersPage() {
   const [loadingActions, setLoadingActions] = useState({});
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-users', search, page, perPage],
-    queryFn: () => getUsers({ search, page, perPage }),
+    queryKey: ['admin-users', search, page, perPage, sortBy, sortDir],
+    queryFn: () => getUsers({ search, page, perPage, sortBy, sortDir }),
   });
+
+  function handleSort(field) {
+    if (sortBy === field) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(field);
+      setSortDir('asc');
+    }
+    setPage(1);
+  }
+
+  function SortIcon({ field }) {
+    if (sortBy !== field) return <span className="ml-1 text-gray-300">↕</span>;
+    return <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+  }
 
   const users = data?.data ?? [];
   const total = data?.total ?? 0;
@@ -101,8 +118,21 @@ export default function UsersPage() {
           <table className="w-full text-sm border-collapse bg-white">
             <thead className="bg-vaya-light text-vaya-dark uppercase text-xs">
               <tr>
-                {['Name', 'Email', 'UNC', 'Status', 'Action'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
+                {[
+                  { label: 'Name', field: 'name' },
+                  { label: 'Email', field: 'email' },
+                  { label: 'UNC', field: 'unc' },
+                  { label: 'Status', field: 'isStatus' },
+                  { label: 'Action', field: null },
+                ].map(({ label, field }) => (
+                  <th
+                    key={label}
+                    className={`px-4 py-3 text-left font-semibold ${field ? 'cursor-pointer select-none hover:bg-vaya-light/70' : ''}`}
+                    onClick={() => field && handleSort(field)}
+                  >
+                    {label}
+                    {field && <SortIcon field={field} />}
+                  </th>
                 ))}
               </tr>
             </thead>

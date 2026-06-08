@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getOrdersByUnc } from '@/api/admin.api';
@@ -20,11 +20,61 @@ const STATUS_COLORS = {
   Pending: 'bg-yellow-100 text-yellow-700',
 };
 
+const COLUMNS = [
+  { label: 'Order ID',      field: 'OrderID',      sortable: true },
+  { label: 'Order Date',    field: 'OrderDate',    sortable: true },
+  { label: 'Invoice ID',    field: 'InvoiceNo',    sortable: true },
+  { label: 'Invoice Date',  field: 'InvoiceDate',  sortable: true },
+  { label: 'Net Payable',   field: 'NetPayable',   sortable: true },
+  { label: 'PO Number',     field: 'PONumber',     sortable: true },
+  { label: 'Shipping Mode', field: 'ShippingMode', sortable: true },
+  { label: 'Order Type',    field: 'OrderType',    sortable: true },
+  { label: 'Order Status',  field: 'OrderStatus',  sortable: true },
+  { label: 'Action',        field: null,           sortable: false },
+];
+
+const DATE_FIELDS = new Set(['OrderDate', 'InvoiceDate']);
+const NUM_FIELDS  = new Set(['NetPayable']);
+
+function getValue(o, field) {
+  const v = o[field];
+  if (v == null || v === 'Null' || v === '') return null;
+  if (NUM_FIELDS.has(field))  return Number(v);
+  if (DATE_FIELDS.has(field)) return new Date(v);
+  return String(v).toLowerCase();
+}
+
+function sortOrders(orders, sortBy, sortDir) {
+  if (!sortBy) return orders;
+  return [...orders].sort((a, b) => {
+    const av = getValue(a, sortBy);
+    const bv = getValue(b, sortBy);
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    let cmp = 0;
+    if (av instanceof Date) cmp = av - bv;
+    else if (typeof av === 'number') cmp = av - bv;
+    else cmp = av < bv ? -1 : av > bv ? 1 : 0;
+    return sortDir === 'asc' ? cmp : -cmp;
+  });
+}
+
+function SortIcon({ field, sortBy, sortDir }) {
+  if (sortBy !== field) return <span className="ml-1 text-gray-300">↕</span>;
+  return <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+}
+
 export default function UserOrdersPage() {
   const { unc } = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
+
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [sortBy, setSortBy]   = useState('OrderDate');
+  const [sortDir, setSortDir] = useState('desc');
+  const [search, setSearch]   = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   const decodedUnc = decodeURIComponent(unc);
 
@@ -34,7 +84,38 @@ export default function UserOrdersPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const orders = data?.data ?? [];
+  const rawOrders = data?.data ?? [];
+
+  const statuses = useMemo(() => {
+    const set = new Set(rawOrders.map((o) => o.OrderStatus).filter(Boolean));
+    return [...set].sort();
+  }, [rawOrders]);
+
+  const orders = useMemo(() => {
+    let result = rawOrders;
+    if (statusFilter) {
+      result = result.filter((o) => o.OrderStatus === statusFilter);
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter(
+        (o) =>
+          (o.OrderID   && String(o.OrderID).toLowerCase().includes(q)) ||
+          (o.InvoiceNo && String(o.InvoiceNo).toLowerCase().includes(q)) ||
+          (o.PONumber  && String(o.PONumber).toLowerCase().includes(q))
+      );
+    }
+    return sortOrders(result, sortBy, sortDir);
+  }, [rawOrders, statusFilter, search, sortBy, sortDir]);
+
+  function handleSort(field) {
+    if (sortBy === field) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(field);
+      setSortDir('asc');
+    }
+  }
 
   return (
     <div>
@@ -48,63 +129,101 @@ export default function UserOrdersPage() {
       </div>
 
       {isLoading && <p className="text-sm text-gray-500">Loading orders from ERP...</p>}
-      {isError && <p className="text-sm text-red-600">Failed to load orders from ERP.</p>}
+      {isError   && <p className="text-sm text-red-600">Failed to load orders from ERP.</p>}
 
       {!isLoading && !isError && (
-        <div className="overflow-x-auto rounded-lg shadow">
-          <table className="w-full text-sm border-collapse bg-white">
-            <thead className="bg-vaya-light text-vaya-dark uppercase text-xs">
-              <tr>
-                {['Order ID', 'Order Date', 'Invoice ID', 'Invoice Date', 'Net Payable', 'PO Number', 'Shipping Mode', 'Order Type', 'Order Status', 'Action'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left font-semibold whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {orders.length === 0 ? (
+        <>
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <input
+              placeholder="Search Order ID, Invoice ID, PO Number..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="border rounded px-3 py-2 text-sm w-full sm:w-80 focus:outline-none focus:ring-1 focus:ring-vaya-green"
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-vaya-green"
+            >
+              <option value="">All Statuses</option>
+              {statuses.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            {(search || statusFilter) && (
+              <button
+                onClick={() => { setSearch(''); setStatusFilter(''); }}
+                className="text-sm text-gray-500 hover:text-gray-700 underline whitespace-nowrap"
+              >
+                Clear filters
+              </button>
+            )}
+            <span className="text-sm text-gray-500 self-center ml-auto whitespace-nowrap">
+              {orders.length} of {rawOrders.length} orders
+            </span>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg shadow">
+            <table className="w-full text-sm border-collapse bg-white">
+              <thead className="bg-vaya-light text-vaya-dark uppercase text-xs">
                 <tr>
-                  <td colSpan={10} className="px-4 py-6 text-center text-gray-400">No orders found for this user.</td>
+                  {COLUMNS.map(({ label, field, sortable }) => (
+                    <th
+                      key={label}
+                      className={`px-4 py-3 text-left font-semibold whitespace-nowrap ${sortable ? 'cursor-pointer select-none hover:bg-vaya-light/70' : ''}`}
+                      onClick={() => sortable && handleSort(field)}
+                    >
+                      {label}
+                      {sortable && <SortIcon field={field} sortBy={sortBy} sortDir={sortDir} />}
+                    </th>
+                  ))}
                 </tr>
-              ) : (
-                orders.map((o, i) => (
-                  <tr key={i} className="border-t hover:bg-vaya-light/30">
-                    <td className="px-4 py-3">
-                      {o.OrderID && o.OrderID !== 'Null' ? (
-                        <button onClick={() => setSelectedOrder(o)} className="text-vaya-primary hover:underline font-medium">
-                          {o.OrderID}
-                        </button>
-                      ) : '—'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">{fmtDate(o.OrderDate)}</td>
-                    <td className="px-4 py-3">{o.InvoiceNo && o.InvoiceNo !== 'Null' ? o.InvoiceNo : '—'}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{fmtDate(o.InvoiceDate)}</td>
-                    <td className="px-4 py-3 text-right">{fmtAmount(o.NetPayable)}</td>
-                    <td className="px-4 py-3">{o.PONumber || '—'}</td>
-                    <td className="px-4 py-3">{o.ShippingMode || '—'}</td>
-                    <td className="px-4 py-3">{o.OrderType || '—'}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${STATUS_COLORS[o.OrderStatus] || 'bg-gray-100 text-gray-600'}`}>
-                        {o.OrderStatus || '—'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {(o.OrderStatus === 'Process' || o.OrderStatus === 'Delivered') && o.InvoiceNo && o.InvoiceNo !== 'Null' && (
-                        <a
-                          href={`/api/orders/download/${encodeURIComponent(o.InvoiceNo)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-vaya-primary hover:underline"
-                        >
-                          Download
-                        </a>
-                      )}
-                    </td>
+              </thead>
+              <tbody>
+                {orders.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-6 text-center text-gray-400">No orders found.</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  orders.map((o, i) => (
+                    <tr key={i} className="border-t hover:bg-vaya-light/30">
+                      <td className="px-4 py-3">
+                        <button onClick={() => setSelectedOrder(o)} className="text-vaya-primary hover:underline font-medium">
+                          {o.OrderID && o.OrderID !== 'Null' ? o.OrderID : 'N/A'}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">{fmtDate(o.OrderDate)}</td>
+                      <td className="px-4 py-3">{o.InvoiceNo && o.InvoiceNo !== 'Null' ? o.InvoiceNo : '—'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{fmtDate(o.InvoiceDate)}</td>
+                      <td className="px-4 py-3 text-right">{fmtAmount(o.NetPayable)}</td>
+                      <td className="px-4 py-3">{o.PONumber || '—'}</td>
+                      <td className="px-4 py-3">{o.ShippingMode || '—'}</td>
+                      <td className="px-4 py-3">{o.OrderType || '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${STATUS_COLORS[o.OrderStatus] || 'bg-gray-100 text-gray-600'}`}>
+                          {o.OrderStatus || '—'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {(o.OrderStatus === 'Process' || o.OrderStatus === 'Delivered') && o.InvoiceNo && o.InvoiceNo !== 'Null' && (
+                          <a
+                            href={`/api/orders/download/${encodeURIComponent(o.InvoiceNo)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-vaya-primary hover:underline"
+                          >
+                            Download
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {selectedOrder && (

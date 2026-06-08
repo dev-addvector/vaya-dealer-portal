@@ -53,7 +53,10 @@ exports.uploadLoginImage = async (req, res) => {
 };
 
 exports.listUsers = async (req, res) => {
-  const { page = 1, perPage = 20, search } = req.query;
+  const { page = 1, perPage = 20, search, sortBy = 'createdAt', sortDir = 'desc' } = req.query;
+  const allowedSortFields = ['name', 'email', 'unc', 'isStatus', 'createdAt'];
+  const orderField = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+  const orderDir = sortDir === 'asc' ? 'asc' : 'desc';
   const where = search
     ? { OR: [{ name: { contains: search, mode: 'insensitive' } }, { email: { contains: search, mode: 'insensitive' } }], role: 'user' }
     : { role: 'user' };
@@ -62,7 +65,7 @@ exports.listUsers = async (req, res) => {
       where,
       skip: (Number(page) - 1) * Number(perPage),
       take: Number(perPage),
-      orderBy: { createdAt: 'desc' },
+      orderBy: { [orderField]: orderDir },
       select: { id: true, name: true, email: true, unc: true, zone: true, isStatus: true, createdAt: true },
     }),
     prisma.user.count({ where }),
