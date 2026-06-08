@@ -2,11 +2,28 @@ import { useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getOrdersByUnc } from '@/api/admin.api';
-import { formatDateIST } from '@/utils/dateUtils';
+
+// ERP sends dates as "DD-MM-YYYY HH:MM:SS" — new Date() misreads this as MM-DD.
+function parseErpDate(str) {
+  if (!str || str === 'Null') return null;
+  const [datePart] = String(str).split(' ');
+  const parts = datePart.split('-');
+  if (parts.length === 3 && parts[0].length <= 2) {
+    const [d, m, y] = parts;
+    const year = y.length === 2 ? `20${y}` : y;
+    const dt = new Date(`${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+  const dt = new Date(str);
+  return isNaN(dt.getTime()) ? null : dt;
+}
 
 function fmtDate(dateStr) {
-  if (!dateStr || dateStr === 'Null') return '—';
-  return formatDateIST(dateStr);
+  const dt = parseErpDate(dateStr);
+  if (!dt) return '—';
+  return dt.toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric',
+  });
 }
 
 function fmtAmount(val) {
@@ -40,7 +57,7 @@ function getValue(o, field) {
   const v = o[field];
   if (v == null || v === 'Null' || v === '') return null;
   if (NUM_FIELDS.has(field))  return Number(v);
-  if (DATE_FIELDS.has(field)) return new Date(v);
+  if (DATE_FIELDS.has(field)) return parseErpDate(v);
   return String(v).toLowerCase();
 }
 
