@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getOrdersByUnc } from '@/api/admin.api';
+import { formatDateIST } from '@/utils/dateUtils';
 
 function fmtDate(dateStr) {
   if (!dateStr || dateStr === 'Null') return '—';
-  const d = new Date(dateStr);
-  return isNaN(d) ? dateStr : d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  return formatDateIST(dateStr);
 }
 
 function fmtAmount(val) {

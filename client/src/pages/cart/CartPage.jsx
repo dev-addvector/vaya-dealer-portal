@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart, useDeleteCartItem, useEditCartItem, usePlaceOrder, useShippingModes } from '@/hooks/useProducts';
 import { useAddresses } from '@/hooks/useAddresses';
 import toast from 'react-hot-toast';
+import { todayIST } from '@/utils/dateUtils';
 
 const thBase = 'bg-vaya-black text-white px-[12px] py-[10px] text-center font-normal text-[13px] whitespace-nowrap border border-[#333]';
 const tdBase = 'px-[10px] py-2 border-b border-[#e0e0e0] align-middle text-[13px] text-[#333]';
@@ -198,8 +199,8 @@ export default function CartPage() {
     return local !== undefined ? local : String(item.quantity ?? '');
   };
 
-  const today = new Date().toISOString().split('T')[0];
-  const maxDate = new Date(Date.now() + receivingOrderDays * 86400000).toISOString().split('T')[0];
+  const today = todayIST();
+  const maxDate = new Date(Date.now() + receivingOrderDays * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
   const handleSubmit = async (orderType) => {
     if (!orderDate) { toast.error('Please select a reserve/delivery date'); return; }

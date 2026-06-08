@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getOrderCustomers, getOrderProducts, getOrderAddresses, getOrderShippingModes, placeAdminOrder } from '@/api/admin.api';
 import toast from 'react-hot-toast';
+import { todayIST } from '@/utils/dateUtils';
 
 // ── Step 1: Customer Selection ─────────────────────────────────────────────
 function StepSelectCustomer({ onSelect }) {
@@ -213,7 +214,7 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
 
 // ── Step 3: Cart Review & Checkout ─────────────────────────────────────────
 function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
-  const [orderDate, setOrderDate] = useState(new Date().toISOString().slice(0, 10));
+  const [orderDate, setOrderDate] = useState(todayIST());
   const [orderType, setOrderType] = useState('Ordered');
   const [poNumber, setPoNumber] = useState('');
   const [shippingAddressId, setShippingAddressId] = useState('');
@@ -410,7 +411,7 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
         <div>
           <label className="text-xs text-gray-600 block mb-1">Order / Delivery Date <span className="text-red-500">*</span></label>
           <input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)}
-            min={new Date().toISOString().slice(0, 10)}
+            min={todayIST()}
             className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-vaya-primary" />
         </div>
       </div>

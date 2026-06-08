@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { getSubadmins, createSubadmin, updateSubadmin, deleteSubadmin, sendPasswordResetLink } from '@/api/admin.api';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
+import { formatDateTimeIST } from '@/utils/dateUtils';
 
 const ROLES = [
   { value: 'sub_admin', label: 'Sub admin' },
@@ -77,10 +78,6 @@ function SubadminModal({ initial, onClose, onSave, isPending }) {
   );
 }
 
-const formatDate = (v) => {
-  if (!v) return '-';
-  try { return new Date(v).toISOString().replace('T', ' ').slice(0, 19); } catch { return '-'; }
-};
 
 export default function SubAdminPage() {
   const qc = useQueryClient();
@@ -159,7 +156,7 @@ export default function SubAdminPage() {
                   <td className="px-4 py-3">{s.email}</td>
                   <td className="px-4 py-3">{s.roleLabel || s.role}</td>
                   <td className="px-4 py-3">{s.zone || '-'}</td>
-                  <td className="px-4 py-3 text-xs">{formatDate(s.createdAt)}</td>
+                  <td className="px-4 py-3 text-xs">{formatDateTimeIST(s.createdAt)}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col sm:flex-row gap-1">
                       {canEditDelete && (

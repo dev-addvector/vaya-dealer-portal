@@ -17,8 +17,9 @@ import html2canvas from 'html2canvas';
 import { getDashboardFilters, getChartData, downloadChartDataCSV } from '@/api/admin.api';
 import { IndiaMap } from '@/components/admin/IndiaMap';
 import DateRangeFilter from '@/components/DateRangeFilter';
+import { todayIST } from '@/utils/dateUtils';
 
-const today = new Date().toISOString().slice(0, 10);
+const today = todayIST();
 const LINE_COLORS = ['#7c3aed', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
 
 export default function DashboardPage() {
@@ -99,7 +100,7 @@ export default function DashboardPage() {
         pdf.addImage(imgData, 'PNG', 0, -y, imgW, imgH);
         y += pageH;
       }
-      const date = new Date().toISOString().slice(0, 10).replace(/-/g, '_');
+      const date = todayIST().replace(/-/g, '_');
       pdf.save(`vaya_dashboard_${date}.pdf`);
     } finally {
       setPdfCapturing(false);

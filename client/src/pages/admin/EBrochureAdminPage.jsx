@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { getEBrochures, uploadEBrochure, deleteEBrochure } from '@/api/admin.api';
 import toast from 'react-hot-toast';
+import { formatDateIST } from '@/utils/dateUtils';
 
 export default function EBrochureAdminPage() {
   const qc = useQueryClient();
@@ -80,7 +81,7 @@ export default function EBrochureAdminPage() {
                 <tr key={b.id} className="border-t hover:bg-vaya-light/30">
                   <td className="px-4 py-3 font-medium">{b.name || b.filename}</td>
                   <td className="px-4 py-3 text-xs text-gray-500">
-                    {b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN') : '—'}
+                    {formatDateIST(b.createdAt)}
                   </td>
                   <td className="px-4 py-3">
                     <a
