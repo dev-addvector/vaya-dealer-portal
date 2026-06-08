@@ -5,6 +5,33 @@ import SearchableSelect from '@/components/SearchableSelect';
 import toast from 'react-hot-toast';
 import { todayIST } from '@/utils/dateUtils';
 
+const round1 = (n) => Math.round(n * 10) / 10;
+
+function RollModal({ product, onClose }) {
+  if (!product) return null;
+  return (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-[rgba(0,0,0,0.4)]" />
+      <div className="relative bg-white rounded-[4px] p-5 min-w-[320px] max-w-[420px] shadow-[0_4px_24px_rgba(0,0,0,0.18)]" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-[10px] right-[14px] bg-transparent border-none text-[20px] cursor-pointer text-[#555] leading-none">×</button>
+        <div className="font-semibold text-sm mb-3 text-gray-700">{product.Pattern} — {product.Color}</div>
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <div className="text-[13px] text-[#555] font-medium">Unique Roll Number</div>
+          <div className="text-[13px] text-[#555] font-medium">Length</div>
+        </div>
+        <div className="max-h-[320px] overflow-y-auto">
+          {product.Rolls.map((r, i) => (
+            <div key={i} className="grid grid-cols-2 gap-2 mb-2">
+              <input readOnly value={r.PcSINo || ''} className="border border-[#C8C8C8] rounded-[3px] px-[10px] py-[6px] text-[13px] bg-[#f9f9f9] outline-none w-full" />
+              <input readOnly value={r.Length || ''} className="border border-[#C8C8C8] rounded-[3px] px-[10px] py-[6px] text-[13px] bg-[#f9f9f9] outline-none w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Step 1: Customer Selection ─────────────────────────────────────────────
 function StepSelectCustomer({ onSelect }) {
   const { data, isLoading } = useQuery({ queryKey: ['order-customers'], queryFn: getOrderCustomers });
@@ -58,6 +85,8 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
   const [draftColor, setDraftColor] = useState('');
   const [search, setSearch] = useState({ pattern: '', color: '' });
   const [page, setPage] = useState(1);
+  const [rollModal, setRollModal] = useState(null);
+  const [draftQtys, setDraftQtys] = useState({});
 
   const { data: filtersData, isLoading: filtersLoading } = useQuery({
     queryKey: ['order-filter-options', customer.unc],
@@ -100,7 +129,7 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
 
   const handleQtyChange = (p, qty) => {
     const key = `${p.Pattern}||${p.Color}`;
-    const q = parseFloat(qty);
+    const q = round1(parseFloat(qty));
     if (!qty || isNaN(q) || q <= 0) {
       onCartChange(cart.filter((i) => i.key !== key));
     } else {
@@ -211,15 +240,35 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
                     <td className="px-3 py-2">{p.Color}</td>
                     <td className="px-3 py-2">{Number(p.CutPrice).toLocaleString('en-IN')}</td>
                     <td className="px-3 py-2">{Number(p.RollPrice).toLocaleString('en-IN')}</td>
-                    <td className="px-3 py-2">{p.NumberOfRolls}</td>
-                    <td className="px-3 py-2">{p.TotalLength}</td>
+                    <td className="px-3 py-2">
+                      {p.NumberOfRolls > 0 ? (
+                        <button
+                          onClick={() => setRollModal(p)}
+                          className="text-blue-600 hover:underline font-medium bg-transparent border-none cursor-pointer p-0"
+                        >
+                          {p.NumberOfRolls}
+                        </button>
+                      ) : p.NumberOfRolls}
+                    </td>
+                    <td className="px-3 py-2">{Number(p.TotalLength).toFixed(1)}</td>
                     <td className="px-3 py-2">
                       <input
-                        type="number"
-                        min="0.1"
-                        step="0.1"
-                        value={qty}
-                        onChange={(e) => handleQtyChange(p, e.target.value)}
+                        type="text"
+                        inputMode="decimal"
+                        value={draftQtys[key] !== undefined ? draftQtys[key] : (qty !== '' ? String(qty) : '')}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v === '' || /^\d*\.?\d*$/.test(v))
+                            setDraftQtys(prev => ({ ...prev, [key]: v }));
+                        }}
+                        onBlur={() => {
+                          const draft = draftQtys[key];
+                          if (draft === undefined) return;
+                          const raw = parseFloat(draft);
+                          const rounded = (!draft || isNaN(raw) || raw <= 0) ? '' : String(raw < 1 ? 1 : round1(raw));
+                          setDraftQtys(prev => { const n = { ...prev }; delete n[key]; return n; });
+                          handleQtyChange(p, rounded);
+                        }}
                         placeholder="0"
                         className="border rounded px-2 py-1 w-20 text-sm focus:outline-none focus:ring-1 focus:ring-vaya-primary"
                       />
@@ -259,6 +308,8 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
           View Cart & Checkout ({cartCount} item{cartCount !== 1 ? 's' : ''})
         </button>
       </div>
+
+      <RollModal product={rollModal} onClose={() => setRollModal(null)} />
     </div>
   );
 }
@@ -270,6 +321,7 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
   const [poNumber, setPoNumber] = useState('');
   const [shippingAddressId, setShippingAddressId] = useState('');
   const [shipmentMode, setShipmentMode] = useState('');
+  const [draftQtys, setDraftQtys] = useState({});
 
   const { data: addrData } = useQuery({
     queryKey: ['order-addresses', customer.unc],
@@ -369,13 +421,21 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
                   <td className="px-3 py-3 text-right">{fmt(item.cutPrice)}</td>
                   <td className="px-3 py-3 text-right">
                     <input
-                      type="number" min="0.1" step="0.1"
-                      value={item.quantity}
+                      type="text"
+                      inputMode="decimal"
+                      value={draftQtys[item.key] !== undefined ? draftQtys[item.key] : String(item.quantity)}
                       onChange={(e) => {
-                        const q = parseFloat(e.target.value);
-                        if (!isNaN(q) && q > 0) {
-                          onCartChange(cart.map((c) => c.key === item.key ? { ...c, quantity: q } : c));
-                        }
+                        const v = e.target.value;
+                        if (v === '' || /^\d*\.?\d*$/.test(v))
+                          setDraftQtys(prev => ({ ...prev, [item.key]: v }));
+                      }}
+                      onBlur={() => {
+                        const draft = draftQtys[item.key];
+                        if (draft === undefined) return;
+                        const raw = parseFloat(draft);
+                        setDraftQtys(prev => { const n = { ...prev }; delete n[item.key]; return n; });
+                        if (!isNaN(raw) && raw > 0)
+                          onCartChange(cart.map((c) => c.key === item.key ? { ...c, quantity: raw < 1 ? 1 : round1(raw) } : c));
                       }}
                       className="border rounded px-2 py-1 w-20 text-sm text-right focus:outline-none focus:ring-1 focus:ring-vaya-primary"
                     />
