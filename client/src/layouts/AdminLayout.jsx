@@ -281,6 +281,9 @@ export default function AdminLayout() {
         <main className="flex-1 p-4 sm:p-6 bg-gray-50 overflow-y-auto">
           <Outlet />
         </main>
+        <footer className="shrink-0 py-3 border-t border-gray-200 text-center text-xs text-gray-400 bg-gray-50">
+          2018–{new Date().getFullYear()} VAYA
+        </footer>
       </div>
     </div>
   );

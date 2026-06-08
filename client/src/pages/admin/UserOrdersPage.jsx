@@ -57,7 +57,6 @@ const COLUMNS = [
   { label: 'Shipping Mode', field: 'ShippingMode', sortable: true },
   { label: 'Order Type',    field: 'OrderType',    sortable: true },
   { label: 'Order Status',  field: 'OrderStatus',  sortable: true },
-  { label: 'Action',        field: null,           sortable: false },
 ];
 
 const DATE_FIELDS = new Set(['OrderDate', 'InvoiceDate']);
@@ -218,7 +217,7 @@ export default function UserOrdersPage() {
               <tbody>
                 {orders.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-6 text-center text-gray-400">No orders found.</td>
+                    <td colSpan={9} className="px-4 py-6 text-center text-gray-400">No orders found.</td>
                   </tr>
                 ) : (
                   orders.map((o, i) => (
@@ -239,18 +238,6 @@ export default function UserOrdersPage() {
                         <span className={`px-2 py-0.5 rounded-full text-xs ${STATUS_COLORS[o.OrderStatus] || 'bg-gray-100 text-gray-600'}`}>
                           {o.OrderStatus || '—'}
                         </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {(o.OrderStatus === 'Process' || o.OrderStatus === 'Delivered') && o.InvoiceNo && o.InvoiceNo !== 'Null' && (
-                          <a
-                            href={`/api/orders/download/${encodeURIComponent(o.InvoiceNo)}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-xs text-vaya-primary hover:underline"
-                          >
-                            Download
-                          </a>
-                        )}
                       </td>
                     </tr>
                   ))

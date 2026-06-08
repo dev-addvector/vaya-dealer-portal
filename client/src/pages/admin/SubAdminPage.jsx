@@ -6,6 +6,8 @@ import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import { formatDateTimeIST } from '@/utils/dateUtils';
 
+const PAGE_SIZE = 10;
+
 const ROLES = [
   { value: 'sub_admin', label: 'Sub admin' },
   { value: 'zone_admin', label: 'Zone admin' },
@@ -85,7 +87,10 @@ export default function SubAdminPage() {
   const canEditDelete = user?.role === 'super_admin';
   const { data, isLoading } = useQuery({ queryKey: ['admin-subadmins'], queryFn: getSubadmins });
   const [modal, setModal] = useState(null); // null | { mode: 'create' | 'edit', data?: object }
+  const [page, setPage] = useState(1);
   const subadmins = data?.data ?? [];
+  const totalPages = Math.max(1, Math.ceil(subadmins.length / PAGE_SIZE));
+  const pagedSubadmins = subadmins.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const create = useMutation({
     mutationFn: createSubadmin,
@@ -150,7 +155,7 @@ export default function SubAdminPage() {
             {subadmins.length === 0 && !isLoading ? (
               <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-400">No subadmins found.</td></tr>
             ) : (
-              subadmins.map((s) => (
+              pagedSubadmins.map((s) => (
                 <tr key={s.id} className="border-t hover:bg-vaya-light/30">
                   <td className="px-4 py-3">{s.name}</td>
                   <td className="px-4 py-3">{s.email}</td>
@@ -194,8 +199,56 @@ export default function SubAdminPage() {
         </table>
       </div>
 
-      <div className="mt-2 text-xs text-gray-500">
-        Showing {subadmins.length} entr{subadmins.length !== 1 ? 'ies' : 'y'}
+      <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <p className="text-xs text-gray-500">
+          Showing {subadmins.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, subadmins.length)} of {subadmins.length} entr{subadmins.length !== 1 ? 'ies' : 'y'}
+        </p>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+              className="px-2 py-1 rounded border text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >«</button>
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-2 py-1 rounded border text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >‹</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+              .reduce((acc, p, idx, arr) => {
+                if (idx > 0 && p - arr[idx - 1] > 1) acc.push('…');
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((item, idx) =>
+                item === '…' ? (
+                  <span key={`ellipsis-${idx}`} className="px-1 text-xs text-gray-400">…</span>
+                ) : (
+                  <button
+                    key={item}
+                    onClick={() => setPage(item)}
+                    className={`px-2.5 py-1 rounded border text-xs transition-colors ${
+                      item === page
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >{item}</button>
+                )
+              )}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-2 py-1 rounded border text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >›</button>
+            <button
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages}
+              className="px-2 py-1 rounded border text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >»</button>
+          </div>
+        )}
       </div>
 
       {modal && (

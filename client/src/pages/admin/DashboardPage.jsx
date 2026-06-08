@@ -10,7 +10,6 @@ import {
   CartesianGrid,
   LineChart,
   Line,
-  Legend,
 } from 'recharts';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -53,15 +52,35 @@ export default function DashboardPage() {
     count: cd.topSearchString?.count?.[i] ?? 0,
   }));
 
+  const allConsigneeUsers = cd.topConsignee?.users ?? [];
+  const top5Users = allConsigneeUsers.slice(0, 5);
+  const otherUsers = allConsigneeUsers.slice(5);
+  const hasOthers = otherUsers.length > 0;
+
   const lineData = (cd.topConsignee?.dates ?? []).map((date, i) => {
     const row = { date };
-    (cd.topConsignee?.users ?? []).forEach((u) => {
+    top5Users.forEach((u) => {
       row[u.name] = u.data[i] ?? 0;
     });
+    if (hasOthers) {
+      row['Others'] = otherUsers.reduce((sum, u) => sum + (u.data[i] ?? 0), 0);
+    }
     return row;
   });
 
   const tickInterval = lineData.length > 30 ? Math.floor(lineData.length / 20) : 0;
+
+  const lineKeys = [...top5Users.map((u) => u.name), ...(hasOthers ? ['Others'] : [])];
+  const [hiddenLines, setHiddenLines] = useState(() => new Set(hasOthers ? ['Others'] : []));
+
+  function toggleLine(key) {
+    setHiddenLines((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   async function handleDownloadCSV() {
     setDropdownOpen(false);
@@ -281,34 +300,68 @@ export default function DashboardPage() {
       <div className="bg-white rounded-lg shadow p-5">
         <h2 className="font-semibold text-gray-700 mb-4">Search By Users</h2>
         {lineData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={lineData} margin={{ top: 5, right: 5, left: 5, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 8 }}
-                angle={-45}
-                textAnchor="end"
-                interval={tickInterval}
-              />
-              <YAxis
-                tick={{ fontSize: 9 }}
-                label={{ value: 'Search Count', angle: -90, position: 'insideLeft', offset: 5 }}
-              />
-              <Tooltip />
-              <Legend wrapperStyle={{ paddingTop: 12 }} />
-              {(cd.topConsignee?.users ?? []).map((u, i) => (
-                <Line
-                  key={u.name}
-                  type="monotone"
-                  dataKey={u.name}
-                  stroke={LINE_COLORS[i % LINE_COLORS.length]}
-                  dot={{ r: 2 }}
-                  strokeWidth={1.5}
+          <>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={lineData} margin={{ top: 5, right: 5, left: 5, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 8 }}
+                  angle={-45}
+                  textAnchor="end"
+                  interval={tickInterval}
                 />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+                <YAxis
+                  tick={{ fontSize: 9 }}
+                  label={{ value: 'Search Count', angle: -90, position: 'insideLeft', offset: 5 }}
+                />
+                <Tooltip />
+                {lineKeys.map((key, i) => (
+                  !hiddenLines.has(key) && (
+                    <Line
+                      key={key}
+                      type="monotone"
+                      dataKey={key}
+                      stroke={key === 'Others' ? '#9ca3af' : LINE_COLORS[i % LINE_COLORS.length]}
+                      dot={{ r: 2 }}
+                      strokeWidth={1.5}
+                      strokeDasharray={key === 'Others' ? '4 2' : undefined}
+                    />
+                  )
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+
+            {/* Custom legend with toggles */}
+            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 justify-center">
+              {lineKeys.map((key, i) => {
+                const color = key === 'Others' ? '#9ca3af' : LINE_COLORS[i % LINE_COLORS.length];
+                const hidden = hiddenLines.has(key);
+                const isOthers = key === 'Others';
+                return (
+                  <button
+                    key={key}
+                    onClick={() => toggleLine(key)}
+                    className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded border transition-colors ${
+                      hidden
+                        ? 'border-gray-200 text-gray-400 bg-gray-50'
+                        : 'border-gray-300 text-gray-700 bg-white'
+                    }`}
+                    title={isOthers && hidden ? 'Click to show aggregated Others' : undefined}
+                  >
+                    <span
+                      className="inline-block w-3 h-0.5 rounded"
+                      style={{ backgroundColor: hidden ? '#d1d5db' : color }}
+                    />
+                    <span>{key}</span>
+                    {isOthers && hidden && (
+                      <span className="text-[10px] text-gray-400">(disabled)</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </>
         ) : (
           <div className="h-40 flex items-center justify-center text-gray-400 text-sm">
             {isLoading ? 'Loading…' : 'No data'}
