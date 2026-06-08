@@ -55,7 +55,7 @@ exports.uploadLoginImage = async (req, res) => {
 exports.listUsers = async (req, res) => {
   const { page = 1, perPage = 20, search } = req.query;
   const where = search
-    ? { OR: [{ name: { contains: search } }, { email: { contains: search } }], role: 'user' }
+    ? { OR: [{ name: { contains: search, mode: 'insensitive' } }, { email: { contains: search, mode: 'insensitive' } }], role: 'user' }
     : { role: 'user' };
   const [users, total] = await Promise.all([
     prisma.user.findMany({
