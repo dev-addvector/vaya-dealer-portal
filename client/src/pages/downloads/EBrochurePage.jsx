@@ -7,17 +7,17 @@ export default function EBrochurePage() {
     queryFn: getEbrochures,
   });
 
-  const brochures = data?.data || [];
+  const brochures = [...(data?.data || [])].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="min-h-[calc(100vh-90px)] bg-white">
-      <div className="bg-[#f5f5ef] py-3">
-        <div className="max-w-[1200px] mx-auto px-[30px]">
-          <span className="text-[18px] text-vaya-primary font-medium">Download Brochures</span>
+      <div className="border-b border-[rgba(112,112,112,0.2)] py-[5px]">
+        <div className="max-w-[90%] mx-auto px-[15px]">
+          <span className="text-vaya-green text-[28px] leading-[43px]">Download Brochures</span>
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-[30px] py-10">
+      <div className="max-w-[90%] mx-auto px-[15px] pt-[30px] pb-10">
         {isLoading && <p className="text-vaya-gray text-sm">Loading brochures...</p>}
         {isError && <p className="text-red-700 text-sm">Failed to load brochures.</p>}
         {!isLoading && !isError && brochures.length === 0 && (

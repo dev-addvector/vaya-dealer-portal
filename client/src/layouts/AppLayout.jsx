@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useCart } from '@/hooks/useProducts';
 import { downloadPriceListCsv, downloadPriceListPdf } from '@/api/download.api';
 import { getActiveAd } from '@/api/admin.api';
+import Footer from '@/components/ui/Footer';
 
 export default function AppLayout() {
   const logout = useLogout();
@@ -283,17 +284,7 @@ export default function AppLayout() {
         </div>
       </main>
 
-      <footer className="bg-[#f5f5f5] border-t border-[#e0e0e0] shrink-0">
-        <div className="p-4 text-center">
-          <p className="m-0 mb-1 text-[13px] text-[#666]">VAYA Home By Universal Textile Mills</p>
-          <p className="m-0 text-[13px] text-[#666]">
-            Customer Care :{' '}
-            <a href="mailto:sales@vayahome.com" className="text-[#666] no-underline">sales@vayahome.com</a>
-            {' | '}
-            <a href="tel:+918068170500" className="text-[#666] no-underline">+91 8068170500</a>
-          </p>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Price List modal */}
       {priceListModal && (

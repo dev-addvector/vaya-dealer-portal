@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import { useLogin } from '@/hooks/useAuth';
+import Footer from '@/components/ui/Footer';
 
 const responsiveStyles = `
   .login-wrapper {
@@ -186,7 +187,7 @@ export default function LoginPage() {
                     {...register('email')}
                     type="email"
                     placeholder="mail@domain.com"
-                    className="w-full h-[60px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 py-[15px] text-[#a4a7ab] text-[15px] outline-none"
+                    className="w-full h-[46px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 py-[10px] text-[#a4a7ab] text-[15px] outline-none"
                     autoComplete="off"
                   />
                   {errors.email && <p className="text-[#e3342f] text-[12px] mt-1">{errors.email.message}</p>}
@@ -199,7 +200,7 @@ export default function LoginPage() {
                       {...register('password')}
                       type={showPwd ? 'text' : 'password'}
                       placeholder="Min. 8 Characters"
-                      className="w-full h-[60px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 pr-[48px] py-[15px] text-[#a4a7ab] text-[15px] outline-none"
+                      className="w-full h-[46px] bg-white border border-[#C8C8C8] rounded-[3px] px-5 pr-[48px] py-[10px] text-[#a4a7ab] text-[15px] outline-none"
                       autoComplete="off"
                     />
                     <button
@@ -226,7 +227,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={login.isPending}
-                  className={`block w-full px-[30px] py-3 bg-black text-white border-none text-[21px] font-normal tracking-[0.5px] ${login.isPending ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                  className={`block w-full px-[30px] py-2 bg-black text-white border-none text-[18px] font-normal tracking-[0.5px] ${login.isPending ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   {login.isPending ? 'Signing in...' : 'Submit'}
                 </button>
@@ -247,18 +248,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Footer */}
-        <footer className="bg-[#f5f5f5] border-t border-[#e0e0e0] shrink-0">
-          <div className="p-4 text-center">
-            <p className="m-0 mb-1 text-[13px] text-[#666]">VAYA Home By Universal Textile Mills</p>
-            <p className="m-0 text-[13px] text-[#666]">
-              Customer Care :{' '}
-              <a href="mailto:sales@vayahome.com" className="text-[#666] no-underline">sales@vayahome.com</a>
-              {' | '}
-              <a href="tel:+918068170500" className="text-[#666] no-underline">+91 8068170500</a>
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   );

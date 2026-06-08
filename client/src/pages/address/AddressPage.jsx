@@ -121,7 +121,7 @@ export default function AddressPage() {
                     onClick={() => setShowAdd(true)}
                     className="bg-transparent border border-[#555] rounded-[50px] px-[14px] py-1 text-[13px] cursor-pointer flex items-center gap-[5px] text-[#555]"
                   >
-                    <span className="text-[16px] leading-none">⊕</span> New Address
+                    <span className="text-[18px] leading-none">+</span> New Address
                   </button>
                 </div>
 
