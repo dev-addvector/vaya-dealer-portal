@@ -59,6 +59,7 @@ const COLUMNS = [
   { label: 'Order Status',  field: 'OrderStatus',  sortable: true },
 ];
 
+const PAGE_SIZE = 10;
 const DATE_FIELDS = new Set(['OrderDate', 'InvoiceDate']);
 const NUM_FIELDS  = new Set(['NetPayable']);
 
@@ -109,6 +110,7 @@ export default function UserOrdersPage() {
   const [sortDir, setSortDir] = useState('desc');
   const [search, setSearch]   = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
 
   const decodedUnc = decodeURIComponent(unc);
 
@@ -142,6 +144,17 @@ export default function UserOrdersPage() {
     return sortOrders(result, sortBy, sortDir);
   }, [rawOrders, statusFilter, search, sortBy, sortDir]);
 
+  const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedOrders = orders.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  function getPageNumbers() {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (safePage <= 4) return [1, 2, 3, 4, 5, '…', totalPages];
+    if (safePage >= totalPages - 3) return [1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, '…', safePage - 1, safePage, safePage + 1, '…', totalPages];
+  }
+
   function handleSort(field) {
     if (sortBy === field) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -149,6 +162,7 @@ export default function UserOrdersPage() {
       setSortBy(field);
       setSortDir('asc');
     }
+    setPage(1);
   }
 
   return (
@@ -172,12 +186,12 @@ export default function UserOrdersPage() {
             <input
               placeholder="Search Order ID, Invoice ID, PO Number..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="border rounded px-3 py-2 text-sm w-full sm:w-80 focus:outline-none focus:ring-1 focus:ring-vaya-green"
             />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
               className="border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-vaya-green"
             >
               <option value="">All Statuses</option>
@@ -187,7 +201,7 @@ export default function UserOrdersPage() {
             </select>
             {(search || statusFilter) && (
               <button
-                onClick={() => { setSearch(''); setStatusFilter(''); }}
+                onClick={() => { setSearch(''); setStatusFilter(''); setPage(1); }}
                 className="text-sm text-gray-500 hover:text-gray-700 underline whitespace-nowrap"
               >
                 Clear filters
@@ -220,7 +234,7 @@ export default function UserOrdersPage() {
                     <td colSpan={9} className="px-4 py-6 text-center text-gray-400">No orders found.</td>
                   </tr>
                 ) : (
-                  orders.map((o, i) => (
+                  pagedOrders.map((o, i) => (
                     <tr key={i} className="border-t hover:bg-vaya-light/30">
                       <td className="px-4 py-3">
                         <button onClick={() => setSelectedOrder(o)} className="text-vaya-primary hover:underline font-medium">
@@ -244,6 +258,51 @@ export default function UserOrdersPage() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-3">
+            <p className="text-sm text-gray-500 text-center sm:text-left">
+              {orders.length === 0
+                ? 'No entries found'
+                : `Showing ${(safePage - 1) * PAGE_SIZE + 1} to ${Math.min(safePage * PAGE_SIZE, orders.length)} of ${orders.length} entries`}
+            </p>
+            <div className="flex items-center gap-1 justify-center">
+              <button
+                disabled={safePage <= 1}
+                onClick={() => setPage(1)}
+                className="px-2.5 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+              >«</button>
+              <button
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+              >Previous</button>
+              {getPageNumbers().map((n, i) =>
+                n === '…' ? (
+                  <span key={`ellipsis-${i}`} className="px-2 py-1.5 text-sm text-gray-400">…</span>
+                ) : (
+                  <button
+                    key={n}
+                    onClick={() => setPage(n)}
+                    className={`px-3 py-1.5 text-sm border rounded ${
+                      n === safePage
+                        ? 'bg-vaya-primary text-white border-vaya-primary'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >{n}</button>
+                )
+              )}
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+              >Next</button>
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage(totalPages)}
+                className="px-2.5 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+              >»</button>
+            </div>
           </div>
         </>
       )}
