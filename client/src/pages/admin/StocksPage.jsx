@@ -34,6 +34,13 @@ export default function StocksPage() {
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
+  function getPageNumbers() {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (safePage <= 4) return [1, 2, 3, 4, 5, '…', totalPages];
+    if (safePage >= totalPages - 3) return [1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, '…', safePage - 1, safePage, safePage + 1, '…', totalPages];
+  }
+
   const handleSearch = (e) => {
     setSearch(e.target.value);
     setPage(1);
@@ -103,56 +110,52 @@ export default function StocksPage() {
             </table>
           </div>
 
-          <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <p className="text-xs text-gray-500">
-              Showing {filtered.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} of {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-3">
+            <p className="text-sm text-gray-500 text-center sm:text-left">
+              {filtered.length === 0
+                ? 'No entries found'
+                : `Showing ${(safePage - 1) * PAGE_SIZE + 1} to ${Math.min(safePage * PAGE_SIZE, filtered.length)} of ${filtered.length} entries`}
             </p>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setPage(1)}
-                  disabled={safePage === 1}
-                  className="px-2 py-1 rounded border text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                >«</button>
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={safePage === 1}
-                  className="px-2 py-1 rounded border text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                >‹</button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
-                  .reduce((acc, p, idx, arr) => {
-                    if (idx > 0 && p - arr[idx - 1] > 1) acc.push('…');
-                    acc.push(p);
-                    return acc;
-                  }, [])
-                  .map((item, idx) =>
-                    item === '…' ? (
-                      <span key={`ellipsis-${idx}`} className="px-1 text-xs text-gray-400">…</span>
-                    ) : (
-                      <button
-                        key={item}
-                        onClick={() => setPage(item)}
-                        className={`px-2.5 py-1 rounded border text-xs transition-colors ${
-                          item === safePage
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'text-gray-600 hover:bg-gray-50'
-                        }`}
-                      >{item}</button>
-                    )
-                  )}
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={safePage === totalPages}
-                  className="px-2 py-1 rounded border text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                >›</button>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  disabled={safePage === totalPages}
-                  className="px-2 py-1 rounded border text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                >»</button>
-              </div>
-            )}
+
+            <div className="flex items-center gap-1 justify-center">
+              <button
+                disabled={safePage <= 1}
+                onClick={() => setPage(1)}
+                className="px-2.5 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+              >«</button>
+              <button
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+              >Previous</button>
+
+              {getPageNumbers().map((n, i) =>
+                n === '…' ? (
+                  <span key={`ellipsis-${i}`} className="px-2 py-1.5 text-sm text-gray-400">…</span>
+                ) : (
+                  <button
+                    key={n}
+                    onClick={() => setPage(n)}
+                    className={`px-3 py-1.5 text-sm border rounded ${
+                      n === safePage
+                        ? 'bg-vaya-primary text-white border-vaya-primary'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >{n}</button>
+                )
+              )}
+
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+              >Next</button>
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage(totalPages)}
+                className="px-2.5 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+              >»</button>
+            </div>
           </div>
           <p className="text-xs text-gray-400 mt-1">
             Stock data is cached for 1 hour. Click Refresh to fetch latest.
