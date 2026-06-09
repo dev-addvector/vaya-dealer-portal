@@ -32,8 +32,10 @@ export default function DashboardPage() {
   const [downloading, setDownloading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [pdfCapturing, setPdfCapturing] = useState(false);
-  const dashboardRef = useRef(null);
-  const barChartCardRef = useRef(null);
+  const sec1Ref = useRef(null); // filters + metrics
+  const sec2Ref = useRef(null); // bar chart
+  const mapRef  = useRef(null); // india map
+  const sec3Ref = useRef(null); // line chart
 
   const { data: filterRes } = useQuery({
     queryKey: ['dashboard-filters'],
@@ -99,43 +101,13 @@ export default function DashboardPage() {
     setPdfCapturing(true);
     await new Promise((r) => setTimeout(r, 50));
     try {
-      const el = dashboardRef.current;
-
-      // Measure split point while DOM is in single-column PDF layout
-      const dashTop = el.getBoundingClientRect().top;
-      const barChartBottom = barChartCardRef.current.getBoundingClientRect().bottom;
-      const splitPixels = barChartBottom - dashTop;
-
-      const scale = 2;
-      const canvas = await html2canvas(el, {
-        scale,
-        useCORS: true,
-        backgroundColor: '#f3f4f6',
-        scrollY: -window.scrollY,
-        windowWidth: el.scrollWidth,
-        windowHeight: el.scrollHeight,
-      });
-
-      // Split canvas: top portion (bar chart section) and bottom portion (map + line chart)
-      const splitCanvasY = Math.round(splitPixels * scale);
-
-      const c1 = document.createElement('canvas');
-      c1.width = canvas.width;
-      c1.height = Math.max(1, Math.min(splitCanvasY, canvas.height));
-      c1.getContext('2d').drawImage(canvas, 0, 0, c1.width, c1.height, 0, 0, c1.width, c1.height);
-
-      const c2 = document.createElement('canvas');
-      c2.width = canvas.width;
-      c2.height = Math.max(1, canvas.height - splitCanvasY);
-      c2.getContext('2d').drawImage(canvas, 0, splitCanvasY, c2.width, c2.height, 0, 0, c2.width, c2.height);
-
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const margin = 10;
       const headerH = 10;
+      const sectionGap = 3;
       const contentTop = margin + headerH;
-      const usableH = pageH - contentTop - margin;
 
       const now = new Date();
       const dateTimeStr = now.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' })
@@ -153,22 +125,34 @@ export default function DashboardPage() {
         pdf.text(dateTimeStr, pageW - margin, margin, { align: 'right' });
       };
 
-      const addCanvasPages = (c, isFirst) => {
-        if (c.height <= 0) return;
-        const imgData = c.toDataURL('image/png');
+      drawHeader();
+      let currentY = contentTop;
+
+      const capture = (el) => html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f3f4f6',
+        scrollY: -window.scrollY,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: el.scrollHeight,
+      });
+
+      const place = (canvas) => {
         const imgW = pageW - margin * 2;
-        const imgH = (c.height * imgW) / c.width;
-        let y = 0;
-        while (y < imgH) {
-          if (!isFirst || y > 0) pdf.addPage();
+        const imgH = (canvas.height * imgW) / canvas.width;
+        // Start a new page if this section doesn't fit in the remaining space
+        if (currentY > contentTop && imgH > pageH - currentY - margin) {
+          pdf.addPage();
           drawHeader();
-          pdf.addImage(imgData, 'PNG', margin, contentTop - y, imgW, imgH);
-          y += usableH;
+          currentY = contentTop;
         }
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, currentY, imgW, imgH);
+        currentY += imgH + sectionGap;
       };
 
-      addCanvasPages(c1, true);   // page 1: filters + metrics + bar chart
-      addCanvasPages(c2, false);  // page 2+: map + line chart
+      for (const ref of [sec1Ref, sec2Ref, mapRef, sec3Ref]) {
+        place(await capture(ref.current));
+      }
 
       const date = todayIST().replace(/-/g, '_');
       pdf.save(`vaya_dashboard_${date}.pdf`);
@@ -214,103 +198,103 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div ref={dashboardRef} className="pt-3">
+      <div className="pt-3">
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4">
-        {pdfCapturing ? (
-          <div className="grid grid-cols-4 gap-3">
-            <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
-              <span className="block text-xs text-gray-400 mb-0.5">Consignee Name</span>
-              {filters.consigneeName || <span className="text-gray-400">All</span>}
+      {/* Section 1: Filters + Metrics */}
+      <div ref={sec1Ref}>
+        <div className="bg-white rounded-lg shadow p-4 mb-4">
+          {pdfCapturing ? (
+            <div className="grid grid-cols-4 gap-3">
+              <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
+                <span className="block text-xs text-gray-400 mb-0.5">Consignee Name</span>
+                {filters.consigneeName || <span className="text-gray-400">All</span>}
+              </div>
+              <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
+                <span className="block text-xs text-gray-400 mb-0.5">Search String</span>
+                {filters.searchString || <span className="text-gray-400">All</span>}
+              </div>
+              <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
+                <span className="block text-xs text-gray-400 mb-0.5">Location</span>
+                {filters.location || <span className="text-gray-400">All</span>}
+              </div>
+              <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
+                <span className="block text-xs text-gray-400 mb-0.5">Date Range</span>
+                {filters.from} — {filters.to}
+              </div>
             </div>
-            <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
-              <span className="block text-xs text-gray-400 mb-0.5">Search String</span>
-              {filters.searchString || <span className="text-gray-400">All</span>}
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <select
+                value={filters.consigneeName}
+                onChange={(e) => setFilters((f) => ({ ...f, consigneeName: e.target.value }))}
+                className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
+              >
+                <option value="">Consignee Name</option>
+                {(opts.consigneeNameArray ?? []).map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+
+              <select
+                value={filters.searchString}
+                onChange={(e) => setFilters((f) => ({ ...f, searchString: e.target.value }))}
+                className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
+              >
+                <option value="">Search Strings</option>
+                {(opts.searchStringArray ?? []).map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+
+              <select
+                value={filters.location}
+                onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value }))}
+                className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
+              >
+                <option value="">Location</option>
+                {(opts.locationArray ?? []).map((l) => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
+
+              <DateRangeFilter
+                from={filters.from}
+                to={filters.to}
+                onChange={({ from, to }) => setFilters((f) => ({ ...f, from, to }))}
+                onClear={clearFilters}
+              />
             </div>
-            <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
-              <span className="block text-xs text-gray-400 mb-0.5">Location</span>
-              {filters.location || <span className="text-gray-400">All</span>}
-            </div>
-            <div className="border border-gray-300 rounded px-3 py-2 text-sm bg-gray-50 text-gray-700">
-              <span className="block text-xs text-gray-400 mb-0.5">Date Range</span>
-              {filters.from} — {filters.to}
-            </div>
+          )}
+        </div>
+
+        <div className={pdfCapturing ? 'grid grid-cols-3 gap-4 mb-4' : 'grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4'}>
+          <div className="rounded-lg p-4 sm:p-5 text-white bg-[#7c3aed]">
+            <div className="text-xl sm:text-2xl mb-1">⏱</div>
+            <p className="text-2xl sm:text-3xl font-bold">
+              {isLoading ? '…' : (cd.averageTimeElpsed ?? 0)} s
+            </p>
+            <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Elapsed Time</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <select
-              value={filters.consigneeName}
-              onChange={(e) => setFilters((f) => ({ ...f, consigneeName: e.target.value }))}
-              className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
-            >
-              <option value="">Consignee Name</option>
-              {(opts.consigneeNameArray ?? []).map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-
-            <select
-              value={filters.searchString}
-              onChange={(e) => setFilters((f) => ({ ...f, searchString: e.target.value }))}
-              className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
-            >
-              <option value="">Search Strings</option>
-              {(opts.searchStringArray ?? []).map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-
-            <select
-              value={filters.location}
-              onChange={(e) => setFilters((f) => ({ ...f, location: e.target.value }))}
-              className="border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50 focus:outline-none focus:border-purple-400"
-            >
-              <option value="">Location</option>
-              {(opts.locationArray ?? []).map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
-
-            <DateRangeFilter
-              from={filters.from}
-              to={filters.to}
-              onChange={({ from, to }) => setFilters((f) => ({ ...f, from, to }))}
-              onClear={clearFilters}
-            />
+          <div className="rounded-lg p-4 sm:p-5 text-white bg-[#3ec97b]">
+            <div className="text-xl sm:text-2xl mb-1">📋</div>
+            <p className="text-2xl sm:text-3xl font-bold">
+              {isLoading ? '…' : (cd.averageRecord ?? 0)}
+            </p>
+            <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Records Per Search</p>
           </div>
-        )}
+          <div className="rounded-lg p-4 sm:p-5 text-white bg-[#f05372]">
+            <div className="text-xl sm:text-2xl mb-1">⚡</div>
+            <p className="text-2xl sm:text-3xl font-bold">
+              {isLoading ? '…' : (cd.averageRecordPerSec ?? 0)} /s
+            </p>
+            <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Records Per Search Per Sec</p>
+          </div>
+        </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-        <div className="rounded-lg p-4 sm:p-5 text-white bg-[#7c3aed]">
-          <div className="text-xl sm:text-2xl mb-1">⏱</div>
-          <p className="text-2xl sm:text-3xl font-bold">
-            {isLoading ? '…' : (cd.averageTimeElpsed ?? 0)} s
-          </p>
-          <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Elapsed Time</p>
-        </div>
-        <div className="rounded-lg p-4 sm:p-5 text-white bg-[#3ec97b]">
-          <div className="text-xl sm:text-2xl mb-1">📋</div>
-          <p className="text-2xl sm:text-3xl font-bold">
-            {isLoading ? '…' : (cd.averageRecord ?? 0)}
-          </p>
-          <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Records Per Search</p>
-        </div>
-        <div className="rounded-lg p-4 sm:p-5 text-white bg-[#f05372]">
-          <div className="text-xl sm:text-2xl mb-1">⚡</div>
-          <p className="text-2xl sm:text-3xl font-bold">
-            {isLoading ? '…' : (cd.averageRecordPerSec ?? 0)} /s
-          </p>
-          <p className="text-xs sm:text-sm mt-1 opacity-90">Average of Records Per Search Per Sec</p>
-        </div>
-      </div>
-
-      {/* Charts Row: 2-col on web, single col during PDF capture */}
-      <div className={`grid gap-4 mb-4 ${pdfCapturing ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
-        {/* Top 5 Search Strings - Horizontal Bar */}
-        <div ref={barChartCardRef} className="bg-white rounded-lg shadow p-5">
+      {/* Section 2: Top 5 Search Strings + Search By Region */}
+      <div className={pdfCapturing ? 'grid grid-cols-1 gap-4 mb-4' : 'grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4'}>
+        <div ref={sec2Ref} className="bg-white rounded-lg shadow p-5">
           <h2 className="font-semibold text-gray-700 mb-4">Top 5 Search Strings</h2>
           {searchBarData.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
@@ -333,8 +317,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Search By Region - India Map */}
-        <div className="bg-white rounded-lg shadow p-5">
+        <div ref={mapRef} className="bg-white rounded-lg shadow p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-700">Search By Region</h2>
             <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -347,8 +330,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Search By Users - Line Chart */}
-      <div className="bg-white rounded-lg shadow p-5">
+      {/* Section 3: Search By Users */}
+      <div ref={sec3Ref} className="bg-white rounded-lg shadow p-5">
         <h2 className="font-semibold text-gray-700 mb-4">Search By Users</h2>
         {lineData.length > 0 ? (
           <>
@@ -384,7 +367,6 @@ export default function DashboardPage() {
               </LineChart>
             </ResponsiveContainer>
 
-            {/* Custom legend with toggles */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: '12px', justifyContent: 'center' }}>
               {lineKeys.map((key, i) => {
                 const color = key === 'Others' ? '#9ca3af' : LINE_COLORS[i % LINE_COLORS.length];
@@ -424,7 +406,8 @@ export default function DashboardPage() {
         )}
         <p className="text-center text-xs text-gray-500 mt-2">Timeline</p>
       </div>
-      </div>{/* end dashboardRef */}
+
+      </div>
     </div>
   );
 }
