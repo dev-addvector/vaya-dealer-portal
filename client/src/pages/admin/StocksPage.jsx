@@ -94,7 +94,7 @@ export default function StocksPage() {
               <thead className="bg-vaya-light text-vaya-dark uppercase text-xs">
                 <tr>
                   {['Pattern', 'Color', 'Available Rolls', 'Stock Available'].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
+                    <th key={h} className="px-4 py-3 text-center font-semibold">{h}</th>
                   ))}
                 </tr>
               </thead>

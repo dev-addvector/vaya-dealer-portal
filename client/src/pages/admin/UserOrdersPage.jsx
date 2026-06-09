@@ -233,7 +233,7 @@ export default function UserOrdersPage() {
                   {COLUMNS.map(({ label, field, sortable }) => (
                     <th
                       key={label}
-                      className={`px-4 py-3 text-left font-semibold whitespace-nowrap ${sortable ? 'cursor-pointer select-none hover:bg-vaya-light/70' : ''}`}
+                      className={`px-4 py-3 text-center font-semibold whitespace-nowrap ${sortable ? 'cursor-pointer select-none hover:bg-vaya-light/70' : ''}`}
                       onClick={() => sortable && handleSort(field)}
                     >
                       {label}
@@ -350,7 +350,7 @@ export default function UserOrdersPage() {
                   <thead className="bg-vaya-light text-vaya-dark uppercase">
                     <tr>
                       {['Color', 'Pattern', 'Rate', 'Ordered Length', 'Tax', 'Discount', 'Total'].map((h) => (
-                        <th key={h} className="px-3 py-2 text-left font-semibold whitespace-nowrap">{h}</th>
+                        <th key={h} className="px-3 py-2 text-center font-semibold whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>

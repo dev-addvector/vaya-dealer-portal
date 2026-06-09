@@ -127,7 +127,7 @@ export default function UsersPage() {
                 ].map(({ label, field }) => (
                   <th
                     key={label}
-                    className={`px-4 py-3 text-left font-semibold ${field ? 'cursor-pointer select-none hover:bg-vaya-light/70' : ''}`}
+                    className={`px-4 py-3 text-center font-semibold ${field ? 'cursor-pointer select-none hover:bg-vaya-light/70' : ''}`}
                     onClick={() => field && handleSort(field)}
                   >
                     {label}

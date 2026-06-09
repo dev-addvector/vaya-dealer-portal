@@ -235,7 +235,7 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
           <thead className="bg-vaya-light text-vaya-dark uppercase text-xs">
             <tr>
               {['Pattern', 'Color', 'Cut Price', 'Roll Price', 'No. of Rolls', 'Total Length', 'Qty (mtrs)', 'Action'].map((h) => (
-                <th key={h} className="px-3 py-3 text-left font-semibold whitespace-nowrap">{h}</th>
+                <th key={h} className="px-3 py-3 text-center font-semibold whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
@@ -455,7 +455,7 @@ function StepCheckout({ customer, cart, onCartChange, onBack, onSuccess }) {
           <thead className="bg-vaya-light text-vaya-dark uppercase text-xs">
             <tr>
               {['Pattern & Color', 'Roll Price', 'Cut Price', 'Qty', 'Amount', 'Discount', `GST ${globalGst}%`, 'Total', 'Action'].map((h) => (
-                <th key={h} className="px-3 py-3 text-right first:text-left font-semibold whitespace-nowrap">{h}</th>
+                <th key={h} className="px-3 py-3 text-center font-semibold whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>

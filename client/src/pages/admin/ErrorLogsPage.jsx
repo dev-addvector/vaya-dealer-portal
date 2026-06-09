@@ -103,11 +103,11 @@ function ErrorLogsContent() {
           <table className="w-full text-sm border-collapse bg-white">
             <thead className="bg-vaya-light text-vaya-dark uppercase text-xs">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">Date &amp; Time</th>
-                <th className="px-4 py-3 text-left font-semibold">Origin</th>
-                <th className="px-4 py-3 text-left font-semibold">Request Path</th>
-                <th className="px-4 py-3 text-left font-semibold">Error Message</th>
-                <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">Response Time</th>
+                <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Date &amp; Time</th>
+                <th className="px-4 py-3 text-center font-semibold">Origin</th>
+                <th className="px-4 py-3 text-center font-semibold">Request Path</th>
+                <th className="px-4 py-3 text-center font-semibold">Error Message</th>
+                <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Response Time</th>
               </tr>
             </thead>
             <tbody>

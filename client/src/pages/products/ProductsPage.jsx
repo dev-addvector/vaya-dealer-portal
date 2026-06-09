@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLoadProducts, useAddToCart, useEditCartItem, useCart, useProductFilters } from '@/hooks/useProducts';
 import SearchableSelect from '@/components/SearchableSelect';
 
-const thBase = 'bg-vaya-black text-white px-[10px] py-[10px] text-left border border-[#333] font-normal whitespace-nowrap text-sm select-none';
+const thBase = 'bg-vaya-black text-white px-[10px] py-[10px] text-center border border-[#333] font-normal whitespace-nowrap text-sm select-none';
 const tdBase = 'px-[10px] py-[6px] border border-[#dee2e6] align-middle text-sm text-[#333]';
 const round2 = (n) => Math.round(n * 10) / 10;
 

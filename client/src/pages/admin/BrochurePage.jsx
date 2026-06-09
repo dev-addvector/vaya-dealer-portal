@@ -166,7 +166,7 @@ export default function BrochurePage() {
           <thead className="bg-vaya-light text-vaya-dark uppercase text-xs">
             <tr>
               {['Catalog / Pattern', 'Price List QR', 'WOP QR' /*, 'CSV', 'Status', 'Action'*/].map((h) => (
-                <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
+                <th key={h} className="px-4 py-3 text-center font-semibold">{h}</th>
               ))}
             </tr>
           </thead>

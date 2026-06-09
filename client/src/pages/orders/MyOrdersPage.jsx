@@ -625,13 +625,13 @@ export default function MyOrdersPage() {
                   <table className="w-full border-collapse text-[14px]">
                     <thead>
                       <tr className="bg-[#f2f2f2] text-[#111]">
-                        <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">Color</th>
-                        <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">Pattern</th>
-                        <th className="px-4 py-3 text-right font-semibold whitespace-nowrap">Rate</th>
-                        <th className="px-4 py-3 text-right font-semibold whitespace-nowrap">Ordered Length</th>
-                        <th className="px-4 py-3 text-right font-semibold whitespace-nowrap">Tax</th>
-                        <th className="px-4 py-3 text-right font-semibold whitespace-nowrap">Discount</th>
-                        <th className="px-4 py-3 text-right font-semibold whitespace-nowrap">Total</th>
+                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Color</th>
+                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Pattern</th>
+                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Rate</th>
+                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Ordered Length</th>
+                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Tax</th>
+                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Discount</th>
+                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Total</th>
                       </tr>
                     </thead>
                     <tbody>
