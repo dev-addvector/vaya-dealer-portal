@@ -133,6 +133,17 @@ model EbrochureFile {
   @@map("ebrochure_files")
 }
 
+model ErrorLog {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  origin       String
+  requestPath  String?
+  errorMessage String?
+  responseTime Int?
+  createdAt    DateTime @default(now())
+
+  @@map("error_logs")
+}
+
 model SearchReport {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   search_string  String?

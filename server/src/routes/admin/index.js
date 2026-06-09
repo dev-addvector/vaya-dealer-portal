@@ -11,5 +11,6 @@ router.use('/subadmins', require('./subadmin.routes'));
 router.use('/stocks', require('./stocks.routes'));
 router.use('/orders', require('./admin_orders.routes'));
 router.use('/ebrochures', require('./ebrochure.routes'));
+router.use('/logs', require('./errorLogs.routes'));
 
 module.exports = router;

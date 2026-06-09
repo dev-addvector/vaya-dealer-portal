@@ -125,6 +125,17 @@ const CollapseIcon = ({ collapsed }) => (
   )
 );
 
+const LOGS_EMAIL = 'saurabh@addvector.com';
+
+const logsNavItem = ['/admin/logs', 'Error Logs', (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M5 5h6M5 8h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <circle cx="11.5" cy="11.5" r="2.5" fill="currentColor" opacity="0.8"/>
+    <path d="M11.5 10.5v1.5l1 .5" stroke="white" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)];
+
 export default function AdminLayout() {
   const logout = useLogout();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -133,7 +144,10 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const defaultRoute = getDefaultAdminRoute(user?.role);
-  const visibleNavItems = navItems.filter(([to]) => canAccessAdminRoute(user?.role, to));
+  const visibleNavItems = [
+    ...navItems.filter(([to]) => canAccessAdminRoute(user?.role, to)),
+    ...(user?.email === LOGS_EMAIL ? [logsNavItem] : []),
+  ];
 
   useEffect(() => {
     setMobileMenuOpen(false);

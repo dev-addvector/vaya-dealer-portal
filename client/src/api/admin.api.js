@@ -75,6 +75,9 @@ export const getStocks = () => api.get('/admin/stocks');
 // Admin Orders (view any user's orders by UNC)
 export const getOrdersByUnc = (unc) => api.get(`/admin/orders/${encodeURIComponent(unc)}`);
 
+// Error Logs
+export const getErrorLogs = (params) => api.get('/admin/logs', { params });
+
 // Admin Create Order
 export const getOrderCustomers = () => api.get('/admin/orders/customers');
 export const getOrderFilterOptions = (unc) => api.get(`/admin/orders/filter-options/${encodeURIComponent(unc)}`);

@@ -23,6 +23,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use((req, _res, next) => { req._startTime = Date.now(); next(); });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

@@ -11,13 +11,19 @@ async function postWithFallback(path, payload, config) {
   try {
     return await erpClient.post(path, payload, config);
   } catch (err) {
+    err.isErpError = true;
     const code = err?.code;
     const isTimeout =
       code === 'ETIMEDOUT' ||
       code === 'ECONNABORTED';
 
     if (isTimeout) {
-      return await erpClient.post(path, payload, config);
+      try {
+        return await erpClient.post(path, payload, config);
+      } catch (retryErr) {
+        retryErr.isErpError = true;
+        throw retryErr;
+      }
     }
     throw err;
   }
