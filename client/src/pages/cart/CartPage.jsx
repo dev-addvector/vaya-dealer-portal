@@ -446,13 +446,13 @@ export default function CartPage() {
                           <td className={tdBase}>
                             Pattern: {item.pattern}, Color: {item.color}
                           </td>
-                          <td className={`${tdBase} text-right`}>
+                          <td className={`${tdBase} text-right whitespace-nowrap`}>
                             ₹{' '}
                             <span className={c.isRoll ? 'text-vaya-green font-bold underline' : ''}>
                               {rupeeFormat(c.rollPrice)}
                             </span>
                           </td>
-                          <td className={`${tdBase} text-right`}>
+                          <td className={`${tdBase} text-right whitespace-nowrap`}>
                             ₹{' '}
                             <span className={!c.isRoll ? 'text-vaya-green font-bold underline' : ''}>
                               {rupeeFormat(c.cutPrice)}
@@ -487,11 +487,11 @@ export default function CartPage() {
                               {inStock ? 'In Stock' : 'No Stock - Delivery date TBD'}
                             </span>
                           </td>
-                          <td className={`${tdBase} text-right`}>₹ {rupeeFormat(c.price)}</td>
-                          <td className={`${tdBase} text-right`}>₹ {rupeeFormat(c.itemDiscount)}</td>
+                          <td className={`${tdBase} text-right whitespace-nowrap`}>₹ {rupeeFormat(c.price)}</td>
+                          <td className={`${tdBase} text-right whitespace-nowrap`}>₹ {rupeeFormat(c.itemDiscount)}</td>
                           <td className={`${tdBase} text-center`}>{c.gstPct}%</td>
-                          <td className={`${tdBase} text-right`}>₹ {rupeeFormat(c.gstAmount)}</td>
-                          <td className={`${tdBase} text-right font-medium`}>₹ {rupeeFormat(c.finalAmount)}</td>
+                          <td className={`${tdBase} text-right whitespace-nowrap`}>₹ {rupeeFormat(c.gstAmount)}</td>
+                          <td className={`${tdBase} text-right whitespace-nowrap font-medium`}>₹ {rupeeFormat(c.finalAmount)}</td>
                           <td className={`${tdBase} text-center`}>
                             <button
                               onClick={() => deleteItem.mutate(item.id)}
@@ -508,11 +508,11 @@ export default function CartPage() {
                       );
                     })}
                     <tr className="bg-[#f9f9f9] font-medium">
-                      <td colSpan={5} className={`${tdBase} text-right font-semibold`}>Total</td>
-                      <td className={`${tdBase} text-right`}>₹ {rupeeFormat(totalPrice)}</td>
-                      <td className={`${tdBase} text-right`}>₹ {rupeeFormat(totalDiscount)}</td>
-                      <td colSpan={2} className={`${tdBase} text-right`}>₹ {rupeeFormat(totalGst)}</td>
-                      <td className={`${tdBase} text-right`}>₹ {rupeeFormat(grandTotal)}</td>
+                      <td colSpan={5} className={`${tdBase} text-right whitespace-nowrap font-semibold`}>Total</td>
+                      <td className={`${tdBase} text-right whitespace-nowrap`}>₹ {rupeeFormat(totalPrice)}</td>
+                      <td className={`${tdBase} text-right whitespace-nowrap`}>₹ {rupeeFormat(totalDiscount)}</td>
+                      <td colSpan={2} className={`${tdBase} text-right whitespace-nowrap`}>₹ {rupeeFormat(totalGst)}</td>
+                      <td className={`${tdBase} text-right whitespace-nowrap`}>₹ {rupeeFormat(grandTotal)}</td>
                       <td className={tdBase}></td>
                     </tr>
                   </tbody>
@@ -535,12 +535,12 @@ export default function CartPage() {
                     ].map(([label, val]) => (
                       <div key={label} className="flex justify-end items-center gap-6 py-1 border-b border-[#eee]">
                         <span className="text-sm text-[#555] min-w-[100px] text-right">{label}</span>
-                        <span className="text-sm text-[#333] min-w-[110px] text-right">₹&nbsp;&nbsp;{rupeeFormat(val)}</span>
+                        <span className="text-sm text-[#333] min-w-[110px] text-right whitespace-nowrap">₹&nbsp;&nbsp;{rupeeFormat(val)}</span>
                       </div>
                     ))}
                     <div className="flex justify-end items-center gap-6 py-2">
                       <span className="text-[16px] font-bold text-[#333] min-w-[100px] text-right">Total Amount:</span>
-                      <span className="text-[18px] font-bold text-[#333] min-w-[110px] text-right">₹&nbsp;&nbsp;{rupeeFormat(grandTotal)}</span>
+                      <span className="text-[18px] font-bold text-[#333] min-w-[110px] text-right whitespace-nowrap">₹&nbsp;&nbsp;{rupeeFormat(grandTotal)}</span>
                     </div>
                   </div>
 
