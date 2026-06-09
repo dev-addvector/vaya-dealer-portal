@@ -5,7 +5,7 @@ export const getDashboardFilters = () => api.get('/admin/dashboard');
 export const getChartData = (data) => api.post('/admin/dashboard/chart-data', data);
 export const downloadChartDataCSV = async (data) => {
   const response = await api.post('/admin/dashboard/download', data, { responseType: 'blob' });
-  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const url = window.URL.createObjectURL(new Blob([response], { type: 'text/csv' }));
   const a = document.createElement('a');
   a.href = url;
   a.download = `vaya_dashboard_data_${new Date().toISOString().slice(0, 10)}.csv`;
