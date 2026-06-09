@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [pdfCapturing, setPdfCapturing] = useState(false);
   const dashboardRef = useRef(null);
+  const barChartCardRef = useRef(null);
 
   const { data: filterRes } = useQuery({
     queryKey: ['dashboard-filters'],
@@ -99,20 +100,42 @@ export default function DashboardPage() {
     await new Promise((r) => setTimeout(r, 50));
     try {
       const el = dashboardRef.current;
+
+      // Measure split point while DOM is in single-column PDF layout
+      const dashTop = el.getBoundingClientRect().top;
+      const barChartBottom = barChartCardRef.current.getBoundingClientRect().bottom;
+      const splitPixels = barChartBottom - dashTop;
+
+      const scale = 2;
       const canvas = await html2canvas(el, {
-        scale: 2,
+        scale,
         useCORS: true,
         backgroundColor: '#f3f4f6',
         scrollY: -window.scrollY,
         windowWidth: el.scrollWidth,
         windowHeight: el.scrollHeight,
       });
-      const imgData = canvas.toDataURL('image/png');
+
+      // Split canvas: top portion (bar chart section) and bottom portion (map + line chart)
+      const splitCanvasY = Math.round(splitPixels * scale);
+
+      const c1 = document.createElement('canvas');
+      c1.width = canvas.width;
+      c1.height = Math.max(1, Math.min(splitCanvasY, canvas.height));
+      c1.getContext('2d').drawImage(canvas, 0, 0, c1.width, c1.height, 0, 0, c1.width, c1.height);
+
+      const c2 = document.createElement('canvas');
+      c2.width = canvas.width;
+      c2.height = Math.max(1, canvas.height - splitCanvasY);
+      c2.getContext('2d').drawImage(canvas, 0, splitCanvasY, c2.width, c2.height, 0, 0, c2.width, c2.height);
+
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const margin = 10;
       const headerH = 10;
+      const contentTop = margin + headerH;
+      const usableH = pageH - contentTop - margin;
 
       const now = new Date();
       const dateTimeStr = now.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' })
@@ -130,17 +153,23 @@ export default function DashboardPage() {
         pdf.text(dateTimeStr, pageW - margin, margin, { align: 'right' });
       };
 
-      const imgW = pageW - margin * 2;
-      const imgH = (canvas.height * imgW) / canvas.width;
-      const contentTop = margin + headerH;
-      const usableH = pageH - contentTop - margin;
-      let y = 0;
-      while (y < imgH) {
-        if (y > 0) pdf.addPage();
-        drawHeader();
-        pdf.addImage(imgData, 'PNG', margin, contentTop - y, imgW, imgH);
-        y += usableH;
-      }
+      const addCanvasPages = (c, isFirst) => {
+        if (c.height <= 0) return;
+        const imgData = c.toDataURL('image/png');
+        const imgW = pageW - margin * 2;
+        const imgH = (c.height * imgW) / c.width;
+        let y = 0;
+        while (y < imgH) {
+          if (!isFirst || y > 0) pdf.addPage();
+          drawHeader();
+          pdf.addImage(imgData, 'PNG', margin, contentTop - y, imgW, imgH);
+          y += usableH;
+        }
+      };
+
+      addCanvasPages(c1, true);   // page 1: filters + metrics + bar chart
+      addCanvasPages(c2, false);  // page 2+: map + line chart
+
       const date = todayIST().replace(/-/g, '_');
       pdf.save(`vaya_dashboard_${date}.pdf`);
     } finally {
@@ -278,10 +307,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+      {/* Charts Row: 2-col on web, single col during PDF capture */}
+      <div className={`grid gap-4 mb-4 ${pdfCapturing ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
         {/* Top 5 Search Strings - Horizontal Bar */}
-        <div className="bg-white rounded-lg shadow p-5">
+        <div ref={barChartCardRef} className="bg-white rounded-lg shadow p-5">
           <h2 className="font-semibold text-gray-700 mb-4">Top 5 Search Strings</h2>
           {searchBarData.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
@@ -294,7 +323,7 @@ export default function DashboardPage() {
                 <XAxis type="number" tick={{ fontSize: 10 }} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={60} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#7c3aed" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10 }} />
+                <Bar dataKey="count" fill="#7c3aed" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10 }} isAnimationActive={!pdfCapturing} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -348,6 +377,7 @@ export default function DashboardPage() {
                       dot={{ r: 2 }}
                       strokeWidth={1.5}
                       strokeDasharray={key === 'Others' ? '4 2' : undefined}
+                      isAnimationActive={!pdfCapturing}
                     />
                   )
                 ))}
