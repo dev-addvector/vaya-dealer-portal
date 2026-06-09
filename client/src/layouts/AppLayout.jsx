@@ -8,6 +8,94 @@ import { downloadPriceListCsv, downloadPriceListPdf } from '@/api/download.api';
 import { getActiveAd } from '@/api/admin.api';
 import Footer from '@/components/ui/Footer';
 
+function IconGrid({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+  );
+}
+
+function IconShoppingBag({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+  );
+}
+
+function IconBookmark({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+    </svg>
+  );
+}
+
+function IconDownload({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+  );
+}
+
+function IconUser({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  );
+}
+
+function IconFileText({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+  );
+}
+
+function IconBook({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </svg>
+  );
+}
+
+function IconInfo({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="16" x2="12" y2="12"/>
+      <line x1="12" y1="8" x2="12.01" y2="8"/>
+    </svg>
+  );
+}
+
+function IconLogOut({ color = '#111111' }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  );
+}
+
 export default function AppLayout() {
   const logout = useLogout();
   const navigate = useNavigate();
@@ -63,14 +151,14 @@ export default function AppLayout() {
   const dropdownItemBase = 'px-4 py-[10px] cursor-pointer text-vaya-gray text-sm flex items-center gap-2 hover:bg-vaya-green hover:text-vaya-black';
 
   const mobileNavItems = [
-    { label: 'Home', to: '/products' },
-    { label: 'My Order', to: '/orders/my-orders' },
-    { label: 'My Open Order', to: '/orders/open-orders' },
-    { label: 'My Reservations', to: '/orders/reserved-orders' },
-    { label: 'My Profile', to: '/profile' },
-    { label: 'Download e-brochure', to: '/downloads/ebrochures' },
-    { label: 'Download Price list', action: () => { setMobileMenuOpen(false); setPriceListModal(true); } },
-    { label: 'About Us', action: () => { window.open('https://vayahome.com/', '_blank'); setMobileMenuOpen(false); } },
+    { label: 'Home', to: '/products', icon: <IconGrid color="#555" /> },
+    { label: 'My Order', to: '/orders/my-orders', icon: <IconFileText color="#555" /> },
+    { label: 'My Open Order', to: '/orders/open-orders', icon: <IconShoppingBag color="#555" /> },
+    { label: 'My Reservations', to: '/orders/reserved-orders', icon: <IconBookmark color="#555" /> },
+    { label: 'My Profile', to: '/profile', icon: <IconUser color="#555" /> },
+    { label: 'Download e-brochure', to: '/downloads/ebrochures', icon: <IconBook color="#555" /> },
+    { label: 'Download Price list', action: () => { setMobileMenuOpen(false); setPriceListModal(true); }, icon: <IconDownload color="#555" /> },
+    { label: 'About Us', action: () => { window.open('https://vayahome.com/', '_blank'); setMobileMenuOpen(false); }, icon: <IconInfo color="#555" /> },
   ];
 
   const handleMobileNav = (item) => {
@@ -119,38 +207,38 @@ export default function AppLayout() {
 
           <div className="w-1/3 flex items-center justify-end pr-[20px] gap-2 md:gap-3 lg:gap-4">
 
-            <NavLink to="/products" title="Stock Check" className={navIconBase}>
-              {({ isActive }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill={isActive ? '#807A52' : '#707070'} viewBox="0 0 16 16">
-                  <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6-.354.353V15.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5V7.5l-.354-.354-6-6z"/>
-                </svg>
-              )}
+            {/* Products / Stock Check */}
+            <NavLink to="/products" title="Stock Check" className={({ isActive }) => `${navIconBase} ${isActive ? 'opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
+              {({ isActive }) => <IconGrid color={isActive ? '#807A52' : '#111111'} />}
             </NavLink>
 
-            <NavLink to="/orders/open-orders" title="Open Orders" className={({ isActive }) => `${navIconBase} ${isActive ? 'opacity-100' : 'opacity-60'}`}>
-              <img src="/images/open-orders.svg" alt="Open Orders" className="w-[80%] h-[80%] object-contain" />
+            {/* Open Orders */}
+            <NavLink to="/orders/open-orders" title="Open Orders" className={({ isActive }) => `${navIconBase} ${isActive ? 'opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
+              {({ isActive }) => <IconShoppingBag color={isActive ? '#807A52' : '#111111'} />}
             </NavLink>
 
-            <NavLink to="/orders/reserved-orders" title="Reserved Orders" className={({ isActive }) => `${navIconBase} ${isActive ? 'opacity-100' : 'opacity-60'}`}>
-              <img src="/images/reserve-order.svg" alt="Reserved Orders" className="w-[80%] h-[80%] object-contain" />
+            {/* Reserved Orders */}
+            <NavLink to="/orders/reserved-orders" title="Reserved Orders" className={({ isActive }) => `${navIconBase} ${isActive ? 'opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
+              {({ isActive }) => <IconBookmark color={isActive ? '#807A52' : '#111111'} />}
             </NavLink>
 
+            {/* Downloads */}
             <div ref={downloadsRef} className="relative" onMouseEnter={() => setDownloadsOpen(true)} onMouseLeave={() => setDownloadsOpen(false)}>
               <button
                 title="Downloads"
                 className={`nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(112,112,112,0.35)] rounded-full bg-transparent cursor-pointer p-0 flex items-center justify-center shrink-0 ${downloadsOpen ? 'opacity-100' : 'opacity-60'}`}
               >
-                <img src="/images/downloads.svg" alt="Downloads" className="w-[80%] h-[80%] object-contain" />
+                <IconDownload color="#111111" />
               </button>
               {downloadsOpen && (
                 <div className="absolute top-full right-0 pt-2 min-w-[160px] z-[100]">
                 <div className="bg-white shadow-[0px_3px_20px_rgba(0,0,0,0.32)] rounded-[4px]">
                   <div onClick={() => { setDownloadsOpen(false); navigate('/downloads/ebrochures'); }} className={`${dropdownItemBase} border-b border-[rgba(92,92,92,0.1)]`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0-2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0-2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/></svg>
+                    <IconBook color="currentColor" />
                     E-Brochure
                   </div>
                   <div onClick={() => { setDownloadsOpen(false); setPriceListModal(true); }} className={dropdownItemBase}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1H1zm13 2v12H2V2h12zm-5.354 7.354a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L8 8.293l1.646-1.647a.5.5 0 0 1 .708.708l-2 2z"/></svg>
+                    <IconFileText color="currentColor" />
                     Price List
                   </div>
                 </div>
@@ -158,9 +246,10 @@ export default function AppLayout() {
               )}
             </div>
 
+            {/* Profile */}
             <div ref={profileRef} className="relative" onMouseEnter={() => setProfileOpen(true)} onMouseLeave={() => setProfileOpen(false)}>
-              <button title="Profile" className="nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(84,84,84,0.5)] rounded-full p-0 bg-transparent cursor-pointer flex items-center justify-center">
-                <img src="/images/menu-icon-3.png" alt="Profile" className="w-[70%] h-[70%] object-contain opacity-70" />
+              <button title="Profile" className={`nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(112,112,112,0.35)] rounded-full p-0 bg-transparent cursor-pointer flex items-center justify-center ${profileOpen ? 'opacity-100' : 'opacity-60'}`}>
+                <IconUser color="#111111" />
               </button>
               {profileOpen && (
                 <div className="absolute top-full right-0 pt-2 min-w-[160px] z-[100]">
@@ -255,15 +344,17 @@ export default function AppLayout() {
             <button
               key={item.label}
               onClick={() => handleMobileNav(item)}
-              className="w-full text-left px-6 py-4 text-[15px] text-[#333] border-b border-[#e8e8e8] bg-transparent cursor-pointer hover:bg-gray-50"
+              className="w-full text-left px-6 py-4 text-[15px] text-[#333] border-b border-[#e8e8e8] bg-transparent cursor-pointer hover:bg-gray-50 flex items-center gap-3"
             >
+              <span className="w-5 flex items-center justify-center shrink-0">{item.icon}</span>
               {item.label}
             </button>
           ))}
           <button
             onClick={() => { setMobileMenuOpen(false); logout.mutate(); }}
-            className="w-full text-left px-6 py-4 text-[15px] text-[#333] border-b border-[#e8e8e8] bg-transparent cursor-pointer hover:bg-gray-50"
+            className="w-full text-left px-6 py-4 text-[15px] text-[#333] border-b border-[#e8e8e8] bg-transparent cursor-pointer hover:bg-gray-50 flex items-center gap-3"
           >
+            <span className="w-5 flex items-center justify-center shrink-0"><IconLogOut color="#555" /></span>
             Logout
           </button>
         </nav>
