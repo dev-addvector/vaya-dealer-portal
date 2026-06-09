@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import { formatDateTimeIST } from '@/utils/dateUtils';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 const ROLES = [
   { value: 'sub_admin', label: 'Sub admin' },
@@ -88,9 +88,10 @@ export default function SubAdminPage() {
   const { data, isLoading } = useQuery({ queryKey: ['admin-subadmins'], queryFn: getSubadmins });
   const [modal, setModal] = useState(null); // null | { mode: 'create' | 'edit', data?: object }
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const subadmins = data?.data ?? [];
-  const totalPages = Math.max(1, Math.ceil(subadmins.length / PAGE_SIZE));
-  const pagedSubadmins = subadmins.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(subadmins.length / perPage));
+  const pagedSubadmins = subadmins.slice((page - 1) * perPage, page * perPage);
 
   const create = useMutation({
     mutationFn: createSubadmin,
@@ -134,10 +135,23 @@ export default function SubAdminPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h1 className="text-xl font-bold text-gray-800">Subadmin</h1>
-        <button onClick={() => setModal({ mode: 'create' })}
-          className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600 w-full sm:w-auto">
-          Create Subadmin
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>Show</span>
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              className="border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-vaya-green"
+            >
+              {PAGE_SIZE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+            <span>entries</span>
+          </div>
+          <button onClick={() => setModal({ mode: 'create' })}
+            className="bg-blue-500 text-white px-4 py-2 rounded text-sm hover:bg-blue-600">
+            Create Subadmin
+          </button>
+        </div>
       </div>
 
       {isLoading && <p className="text-gray-500 text-sm">Loading...</p>}
@@ -201,7 +215,7 @@ export default function SubAdminPage() {
 
       <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <p className="text-xs text-gray-500">
-          Showing {subadmins.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, subadmins.length)} of {subadmins.length} entr{subadmins.length !== 1 ? 'ies' : 'y'}
+          Showing {subadmins.length === 0 ? 0 : (page - 1) * perPage + 1}–{Math.min(page * perPage, subadmins.length)} of {subadmins.length} entr{subadmins.length !== 1 ? 'ies' : 'y'}
         </p>
         {totalPages > 1 && (
           <div className="flex items-center gap-1">

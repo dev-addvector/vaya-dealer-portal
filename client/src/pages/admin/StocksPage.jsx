@@ -2,11 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { getStocks } from '@/api/admin.api';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 export default function StocksPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['admin-stocks'],
@@ -30,9 +31,9 @@ export default function StocksPage() {
     );
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
-  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const paged = filtered.slice((safePage - 1) * perPage, safePage * perPage);
 
   function getPageNumbers() {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -59,16 +60,24 @@ export default function StocksPage() {
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>Show</span>
+          <select
+            value={perPage}
+            onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+            className="border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-vaya-green"
+          >
+            {PAGE_SIZE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+          <span>entries</span>
+        </div>
         <input
           placeholder="Search by pattern or color..."
           value={search}
           onChange={handleSearch}
           className="border rounded px-3 py-2 text-sm w-full sm:w-72 focus:outline-none focus:ring-1 focus:ring-vaya-primary"
         />
-        {!isLoading && !isError && (
-          <span className="text-sm text-gray-500">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
-        )}
       </div>
 
       {isLoading && <p className="text-sm text-gray-500">Loading stock data from ERP...</p>}
@@ -114,7 +123,7 @@ export default function StocksPage() {
             <p className="text-sm text-gray-500 text-center sm:text-left">
               {filtered.length === 0
                 ? 'No entries found'
-                : `Showing ${(safePage - 1) * PAGE_SIZE + 1} to ${Math.min(safePage * PAGE_SIZE, filtered.length)} of ${filtered.length} entries`}
+                : `Showing ${(safePage - 1) * perPage + 1} to ${Math.min(safePage * perPage, filtered.length)} of ${filtered.length} entries`}
             </p>
 
             <div className="flex items-center gap-1 justify-center">

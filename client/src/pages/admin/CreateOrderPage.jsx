@@ -85,6 +85,8 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
   const [draftColor, setDraftColor] = useState('');
   const [search, setSearch] = useState({ pattern: '', color: '' });
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const PAGE_SIZE_OPTIONS = [10, 20, 25, 50, 100];
   const [rollModal, setRollModal] = useState(null);
   const [draftQtys, setDraftQtys] = useState({});
 
@@ -110,14 +112,13 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
   }, [allColors, draftPattern, patternColorsMap]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['order-products', customer.unc, search.pattern, search.color, page],
-    queryFn: () => getOrderProducts(customer.unc, { pattern: search.pattern, color: search.color, page, perPage: 20 }),
+    queryKey: ['order-products', customer.unc, search.pattern, search.color, page, perPage],
+    queryFn: () => getOrderProducts(customer.unc, { pattern: search.pattern, color: search.color, page, perPage }),
     keepPreviousData: true,
   });
 
   const products = data?.items ?? [];
   const total = data?.total ?? 0;
-  const perPage = 20;
   const totalPages = Math.ceil(total / perPage);
 
   const cartCount = cart.reduce((sum, i) => sum + 1, 0);
@@ -178,6 +179,18 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
             View Cart & Checkout
           </button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+        <span>Show</span>
+        <select
+          value={perPage}
+          onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+          className="border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-vaya-green"
+        >
+          {PAGE_SIZE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
+        </select>
+        <span>entries</span>
       </div>
 
       <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 mb-4 items-end">
@@ -289,15 +302,53 @@ function StepSelectProducts({ customer, cart, onCartChange, onNext, onBack }) {
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-3 text-sm">
-          <div className="flex gap-2 order-2 sm:order-1">
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-              className="border px-3 py-1 rounded disabled:opacity-40 hover:bg-gray-50">Previous</button>
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-              className="border px-3 py-1 rounded disabled:opacity-40 hover:bg-gray-50">Next</button>
+      {total > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-3">
+          <p className="text-sm text-gray-500 text-center sm:text-left">
+            {`Showing ${(page - 1) * perPage + 1} to ${Math.min(page * perPage, total)} of ${total} entries`}
+          </p>
+          <div className="flex items-center gap-1 justify-center">
+            <button
+              disabled={page <= 1}
+              onClick={() => setPage(1)}
+              className="px-2.5 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+            >«</button>
+            <button
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+              className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+            >Previous</button>
+            {(() => {
+              let pages;
+              if (totalPages <= 7) pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+              else if (page <= 4) pages = [1, 2, 3, 4, 5, '…', totalPages];
+              else if (page >= totalPages - 3) pages = [1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+              else pages = [1, '…', page - 1, page, page + 1, '…', totalPages];
+              return pages.map((n, idx) =>
+                n === '…' ? (
+                  <span key={`e-${idx}`} className="px-2 py-1.5 text-sm text-gray-400">…</span>
+                ) : (
+                  <button
+                    key={n}
+                    onClick={() => setPage(n)}
+                    className={`px-3 py-1.5 text-sm border rounded ${
+                      n === page ? 'bg-vaya-primary text-white border-vaya-primary' : 'hover:bg-gray-50'
+                    }`}
+                  >{n}</button>
+                )
+              );
+            })()}
+            <button
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+            >Next</button>
+            <button
+              disabled={page >= totalPages}
+              onClick={() => setPage(totalPages)}
+              className="px-2.5 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+            >»</button>
           </div>
-          <span className="text-gray-600 order-1 sm:order-2 text-center">Page {page} of {totalPages} ({total} products)</span>
         </div>
       )}
 

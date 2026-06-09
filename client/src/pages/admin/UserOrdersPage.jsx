@@ -59,7 +59,7 @@ const COLUMNS = [
   { label: 'Order Status',  field: 'OrderStatus',  sortable: true },
 ];
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const DATE_FIELDS = new Set(['OrderDate', 'InvoiceDate']);
 const NUM_FIELDS  = new Set(['NetPayable']);
 
@@ -111,6 +111,7 @@ export default function UserOrdersPage() {
   const [search, setSearch]   = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
 
   const decodedUnc = decodeURIComponent(unc);
 
@@ -144,9 +145,9 @@ export default function UserOrdersPage() {
     return sortOrders(result, sortBy, sortDir);
   }, [rawOrders, statusFilter, search, sortBy, sortDir]);
 
-  const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(orders.length / perPage));
   const safePage = Math.min(page, totalPages);
-  const pagedOrders = orders.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const pagedOrders = orders.slice((safePage - 1) * perPage, safePage * perPage);
 
   function getPageNumbers() {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -182,6 +183,19 @@ export default function UserOrdersPage() {
       {!isLoading && !isError && (
         <>
           {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Show</span>
+              <select
+                value={perPage}
+                onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+                className="border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-vaya-green"
+              >
+                {PAGE_SIZE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+              <span>entries</span>
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <input
               placeholder="Search Order ID, Invoice ID, PO Number..."
@@ -264,7 +278,7 @@ export default function UserOrdersPage() {
             <p className="text-sm text-gray-500 text-center sm:text-left">
               {orders.length === 0
                 ? 'No entries found'
-                : `Showing ${(safePage - 1) * PAGE_SIZE + 1} to ${Math.min(safePage * PAGE_SIZE, orders.length)} of ${orders.length} entries`}
+                : `Showing ${(safePage - 1) * perPage + 1} to ${Math.min(safePage * perPage, orders.length)} of ${orders.length} entries`}
             </p>
             <div className="flex items-center gap-1 justify-center">
               <button
