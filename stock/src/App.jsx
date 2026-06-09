@@ -99,6 +99,18 @@ export default function App() {
   const [sortDir, setSortDir] = useState('asc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const header = document.querySelector('.header');
+    if (!header) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setShowScrollTop(!entry.isIntersecting);
+    });
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     fetchStocks()
       .then((res) => setStocks(res.data || []))
@@ -170,7 +182,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 py-4 sm:py-5">
+      <div className="header border-b border-gray-200 bg-white px-4 sm:px-6 py-4 sm:py-5">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-lg sm:text-xl font-bold text-vaya-black tracking-wide">
             VAYA Updated Stock List
@@ -340,7 +352,7 @@ export default function App() {
         )}
       </div>
 
-      <button
+      {showScrollTop && <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-vaya-black text-white shadow-lg flex items-center justify-center hover:bg-vaya-dark transition-colors"
         aria-label="Scroll to top"
@@ -348,7 +360,7 @@ export default function App() {
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
           <path fillRule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
         </svg>
-      </button>
+      </button>}
     </div>
   );
 }
