@@ -293,7 +293,7 @@ export default function MyOrdersPage() {
                           {nullStr(o.OrderID)}
                         </button>
                       </td>
-                      <td className={tdBase}>{nullStr(o.OrderDate)}</td>
+                      <td className={`${tdBase} whitespace-nowrap`}>{nullStr(o.OrderDate)}</td>
                       <td className={tdBase}>{nullStr(o.InvoiceNo)}</td>
                       <td className={tdBase}>{nullStr(o.InvoiceDate)}</td>
                       <td className={`${tdBase} text-right`}>{formatNetPayable(o)}</td>

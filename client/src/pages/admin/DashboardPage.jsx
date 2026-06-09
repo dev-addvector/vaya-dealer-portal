@@ -111,13 +111,35 @@ export default function DashboardPage() {
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const imgW = pageW;
+      const margin = 10;
+      const headerH = 10;
+
+      const now = new Date();
+      const dateTimeStr = now.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' })
+        + ' - '
+        + now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
+
+      const drawHeader = () => {
+        pdf.setFontSize(13);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(40, 40, 40);
+        pdf.text('Vaya', margin, margin);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(dateTimeStr, pageW - margin, margin, { align: 'right' });
+      };
+
+      const imgW = pageW - margin * 2;
       const imgH = (canvas.height * imgW) / canvas.width;
+      const contentTop = margin + headerH;
+      const usableH = pageH - contentTop - margin;
       let y = 0;
       while (y < imgH) {
         if (y > 0) pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, -y, imgW, imgH);
-        y += pageH;
+        drawHeader();
+        pdf.addImage(imgData, 'PNG', margin, contentTop - y, imgW, imgH);
+        y += usableH;
       }
       const date = todayIST().replace(/-/g, '_');
       pdf.save(`vaya_dashboard_${date}.pdf`);
@@ -333,7 +355,7 @@ export default function DashboardPage() {
             </ResponsiveContainer>
 
             {/* Custom legend with toggles */}
-            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 justify-center">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: '12px', justifyContent: 'center' }}>
               {lineKeys.map((key, i) => {
                 const color = key === 'Others' ? '#9ca3af' : LINE_COLORS[i % LINE_COLORS.length];
                 const hidden = hiddenLines.has(key);
@@ -342,20 +364,23 @@ export default function DashboardPage() {
                   <button
                     key={key}
                     onClick={() => toggleLine(key)}
-                    className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded border transition-colors ${
-                      hidden
-                        ? 'border-gray-200 text-gray-400 bg-gray-50'
-                        : 'border-gray-300 text-gray-700 bg-white'
-                    }`}
                     title={isOthers && hidden ? 'Click to show aggregated Others' : undefined}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      fontSize: '12px', padding: '4px 8px', borderRadius: '4px',
+                      border: `1px solid ${hidden ? '#e5e7eb' : '#d1d5db'}`,
+                      background: hidden ? '#f9fafb' : '#ffffff',
+                      color: hidden ? '#9ca3af' : '#374151',
+                      cursor: 'pointer', transition: 'colors 0.15s',
+                    }}
                   >
-                    <span
-                      className="inline-block w-3 h-0.5 rounded"
-                      style={{ backgroundColor: hidden ? '#d1d5db' : color }}
-                    />
+                    <span style={{
+                      display: 'inline-block', width: '12px', height: '2px',
+                      borderRadius: '2px', backgroundColor: hidden ? '#d1d5db' : color,
+                    }} />
                     <span>{key}</span>
                     {isOthers && hidden && (
-                      <span className="text-[10px] text-gray-400">(disabled)</span>
+                      <span style={{ fontSize: '10px', color: '#9ca3af' }}>(disabled)</span>
                     )}
                   </button>
                 );

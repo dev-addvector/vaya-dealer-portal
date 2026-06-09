@@ -20,8 +20,9 @@ function ContactModal({ initial, onSave, onClose, saving }) {
       <div className="bg-white rounded-[12px] p-8 w-[460px] max-w-[92vw] relative">
         <button
           onClick={onClose}
-          className="absolute top-[14px] right-4 bg-transparent border border-[#ccc] rounded-full w-7 h-7 cursor-pointer text-[16px] text-[#888] flex items-center justify-center"
-        >×</button>
+          className="absolute top-[14px] right-4 bg-transparent border border-[#ccc] rounded-full w-7 h-7 cursor-pointer text-[#888] flex items-center justify-center">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg>
+        </button>
         <h4 className="text-[20px] font-semibold text-center mb-6">{initial ? 'Edit Contact' : 'Add Contact'}</h4>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -147,8 +148,9 @@ export default function ContactPage() {
           <div className="bg-white rounded-[12px] p-8 w-[360px] max-w-[90vw] relative text-center">
             <button
               onClick={() => setDeleting(null)}
-              className="absolute top-[14px] right-4 bg-transparent border border-[#ccc] rounded-full w-7 h-7 cursor-pointer text-[16px] text-[#888]"
-            >×</button>
+              className="absolute top-[14px] right-4 bg-transparent border border-[#ccc] rounded-full w-7 h-7 cursor-pointer text-[#888] flex items-center justify-center">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg>
+            </button>
             <p className="text-[15px] text-[#111] mb-6">Do you want to delete contact?</p>
             <button
               onClick={handleDelete}

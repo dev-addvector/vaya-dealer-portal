@@ -269,7 +269,7 @@ export default function OpenOrdersPage() {
                             {orderId}
                           </button>
                         </td>
-                        <td className={tdBase}>{o.OrderDate ?? 'N/A'}</td>
+                        <td className={`${tdBase} whitespace-nowrap`}>{o.OrderDate ?? 'N/A'}</td>
                         <td className={`${tdBase} text-right`}>{formatNetPayable(o)}</td>
                         <td className={tdBase}>{o.PONumber ?? 'N/A'}</td>
                         <td className={tdBase}>{o.ShippingMode ?? 'N/A'}</td>

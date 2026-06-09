@@ -11,6 +11,14 @@ const toIST = (utcStr) => {
   });
 };
 
+const toISTWithTime = (utcStr) => {
+  if (!utcStr) return '—';
+  const d = new Date(utcStr);
+  const date = d.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' });
+  const time = d.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
+  return `${date} - ${time}`;
+};
+
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -89,7 +97,7 @@ export default function AdsPage() {
                 <span className="text-gray-400">End Date: </span>{toIST(ad.endDate)}
               </p>
               <p className="text-xs text-gray-500">
-                <span className="text-gray-400">Created At: </span>{toIST(ad.createdAt)}
+                <span className="text-gray-400">Created At: </span>{toISTWithTime(ad.createdAt)}
               </p>
             </div>
             <button

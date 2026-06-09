@@ -84,8 +84,9 @@ export default function ProfilePage() {
           <div className="bg-white rounded-[12px] p-8 w-[420px] max-w-[90vw] relative">
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-[14px] right-4 bg-transparent border-none text-[20px] cursor-pointer text-[#888]"
-            >×</button>
+              className="absolute top-[14px] right-4 bg-transparent border border-[#ccc] rounded-full w-7 h-7 cursor-pointer text-[#888] flex items-center justify-center">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg>
+            </button>
             <h4 className="text-[16px] font-semibold mb-4">To Admin,</h4>
             <textarea
               rows={5}
