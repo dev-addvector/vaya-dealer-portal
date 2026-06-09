@@ -23,10 +23,11 @@ export default function EBrochurePage() {
         {!isLoading && !isError && brochures.length === 0 && (
           <p className="text-vaya-gray text-sm">No brochures available.</p>
         )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
         {brochures.map((b) => (
           <div
             key={b.id ?? b.filename}
-            className="flex items-center gap-4 py-3 border-b border-vaya-light"
+            className="flex items-center gap-4 py-1.5 border-b border-vaya-light"
           >
             <span className="font-normal text-vaya-green text-[15px]">{b.name}</span>
             <a
@@ -39,6 +40,7 @@ export default function EBrochurePage() {
             </a>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );
