@@ -198,7 +198,7 @@ export default function LoginPage() {
             <div className="login-title-wrap">
               {/* <div className="w-8 h-[3px] bg-[#807A52] mb-3" /> */}
               <h1 className="text-[35px] font-normal m-0 text-white">Dealer Login</h1>
-              <p className="m-0 mt-2 text-[15px] text-white/80 leading-[1.5]">Welcome back! Please login to access<br />your dealer account.</p>
+              <p className="m-0 mt-2 text-[14px] text-white/80 leading-[1.5] whitespace-nowrap">Welcome back! Please login to access your dealer account.</p>
             </div>
 
             <div className="login-form-inner">
