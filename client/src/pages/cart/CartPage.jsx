@@ -6,8 +6,8 @@ import { useAddresses } from '@/hooks/useAddresses';
 import toast from 'react-hot-toast';
 import { todayIST } from '@/utils/dateUtils';
 
-const thBase = 'bg-vaya-black text-white px-[12px] py-[10px] text-center font-normal text-[13px] whitespace-nowrap border border-[#333]';
-const tdBase = 'px-[10px] py-2 border-b border-[#e0e0e0] align-middle text-[13px] text-[#333]';
+const thBase = 'bg-[#E3E8CC] text-[#76774D] px-[12px] py-[10px] text-center border border-[#E3E8CC] font-normal text-[13px] whitespace-nowrap';
+const tdBase = 'px-[10px] py-2 border-b border-[#E3E8CC] align-middle text-[13px] text-[#333]';
 
 const round2 = (n) => Math.round(n * 10) / 10;
 
@@ -413,7 +413,7 @@ export default function CartPage() {
               <div className="hidden sm:block overflow-x-auto shadow-[0_2px_10px_rgba(0,0,0,0.08)]">
                 <table className="w-full border-collapse bg-white">
                   <thead>
-                    <tr>
+                    <tr className="bg-[#E3E8CC]">
                       <th className={thBase}>Product Descriptions</th>
                       <th className={thBase}>
                         <div className="flex items-center justify-center gap-1">

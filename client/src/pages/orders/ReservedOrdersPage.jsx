@@ -44,8 +44,8 @@ function matchesDate(orderDate, filterDate) {
   return (orderDate || '').startsWith(`${d}-${m}-${y}`);
 }
 
-const thBase = 'bg-vaya-black text-white px-[10px] py-[10px] text-center font-normal text-sm border border-[#333] whitespace-nowrap select-none';
-const tdBase = 'px-[10px] py-2 text-center text-[#555] text-sm border border-[#dee2e6] align-middle';
+const thBase = 'bg-[#E3E8CC] text-[#76774D] px-[10px] py-[10px] text-center border border-[#E3E8CC] font-normal text-sm whitespace-nowrap select-none';
+const tdBase = 'px-[10px] py-2 text-center text-[#555] text-sm border border-[#E3E8CC] align-middle';
 const filterCellCls = 'px-[6px] py-1 border border-[#dee2e6]';
 const filterInputCls = 'w-full px-[6px] py-1 text-[13px] border border-[#ccc] rounded-[3px] h-[30px] bg-white';
 
@@ -202,7 +202,7 @@ export default function ReservedOrdersPage() {
             {!isLoading && (
               <table className="w-full border-collapse bg-white text-sm">
                 <thead>
-                  <tr>
+                  <tr className="bg-[#E3E8CC]">
                     {[
                       { label: 'Order ID',      key: 'OrderID' },
                       { label: 'Order Date',    key: 'OrderDate' },
@@ -586,7 +586,7 @@ export default function ReservedOrdersPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-[14px]">
                     <thead>
-                      <tr className="bg-[#f2f2f2] text-[#111]">
+                      <tr className="bg-[#E3E8CC] text-[#76774D]">
                         <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Color</th>
                         <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Pattern</th>
                         <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Rate</th>

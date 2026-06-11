@@ -141,10 +141,10 @@ export default function AddressPage() {
                         <tr>
                           <th className="w-[70%]" />
                           <th className="w-[8%]" />
-                          <th className="w-[11%] text-center text-[13px] text-[#555] font-medium pb-[10px]">
+                          <th className="w-[11%] text-center text-[13px] text-[#76774D] font-medium pb-[10px]">
                             Shipping<br />address
                           </th>
-                          <th className="w-[11%] text-center text-[13px] text-[#555] font-medium pb-[10px]">
+                          <th className="w-[11%] text-center text-[13px] text-[#76774D] font-medium pb-[10px]">
                             Billing<br />address
                           </th>
                         </tr>

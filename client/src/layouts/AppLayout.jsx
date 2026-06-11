@@ -148,7 +148,7 @@ export default function AppLayout() {
     }
   };
 
-  const navIconBase = 'nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] flex items-center justify-center border border-[rgba(112,112,112,0.35)] rounded-full no-underline shrink-0';
+  const navIconBase = 'nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] flex items-center justify-center border border-[rgba(0,0,0,0.07)] rounded-full no-underline shrink-0';
   const dropdownItemBase = 'px-4 py-[10px] cursor-pointer text-vaya-gray text-sm flex items-center gap-2 hover:bg-vaya-green hover:text-vaya-black';
 
   const mobileNavItems = [
@@ -175,12 +175,18 @@ export default function AppLayout() {
     <div className="min-h-screen bg-white flex flex-col">
       <style>{`
         .nav-icon {
-          transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+          background-color: #ffffff;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.07);
+          transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
         }
         .nav-icon:hover {
-          background-color: rgba(128,122,82,0.12) !important;
+          background-color: rgba(128,122,82,0.10) !important;
           border-color: #807A52 !important;
+          box-shadow: 0 2px 8px rgba(128,122,82,0.22), 0 4px 14px rgba(128,122,82,0.14) !important;
           opacity: 1 !important;
+        }
+        .nav-icon-active {
+          box-shadow: 0 0 0 2.5px rgba(128,122,82,0.35), 0 2px 10px rgba(128,122,82,0.28), 0 4px 18px rgba(128,122,82,0.16) !important;
         }
         .cart-btn:hover { background-color: #9aae37 !important; }
         .mobile-drawer {
@@ -232,6 +238,10 @@ export default function AppLayout() {
           align-items: center;
           justify-content: center;
         }
+        @media (max-width: 767px) {
+          .support-tab-label { display: none; }
+          .support-tab-body { padding: 9px 7px; }
+        }
       `}</style>
 
       {/* ── Desktop header (hidden on mobile) ── */}
@@ -251,17 +261,17 @@ export default function AppLayout() {
           <div className="w-1/3 flex items-center justify-end pr-[20px] gap-2 md:gap-3 lg:gap-4">
 
             {/* Products / Stock Check */}
-            <NavLink to="/products" title="Stock Check" className={({ isActive }) => `${navIconBase} ${isActive ? 'opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
+            <NavLink to="/products" title="Stock Check" className={({ isActive }) => `${navIconBase} ${isActive ? 'nav-icon-active opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
               {({ isActive }) => <IconGrid color={isActive ? '#807A52' : '#111111'} />}
             </NavLink>
 
             {/* Open Orders */}
-            <NavLink to="/orders/open-orders" title="Open Orders" className={({ isActive }) => `${navIconBase} ${isActive ? 'opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
+            <NavLink to="/orders/open-orders" title="Open Orders" className={({ isActive }) => `${navIconBase} ${isActive ? 'nav-icon-active opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
               {({ isActive }) => <IconShoppingBag color={isActive ? '#807A52' : '#111111'} />}
             </NavLink>
 
             {/* Reserved Orders */}
-            <NavLink to="/orders/reserved-orders" title="Reserved Orders" className={({ isActive }) => `${navIconBase} ${isActive ? 'opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
+            <NavLink to="/orders/reserved-orders" title="Reserved Orders" className={({ isActive }) => `${navIconBase} ${isActive ? 'nav-icon-active opacity-100 !border-[#807A52]' : 'opacity-60'}`}>
               {({ isActive }) => <IconBookmark color={isActive ? '#807A52' : '#111111'} />}
             </NavLink>
 
@@ -269,7 +279,7 @@ export default function AppLayout() {
             <div ref={downloadsRef} className="relative" onMouseEnter={() => setDownloadsOpen(true)} onMouseLeave={() => setDownloadsOpen(false)}>
               <button
                 title="Downloads"
-                className={`nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(112,112,112,0.35)] rounded-full bg-transparent cursor-pointer p-0 flex items-center justify-center shrink-0 ${downloadsOpen ? 'opacity-100' : 'opacity-60'}`}
+                className={`nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(0,0,0,0.07)] rounded-full cursor-pointer p-0 flex items-center justify-center shrink-0 ${downloadsOpen ? 'opacity-100' : 'opacity-60'}`}
               >
                 <IconDownload color="#111111" />
               </button>
@@ -291,27 +301,33 @@ export default function AppLayout() {
 
             {/* Profile */}
             <div ref={profileRef} className="relative" onMouseEnter={() => setProfileOpen(true)} onMouseLeave={() => setProfileOpen(false)}>
-              <button title="Profile" className={`nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(112,112,112,0.35)] rounded-full p-0 bg-transparent cursor-pointer flex items-center justify-center ${profileOpen ? 'opacity-100' : 'opacity-60'}`}>
+              <button title="Profile" className={`nav-icon w-[30px] h-[30px] md:w-[34px] md:h-[34px] border border-[rgba(0,0,0,0.07)] rounded-full p-0 cursor-pointer flex items-center justify-center ${profileOpen ? 'opacity-100' : 'opacity-60'}`}>
                 <IconUser color="#111111" />
               </button>
               {profileOpen && (
                 <div className="absolute top-full right-0 pt-2 min-w-[160px] z-[100]">
                 <div className="bg-white shadow-[0px_3px_20px_rgba(0,0,0,0.32)] rounded-[4px]">
-                  {[['/profile', 'Profile'], ['/orders/my-orders', 'All Orders']].map(([to, label]) => (
-                    <div key={to} onClick={() => { setProfileOpen(false); navigate(to); }} className={`${dropdownItemBase} border-b border-[rgba(92,92,92,0.1)]`}>
-                      {label}
-                    </div>
-                  ))}
-                  <div onClick={() => { setProfileOpen(false); logout.mutate(); }} className={dropdownItemBase}>Logout</div>
+                  <div onClick={() => { setProfileOpen(false); navigate('/profile'); }} className={`${dropdownItemBase} border-b border-[rgba(92,92,92,0.1)]`}>
+                    <IconUser color="currentColor" />
+                    Profile
+                  </div>
+                  <div onClick={() => { setProfileOpen(false); navigate('/orders/my-orders'); }} className={`${dropdownItemBase} border-b border-[rgba(92,92,92,0.1)]`}>
+                    <IconFileText color="currentColor" />
+                    All Orders
+                  </div>
+                  <div onClick={() => { setProfileOpen(false); logout.mutate(); }} className={dropdownItemBase}>
+                    <IconLogOut color="currentColor" />
+                    Logout
+                  </div>
                 </div>
                 </div>
               )}
             </div>
 
-            <button onClick={() => navigate('/cart')} title="Cart" className="cart-btn bg-vaya-green px-[14px] md:px-[18px] border-none cursor-pointer relative flex items-center justify-center h-16 shrink-0">
-              <img src="/images/shopping-cart.png" alt="Cart" className="w-7" />
+            <button onClick={() => navigate('/cart')} title="Cart" className="cart-btn bg-vaya-green w-[30px] h-[30px] md:w-[34px] md:h-[34px] border-none cursor-pointer relative flex items-center justify-center shrink-0 rounded-[6px]">
+              <img src="/images/shopping-cart.png" alt="Cart" className="w-[16px] md:w-[18px]" />
               {cartCount >= 0 && (
-                <span className="absolute w-[17px] h-[17px] bg-vaya-black text-vaya-green rounded-full text-center text-[12px] leading-[17px] right-2 top-2">
+                <span className="absolute w-[15px] h-[15px] bg-vaya-black text-vaya-green rounded-full text-center text-[10px] leading-[15px] -right-1 -top-1">
                   {cartCount}
                 </span>
               )}
@@ -349,7 +365,7 @@ export default function AppLayout() {
               onClick={() => navigate('/cart')}
               className="cart-btn bg-vaya-green h-14 px-4 border-none cursor-pointer relative flex items-center justify-center"
             >
-              <img src="/images/shopping-cart.png" alt="Cart" className="w-6" />
+              <img src="/images/shopping-cart.png" alt="Cart" className="w-[22px]" />
               <span className="absolute w-[16px] h-[16px] bg-vaya-black text-vaya-green rounded-full text-center text-[11px] leading-[16px] right-1 top-1">
                 {cartCount}
               </span>
