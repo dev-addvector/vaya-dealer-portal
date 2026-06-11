@@ -274,7 +274,7 @@ export default function AppLayout() {
                 </span>
               )}
             </button>
-            <ErpStatusIndicator />
+            {/* <ErpStatusIndicator /> */}
           </div>
         </nav>
       </header>
@@ -312,7 +312,7 @@ export default function AppLayout() {
                 {cartCount}
               </span>
             </button>
-            <ErpStatusIndicator />
+            {/* <ErpStatusIndicator /> */}
           </div>
         </div>
       </header>
