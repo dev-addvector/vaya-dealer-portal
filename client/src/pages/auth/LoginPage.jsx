@@ -16,101 +16,75 @@ const responsiveStyles = `
     overflow: hidden;
   }
   .login-header {
-    background-color: #E3E8CC;
+    background-color: #ffffff;
     box-shadow: 0px 1px 3px #00000029;
     width: 100%;
-    height: 64px;
+    height: 56px;
     flex-shrink: 0;
   }
   .login-header-inner {
-    height: 64px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     max-width: 100%;
   }
+  @media (min-width: 768px) {
+    .login-header { height: 64px; }
+    .login-header-inner { height: 64px; }
+  }
   .login-body {
     flex: 1;
     display: flex;
     min-height: 0;
+    position: relative;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
   }
   .login-form-panel {
     width: 50%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 40px;
-    overflow-y: auto;
+    padding: 40px 60px;
+  }
+  .login-title-wrap {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 24px;
   }
   .login-form-inner {
     width: 100%;
     max-width: 480px;
+    background: #fff;
+    padding: 28px 32px 24px;
+    border-radius: 6px;
   }
-  .login-title-wrap { margin-bottom: 40px; }
   .login-field-email { margin-bottom: 25px; }
   .login-field-password { margin-bottom: 20px; }
   .login-remember-row { margin-bottom: 25px; }
-  .login-image-panel {
-    width: 50%;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    min-height: 0;
-  }
-  .dealer-portal-label { display: block; }
+  .login-image-panel { display: none; }
 
-  /* Mobile: full-screen background image, form as overlay card */
+  /* Mobile */
   @media (max-width: 767px) {
-    .login-header { height: 56px; }
-    .login-header-inner { height: 56px; justify-content: center; }
-    .dealer-portal-label { display: none; }
+    .login-header-inner { justify-content: center; }
     .header-logo-wrap { width: auto !important; padding: 0 !important; }
-    .header-spacer { display: none; }
-    .login-body {
-      position: relative;
-      background-image: var(--login-bg);
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-    }
     .login-form-panel {
       width: 100%;
-      background: transparent;
-      padding: 24px 20px;
+      padding: 32px 20px 24px;
       align-items: flex-start;
     }
+    .login-title-wrap { max-width: 100%; margin-bottom: 20px; }
     .login-form-inner {
       width: 100%;
       max-width: 100%;
-      background: rgba(255, 255, 255, 0.96);
-      padding: 28px 24px 20px;
-      border-radius: 4px;
+      padding: 24px 20px 20px;
     }
-    .login-image-panel { display: none; }
-    .login-title-wrap { margin-bottom: 24px; }
     .login-field-email { margin-bottom: 18px; }
     .login-field-password { margin-bottom: 14px; }
     .login-remember-row { margin-bottom: 20px; }
-  }
-
-  @media (max-height: 820px) and (min-width: 768px) {
-    .login-header { height: 56px; }
-    .login-header-inner { height: 56px; }
-    .login-form-panel { padding: 24px 40px; }
-    .login-title-wrap { margin-bottom: 24px; }
-    .login-field-email { margin-bottom: 16px; }
-    .login-field-password { margin-bottom: 14px; }
-    .login-remember-row { margin-bottom: 16px; }
-  }
-  @media (max-height: 680px) and (min-width: 768px) {
-    .login-header { height: 48px; }
-    .login-header-inner { height: 48px; }
-    .login-form-panel { padding: 16px 32px; }
-    .login-title-wrap { margin-bottom: 16px; }
-    .login-field-email { margin-bottom: 12px; }
-    .login-field-password { margin-bottom: 10px; }
-    .login-remember-row { margin-bottom: 12px; }
   }
 `;
 
@@ -157,29 +131,43 @@ export default function LoginPage() {
         {/* Header */}
         <header className="login-header">
           <div className="login-header-inner">
-            <div className="header-logo-wrap w-1/3 px-[30px] py-5">
+            {/* Logo */}
+            <div className="header-logo-wrap flex-1 flex items-center justify-center md:justify-start px-[30px]">
               <img src="/images/logo.png" alt="Vaya" className="h-7 object-contain block" />
             </div>
-            <div className="dealer-portal-label w-1/3 text-center">
-              <span className="text-[25px] text-vaya-black font-normal">Dealer Portal</span>
+            {/* Dealer Portal + Support — hidden on mobile */}
+            <div className="hidden md:flex items-center gap-6 px-[30px]">
+              <span className="text-[22px] text-vaya-black font-normal">Dealer Portal</span>
+              <a
+                href="mailto:sales@vayahome.com"
+                className="flex items-center gap-[6px] text-vaya-black no-underline text-[15px] opacity-70 hover:opacity-100"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#807A52" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
+                  <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                </svg>
+                <span>Support</span>
+              </a>
             </div>
-            <div className="header-spacer w-1/3" />
           </div>
         </header>
 
         {/* Body */}
         <div
           className="login-body"
-          style={{ '--login-bg': `url(${loginImage})` }}
+          style={{ backgroundImage: `url(${loginImage})` }}
         >
           {/* Form panel */}
           <div className="login-form-panel">
+
+            <div className="login-title-wrap">
+              <div className="w-8 h-[3px] bg-[#807A52] mb-3" />
+              <h1 className="text-[35px] font-normal m-0 text-white">Dealer Login</h1>
+              <p className="m-0 mt-2 text-[15px] text-white/80 leading-[1.5]">Welcome back! Please login to access<br />your dealer account.</p>
+            </div>
+
             <div className="login-form-inner">
-
-              <div className="login-title-wrap">
-                <h1 className="text-[35px] font-normal m-0 text-vaya-black">Dealer Login</h1>
-              </div>
-
               <form onSubmit={handleSubmit((d) => login.mutate(d))}>
                 <div className="login-field-email">
                   <label className="block mb-[7px] text-black text-[16px] leading-[140%]">Email</label>
@@ -219,7 +207,7 @@ export default function LoginPage() {
                     <input {...register('remember')} type="checkbox" className="w-4 h-4 cursor-pointer" />
                     Remember me
                   </label>
-                  <Link to="/forgot-password" className="text-vaya-black text-sm no-underline">
+                  <Link to="/forgot-password" className="text-[#807A52] text-sm no-underline">
                     Forgot Password?
                   </Link>
                 </div>
@@ -227,9 +215,9 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={login.isPending}
-                  className={`block w-full px-[30px] py-2 bg-black text-white border-none text-[18px] font-normal tracking-[0.5px] ${login.isPending ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                  className={`block w-full px-[30px] py-2 bg-[#807A52] text-white border-none text-[18px] font-normal tracking-[0.5px] ${login.isPending ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  {login.isPending ? 'Signing in...' : 'Submit'}
+                  {login.isPending ? 'Signing in...' : 'Sign In'}
                 </button>
 
                 {login.isError && (
@@ -239,13 +227,9 @@ export default function LoginPage() {
                 )}
               </form>
             </div>
+
           </div>
 
-          {/* Right: Image (desktop only) */}
-          <div
-            className="login-image-panel"
-            style={{ backgroundImage: `url(${loginImage})` }}
-          />
         </div>
 
         <Footer />

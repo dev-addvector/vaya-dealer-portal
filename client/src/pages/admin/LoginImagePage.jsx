@@ -42,8 +42,8 @@ export default function LoginImagePage() {
               const img = new Image();
               img.onload = () => {
                 URL.revokeObjectURL(url);
-                if (img.width !== 721 || img.height !== 808) {
-                  toast.error(`Image must be 721 × 808 px. Selected image is ${img.width} × ${img.height} px.`);
+                if (img.width !== 2560 || img.height !== 1440) {
+                  toast.error(`Image must be 2560 × 1440 px. Selected image is ${img.width} × ${img.height} px.`);
                   e.target.value = '';
                   return;
                 }
@@ -54,7 +54,7 @@ export default function LoginImagePage() {
             className="text-sm"
             disabled={upload.isPending}
           />
-          <p className="text-xs text-gray-400 mt-1">Recommended image size: 721 × 808 px</p>
+          <p className="text-xs text-gray-400 mt-1">Recommended image size: 2560 × 1440 px</p>
           {upload.isPending && <p className="text-xs text-gray-400 mt-1">Uploading...</p>}
         </div>
       </div>
