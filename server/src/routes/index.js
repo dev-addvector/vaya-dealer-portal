@@ -1,8 +1,10 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
 const adsController = require('../controllers/admin/ads.controller');
+const erpStatusController = require('../controllers/erpStatus.controller');
 
 router.get('/ads/active', auth, adsController.getActive);
+router.get('/erp-status', auth, erpStatusController.check);
 
 router.use('/auth', require('./auth.routes'));
 router.use('/products', require('./product.routes'));

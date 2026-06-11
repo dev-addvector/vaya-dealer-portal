@@ -7,6 +7,7 @@ import { useCart } from '@/hooks/useProducts';
 import { downloadPriceListCsv, downloadPriceListPdf } from '@/api/download.api';
 import { getActiveAd } from '@/api/admin.api';
 import Footer from '@/components/ui/Footer';
+import ErpStatusIndicator from '@/components/ui/ErpStatusIndicator';
 
 function IconGrid({ color = '#111111' }) {
   return (
@@ -273,6 +274,7 @@ export default function AppLayout() {
                 </span>
               )}
             </button>
+            <ErpStatusIndicator />
           </div>
         </nav>
       </header>
@@ -300,15 +302,18 @@ export default function AppLayout() {
           </NavLink>
 
           {/* Cart */}
-          <button
-            onClick={() => navigate('/cart')}
-            className="cart-btn bg-vaya-green h-14 px-4 border-none cursor-pointer relative flex items-center justify-center"
-          >
-            <img src="/images/shopping-cart.png" alt="Cart" className="w-6" />
-            <span className="absolute w-[16px] h-[16px] bg-vaya-black text-vaya-green rounded-full text-center text-[11px] leading-[16px] right-1 top-1">
-              {cartCount}
-            </span>
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={() => navigate('/cart')}
+              className="cart-btn bg-vaya-green h-14 px-4 border-none cursor-pointer relative flex items-center justify-center"
+            >
+              <img src="/images/shopping-cart.png" alt="Cart" className="w-6" />
+              <span className="absolute w-[16px] h-[16px] bg-vaya-black text-vaya-green rounded-full text-center text-[11px] leading-[16px] right-1 top-1">
+                {cartCount}
+              </span>
+            </button>
+            <ErpStatusIndicator />
+          </div>
         </div>
       </header>
 
