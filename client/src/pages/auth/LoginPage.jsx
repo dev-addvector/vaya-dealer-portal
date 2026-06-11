@@ -40,6 +40,14 @@ const responsiveStyles = `
     background-position: center;
     background-size: cover;
   }
+  .login-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.82) 22%, rgba(0,0,0,0.45) 52%, rgba(0,0,0,0.1) 72%);
+    pointer-events: none;
+    z-index: 0;
+  }
   .login-form-panel {
     width: 50%;
     display: flex;
@@ -47,6 +55,8 @@ const responsiveStyles = `
     align-items: flex-start;
     justify-content: center;
     padding: 40px 60px;
+    position: relative;
+    z-index: 1;
   }
   .login-title-wrap {
     width: 100%;
@@ -67,6 +77,9 @@ const responsiveStyles = `
 
   /* Mobile */
   @media (max-width: 767px) {
+    .login-body::before {
+      background: rgba(0, 0, 0, 0.55);
+    }
     .login-header-inner { justify-content: center; }
     .header-logo-wrap { width: auto !important; padding: 0 !important; }
     .login-form-panel {
@@ -160,7 +173,7 @@ export default function LoginPage() {
           <div className="login-form-panel">
 
             <div className="login-title-wrap">
-              <div className="w-8 h-[3px] bg-[#807A52] mb-3" />
+              {/* <div className="w-8 h-[3px] bg-[#807A52] mb-3" /> */}
               <h1 className="text-[35px] font-normal m-0 text-white">Dealer Login</h1>
               <p className="m-0 mt-2 text-[15px] text-white/80 leading-[1.5]">Welcome back! Please login to access<br />your dealer account.</p>
             </div>
