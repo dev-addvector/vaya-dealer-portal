@@ -75,6 +75,29 @@ const responsiveStyles = `
   .login-remember-row { margin-bottom: 25px; }
   .login-image-panel { display: none; }
 
+  /* 14-inch laptop (≤1440px) */
+  @media (min-width: 768px) and (max-width: 1440px) {
+    .login-form-panel {
+      padding: 28px 40px;
+    }
+    .login-title-wrap {
+      max-width: 360px;
+      margin-bottom: 16px;
+    }
+    .login-title-wrap h1 { font-size: 26px !important; }
+    .login-title-wrap p  { font-size: 13px !important; }
+    .login-form-inner {
+      max-width: 360px;
+      padding: 20px 24px 18px;
+    }
+    .login-form-inner label   { font-size: 13px !important; }
+    .login-form-inner input   { height: 40px !important; font-size: 13px !important; }
+    .login-form-inner button[type="submit"] { font-size: 15px !important; }
+    .login-field-email    { margin-bottom: 18px; }
+    .login-field-password { margin-bottom: 14px; }
+    .login-remember-row   { margin-bottom: 18px; }
+  }
+
   /* Mobile */
   @media (max-width: 767px) {
     .login-body::before {
