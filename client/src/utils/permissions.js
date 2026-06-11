@@ -7,13 +7,16 @@ const ROLE_ROUTES = {
     '/admin/stocks',
     '/admin/create-order',
     '/admin/subadmins',
+    '/admin/erp-status',
   ],
   qr_admin: [
     '/admin/qr-setting',
     '/admin/brochures',
+    '/admin/erp-status',
   ],
   zone_admin: [
     '/admin/create-order',
+    '/admin/erp-status',
   ],
 };
 

@@ -44,6 +44,7 @@ import UserOrdersPage from '@/pages/admin/UserOrdersPage';
 import CreateOrderPage from '@/pages/admin/CreateOrderPage';
 import BrochurePage from '@/pages/admin/BrochurePage';
 import ErrorLogsPage from '@/pages/admin/ErrorLogsPage';
+import ErpStatusPage from '@/pages/admin/ErpStatusPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
@@ -85,6 +86,7 @@ export const router = createBrowserRouter([
       { path: '/admin/create-order', element: <PermissionRoute><CreateOrderPage /></PermissionRoute> },
       { path: '/admin/brochures', element: <PermissionRoute><BrochurePage /></PermissionRoute> },
       { path: '/admin/logs', element: <ErrorLogsPage /> },
+      { path: '/admin/erp-status', element: <PermissionRoute><ErpStatusPage /></PermissionRoute> },
     ],
   },
   { path: '*', element: <CatchAll /> },

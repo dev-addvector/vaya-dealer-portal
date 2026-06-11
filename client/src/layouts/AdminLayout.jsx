@@ -104,6 +104,13 @@ const navItems = [
       <path d="M10 5.5v3M8.5 7H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   )],
+  ['/admin/erp-status', 'ERP Status', (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5"/>
+      <circle cx="8" cy="8" r="2.5" fill="currentColor"/>
+      <path d="M4.5 3.5l1.5 1.5M11.5 3.5L10 5M4.5 12.5L6 11M11.5 12.5L10 11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  )],
 ];
 
 const LogoutIcon = () => (
