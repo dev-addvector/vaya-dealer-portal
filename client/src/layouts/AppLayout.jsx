@@ -190,6 +190,48 @@ export default function AppLayout() {
         .mobile-drawer.open {
           transform: translateX(0);
         }
+        .support-tab {
+          position: fixed;
+          right: 0;
+          top: 52%;
+          transform: translateY(-50%) translateX(0);
+          z-index: 200;
+          display: flex;
+          align-items: center;
+          text-decoration: none;
+          transition: transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1);
+          filter: drop-shadow(-3px 2px 10px rgba(0,0,0,0.22));
+        }
+        .support-tab:hover {
+          transform: translateY(-50%) translateX(-6px);
+          filter: drop-shadow(-4px 3px 14px rgba(128,122,82,0.45));
+        }
+        .support-tab-body {
+          background: #807A52;
+          border-radius: 10px 0 0 10px;
+          padding: 14px 10px 14px 12px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          color: #fff;
+        }
+        .support-tab-label {
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.8px;
+          writing-mode: vertical-rl;
+          text-orientation: mixed;
+          transform: rotate(180deg);
+          color: rgba(255,255,255,0.88);
+          text-transform: uppercase;
+        }
+        .support-tab-icon {
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
       `}</style>
 
       {/* ── Desktop header (hidden on mobile) ── */}
@@ -381,6 +423,20 @@ export default function AppLayout() {
       </main>
 
       <Footer />
+
+      {/* Hanging support tab */}
+      <a href="mailto:sales@vayahome.com" className="support-tab" title="Contact Support — sales@vayahome.com">
+        <div className="support-tab-body">
+          <span className="support-tab-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
+              <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+            </svg>
+          </span>
+          <span className="support-tab-label">Support</span>
+        </div>
+      </a>
 
       {/* Price List modal */}
       {priceListModal && (
