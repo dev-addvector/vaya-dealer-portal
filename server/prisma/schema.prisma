@@ -144,6 +144,14 @@ model ErrorLog {
   @@map("error_logs")
 }
 
+model ErpStatusLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  online    Boolean
+  checkedAt DateTime @default(now())
+
+  @@map("erp_status_logs")
+}
+
 model SearchReport {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   search_string  String?

@@ -13,6 +13,7 @@ const path = require('path');
 
 const routes = require('./routes');
 const errorHandler = require('./middleware/errorHandler');
+const { startErpCron } = require('./services/erpCron');
 
 const app = express();
 
@@ -35,6 +36,9 @@ app.use('/api', routes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+  startErpCron();
+});
 
 module.exports = app;

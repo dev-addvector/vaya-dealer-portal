@@ -1,8 +1,11 @@
 const router = require('express').Router();
 const auth = require('../../middleware/auth');
 const adminAuth = require('../../middleware/adminAuth');
+const erpStatusLogController = require('../../controllers/admin/erpStatusLog.controller');
 
 router.use(auth, adminAuth);
+router.get('/erp-status-log/history', erpStatusLogController.getHistory);
+router.get('/erp-status-log', erpStatusLogController.getStatus);
 router.use('/dashboard', require('./dashboard.routes'));
 router.use('/settings', require('./settings.routes'));
 router.use('/ads', require('./ads.routes'));
