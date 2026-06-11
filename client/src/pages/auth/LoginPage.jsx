@@ -8,12 +8,11 @@ import Footer from '@/components/ui/Footer';
 
 const responsiveStyles = `
   .login-wrapper {
-    height: 100vh;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     background-color: #fff;
-    overflow: hidden;
+    overflow-y: auto;
   }
   .login-header {
     background-color: #ffffff;
@@ -36,7 +35,6 @@ const responsiveStyles = `
   .login-body {
     flex: 1;
     display: flex;
-    min-height: 0;
     position: relative;
     background-repeat: no-repeat;
     background-position: center;
