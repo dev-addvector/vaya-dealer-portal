@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { getErpStatus, getErpStatusHistory } from '@/api/erp.api';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 function fmt(dateStr) {
   if (!dateStr) return '—';
@@ -16,6 +16,7 @@ function fmt(dateStr) {
 
 export default function ErpStatusPage() {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[1]);
 
   const { data, isLoading, isFetching, dataUpdatedAt, refetch } = useQuery({
     queryKey: ['erp-status'],
@@ -25,10 +26,10 @@ export default function ErpStatusPage() {
   });
 
   const { data: histData, isLoading: histLoading, isFetching: histFetching } = useQuery({
-    queryKey: ['erp-status-history', page],
-    queryFn: () => getErpStatusHistory(page, PAGE_SIZE),
+    queryKey: ['erp-status-history', page, pageSize],
+    queryFn: () => getErpStatusHistory(page, pageSize),
     staleTime: 60 * 1000,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const online = isLoading ? null : (data?.online ?? false);
@@ -47,9 +48,9 @@ export default function ErpStatusPage() {
     ? new Date(dataUpdatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
     : null;
 
-  const records    = histData?.data?.records ?? [];
-  const total      = histData?.data?.total ?? 0;
-  const totalPages = histData?.data?.totalPages ?? 1;
+  const records    = histData?.records ?? [];
+  const total      = histData?.total ?? 0;
+  const totalPages = histData?.totalPages ?? 1;
 
   return (
     <div className="max-w-2xl">
@@ -127,7 +128,7 @@ export default function ErpStatusPage() {
               records.map((log, i) => (
                 <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-2.5 text-xs text-gray-400">
-                    {(page - 1) * PAGE_SIZE + i + 1}
+                    {(page - 1) * pageSize + i + 1}
                   </td>
                   <td className="px-4 py-2.5 text-xs text-gray-600">{fmt(log.checkedAt)}</td>
                   <td className="px-4 py-2.5">
@@ -148,57 +149,69 @@ export default function ErpStatusPage() {
         </table>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-xs text-gray-400">
-              Page {page} of {totalPages}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1 || histFetching}
-                className="text-xs px-3 py-1.5 rounded border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        {total > 0 && (
+          <div className="px-4 py-3 border-t border-gray-100 flex flex-wrap items-center justify-center lg:justify-between gap-3">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm text-gray-500">Rows per page:</span>
+              <select
+                value={pageSize}
+                onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
+                className="text-sm border rounded px-1.5 py-1 bg-white text-gray-600 outline-none cursor-pointer"
               >
-                Previous
-              </button>
+                {PAGE_SIZE_OPTIONS.map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
 
-              {/* page number pills — show a sliding window */}
-              <div className="flex items-center gap-1">
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1 justify-center">
+                <button
+                  disabled={page <= 1}
+                  onClick={() => setPage(1)}
+                  className="px-2.5 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+                >«</button>
+                <button
+                  disabled={page <= 1}
+                  onClick={() => setPage(p => p - 1)}
+                  className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+                >Previous</button>
+
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-                  .reduce((acc, p, idx, arr) => {
-                    if (idx > 0 && p - arr[idx - 1] > 1) acc.push('…');
-                    acc.push(p);
+                  .filter(n => n === 1 || n === totalPages || Math.abs(n - page) <= 1)
+                  .reduce((acc, n, idx, arr) => {
+                    if (idx > 0 && n - arr[idx - 1] > 1) acc.push('…');
+                    acc.push(n);
                     return acc;
                   }, [])
                   .map((item, idx) =>
                     item === '…' ? (
-                      <span key={`ellipsis-${idx}`} className="text-xs text-gray-400 px-1">…</span>
+                      <span key={`e-${idx}`} className="px-2 py-1.5 text-sm text-gray-400">…</span>
                     ) : (
                       <button
                         key={item}
                         onClick={() => setPage(item)}
-                        disabled={histFetching}
-                        className={`text-xs w-7 h-7 rounded border transition-colors ${
+                        className={`px-3 py-1.5 text-sm border rounded ${
                           item === page
-                            ? 'border-gray-800 bg-gray-800 text-white'
-                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                            ? 'bg-vaya-primary text-white border-vaya-primary'
+                            : 'hover:bg-gray-50'
                         }`}
-                      >
-                        {item}
-                      </button>
+                      >{item}</button>
                     )
                   )}
-              </div>
 
-              <button
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages || histFetching}
-                className="text-xs px-3 py-1.5 rounded border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-              </button>
-            </div>
+                <button
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                  className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+                >Next</button>
+                <button
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(totalPages)}
+                  className="px-2.5 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
+                >»</button>
+              </div>
+            )}
           </div>
         )}
       </div>
