@@ -21,14 +21,13 @@ export default function ErpStatusPage() {
   const { data, isLoading, isFetching, dataUpdatedAt, refetch } = useQuery({
     queryKey: ['erp-status'],
     queryFn: getErpStatus,
-    refetchInterval: 30 * 1000,
-    staleTime: 30 * 1000,
+    staleTime: 0,
   });
 
   const { data: histData, isLoading: histLoading, isFetching: histFetching } = useQuery({
     queryKey: ['erp-status-history', page, pageSize],
     queryFn: () => getErpStatusHistory(page, pageSize),
-    staleTime: 60 * 1000,
+    staleTime: 0,
     placeholderData: keepPreviousData,
   });
 
@@ -91,7 +90,7 @@ export default function ErpStatusPage() {
 
       <div className="mt-4 bg-white rounded-lg border border-gray-200 p-4 mb-6">
         <p className="text-xs text-gray-500">
-          Status refreshes automatically every 30 seconds. Use <strong>Check Now</strong> for an immediate check.
+          The <strong>Service History</strong> shows ERP server status captured every 15 minutes. Use <strong>Check Now</strong> for an immediate check.
         </p>
       </div>
 
