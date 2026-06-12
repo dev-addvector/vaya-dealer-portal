@@ -9,6 +9,8 @@ import Footer from '@/components/ui/Footer';
 const responsiveStyles = `
   .login-wrapper {
     height: 100vh;
+    height: 100svh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     background-color: #fff;
@@ -110,7 +112,8 @@ const responsiveStyles = `
       width: 100%;
       padding: 32px 20px 24px;
       align-items: flex-start;
-      justify-content: flex-start;
+      justify-content: center;
+      margin: auto 0;
     }
     .login-title-wrap { max-width: 100%; margin-bottom: 20px; }
     .login-form-inner {
