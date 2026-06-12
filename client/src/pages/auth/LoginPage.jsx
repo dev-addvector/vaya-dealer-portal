@@ -8,11 +8,11 @@ import Footer from '@/components/ui/Footer';
 
 const responsiveStyles = `
   .login-wrapper {
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     background-color: #fff;
-    overflow-y: auto;
+    overflow: hidden;
   }
   .login-header {
     background-color: #ffffff;
@@ -39,6 +39,7 @@ const responsiveStyles = `
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
+    overflow-y: auto;
   }
   .login-body::before {
     content: '';
@@ -109,6 +110,7 @@ const responsiveStyles = `
       width: 100%;
       padding: 32px 20px 24px;
       align-items: flex-start;
+      justify-content: flex-start;
     }
     .login-title-wrap { max-width: 100%; margin-bottom: 20px; }
     .login-form-inner {
@@ -198,7 +200,7 @@ export default function LoginPage() {
             <div className="login-title-wrap">
               {/* <div className="w-8 h-[3px] bg-[#807A52] mb-3" /> */}
               <h1 className="text-[35px] font-normal m-0 text-white">Dealer Login</h1>
-              <p className="m-0 mt-2 text-[14px] text-white/80 leading-[1.5] whitespace-nowrap">Welcome back! Please login to access your dealer account.</p>
+              <p className="m-0 mt-2 text-[14px] text-white/80 leading-[1.5] whitespace-nowrap">Welcome back! <br /> Please login to access your dealer account.</p>
             </div>
 
             <div className="login-form-inner">
