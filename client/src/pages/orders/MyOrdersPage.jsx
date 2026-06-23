@@ -152,6 +152,8 @@ export default function MyOrdersPage() {
       const a = document.createElement('a');
       a.href = url;
       a.download = `order-${po}.pdf`;
+      a.target = '_blank';
+      a.rel = 'noopener';
       a.click();
       URL.revokeObjectURL(url);
     } catch (_) {
