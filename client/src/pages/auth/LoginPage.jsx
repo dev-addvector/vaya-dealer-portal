@@ -151,7 +151,7 @@ function EyeIcon({ visible }) {
 export default function LoginPage() {
   const login = useLogin();
   const [showPwd, setShowPwd] = useState(false);
-  const [loginImage, setLoginImage] = useState('/images/login_left_banner.png');
+  const [loginImage, setLoginImage] = useState('/images/login_left_banner.webp');
 
   useEffect(() => {
     fetch('/api/auth/login-image')

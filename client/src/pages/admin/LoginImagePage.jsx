@@ -25,7 +25,7 @@ export default function LoginImagePage() {
         <div>
           <p className="text-xs text-gray-500 mb-1">Current login page image:</p>
           <img
-            src={settings.image ? `/uploads/settings/${settings.image}` : '/images/login_left_banner.png'}
+            src={settings.image ? `/uploads/settings/${settings.image}` : '/images/login_left_banner.webp'}
             alt="Current login"
             className="h-32 sm:h-40 rounded border object-cover w-full max-w-xs"
           />
