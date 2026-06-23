@@ -32,13 +32,14 @@ function ErrorLogsContent() {
   const [from, setFrom] = useState(last7DaysIST);
   const [to, setTo] = useState(today);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['admin-error-logs', page, perPage, from, to],
     queryFn: () => getErrorLogs({ page, perPage, from, to }),
+    staleTime: 0,
   });
 
-  const logs = data?.data?.data ?? [];
-  const total = data?.data?.total ?? 0;
+  const logs = data?.data ?? [];
+  const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / perPage));
   const fromEntry = total === 0 ? 0 : (page - 1) * perPage + 1;
   const toEntry = Math.min(page * perPage, total);
@@ -76,6 +77,12 @@ function ErrorLogsContent() {
             onChange={handleDateChange}
             onClear={clearFilters}
           />
+          <button
+            onClick={() => refetch()}
+            className="text-sm px-3 py-1.5 border border-gray-300 rounded bg-white text-gray-600 hover:bg-gray-50 shrink-0"
+          >
+            Refresh
+          </button>
         </div>
       </div>
 

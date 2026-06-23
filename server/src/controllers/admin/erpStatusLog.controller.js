@@ -1,5 +1,8 @@
 const prisma = require('../../config/database');
 
+function toISTStart(d) { return new Date(d + 'T00:00:00+05:30'); }
+function toISTEnd(d)   { return new Date(d + 'T23:59:59+05:30'); }
+
 exports.getStatus = async (req, res) => {
   const [latest, history] = await Promise.all([
     prisma.erpStatusLog.findFirst({ orderBy: { checkedAt: 'desc' } }),
@@ -19,12 +22,8 @@ exports.getHistory = async (req, res) => {
   const where = {};
   if (req.query.dateFrom || req.query.dateTo) {
     where.checkedAt = {};
-    if (req.query.dateFrom) where.checkedAt.gte = new Date(req.query.dateFrom);
-    if (req.query.dateTo) {
-      const to = new Date(req.query.dateTo);
-      to.setHours(23, 59, 59, 999);
-      where.checkedAt.lte = to;
-    }
+    if (req.query.dateFrom) where.checkedAt.gte = toISTStart(req.query.dateFrom);
+    if (req.query.dateTo)   where.checkedAt.lte = toISTEnd(req.query.dateTo);
   }
 
   const [total, records] = await Promise.all([
