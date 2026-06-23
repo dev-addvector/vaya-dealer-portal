@@ -1,4 +1,4 @@
 import api from './axios';
 export const getErpStatus = () => api.get('/erp-status');
-export const getErpStatusHistory = (page = 1, pageSize = 20) =>
-  api.get('/admin/erp-status-log/history', { params: { page, pageSize } });
+export const getErpStatusHistory = (page = 1, pageSize = 20, dateFrom = '', dateTo = '') =>
+  api.get('/admin/erp-status-log/history', { params: { page, pageSize, ...(dateFrom && { dateFrom }), ...(dateTo && { dateTo }) } });

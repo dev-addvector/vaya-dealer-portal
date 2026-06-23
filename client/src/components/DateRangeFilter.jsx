@@ -32,12 +32,12 @@ export default function DateRangeFilter({ from, to, onChange, onClear }) {
     { startDate: parseDate(from), endDate: parseDate(to), key: 'selection' },
   ]);
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth < 640
+    () => typeof window !== 'undefined' && window.innerWidth < 1024
   );
   const wrapperRef = useRef(null);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
