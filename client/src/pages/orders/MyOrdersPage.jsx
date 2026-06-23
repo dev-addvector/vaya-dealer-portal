@@ -240,13 +240,13 @@ export default function MyOrdersPage() {
                     <td className={filterCellCls}>
                       <SearchableSelect value={filters.orderId} onChange={v => setFilter('orderId', v)} options={orderIds} placeholder="Search Order ID" />
                     </td>
-                    <td className={filterCellCls}>
+                    <td className={`${filterCellCls} min-w-[120px]`}>
                       <input type="date" value={filters.orderDate} onChange={e => setFilter('orderDate', e.target.value)} className={filterInputCls} />
                     </td>
                     <td className={filterCellCls}>
                       <SearchableSelect value={filters.invoiceId} onChange={v => setFilter('invoiceId', v)} options={invoiceIds} placeholder="Search Invoice ID" />
                     </td>
-                    <td className={filterCellCls}>
+                    <td className={`${filterCellCls} min-w-[120px]`}>
                       <input type="date" value={filters.invoiceDate} onChange={e => setFilter('invoiceDate', e.target.value)} className={filterInputCls} />
                     </td>
                     <td className={filterCellCls}>
