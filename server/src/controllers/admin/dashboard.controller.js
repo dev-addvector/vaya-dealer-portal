@@ -81,12 +81,15 @@ exports.loadChartData = async (req, res) => {
       ],
       cursor: {},
     }),
-    prisma.searchReport.groupBy({
-      by: ['search_string'],
-      _count: { search_string: true },
-      where: { ...baseWhere, search_string: { not: null } },
-      orderBy: { _count: { search_string: 'desc' } },
-      take: 5,
+    prisma.$runCommandRaw({
+      aggregate: 'search_reports',
+      pipeline: [
+        { $match: { ...baseMatch, search_string: { $nin: [null, ''] } } },
+        { $group: { _id: { $toLower: '$search_string' }, count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 },
+      ],
+      cursor: {},
     }),
     prisma.searchReport.groupBy({
       by: ['location'],
@@ -150,8 +153,8 @@ exports.loadChartData = async (req, res) => {
       averageRecord: parseFloat(avgRowCount.toFixed(2)),
       averageRecordPerSec: avgPerSec,
       topSearchString: {
-        search_string: topSearchStrings.map((r) => r.search_string),
-        count: topSearchStrings.map((r) => r._count.search_string),
+        search_string: (topSearchStrings.cursor?.firstBatch ?? []).map((r) => r._id),
+        count: (topSearchStrings.cursor?.firstBatch ?? []).map((r) => r.count),
       },
       topConsignee: {
         dates,
